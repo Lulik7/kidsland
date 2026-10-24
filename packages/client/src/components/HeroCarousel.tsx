@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { DemoBoard } from './DemoBoard';
-import { SectionArt } from './RobotGuide';
+import { SectionScene } from './SectionScene';
 
 const DELAY = 5000;
 
@@ -32,7 +32,7 @@ export function HeroCarousel() {
               style={{ ['--c' as string]: s.color }}
               aria-hidden={k !== i}
             >
-              {s.id === 'coding' ? <DemoBoard /> : k === i && <SectionArt t={t} id={s.id} />}
+              {s.id === 'coding' ? <DemoBoard /> : <SectionScene id={s.id} />}
             </div>
           ))}
         </div>

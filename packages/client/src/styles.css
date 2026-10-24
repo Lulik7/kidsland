@@ -1450,3 +1450,17 @@ h1, h2 { color: #34404f; }
 .bs-fly { position: absolute; left: -22px; top: -14px; transform: rotate(-14deg); }
 .course-sections .big-section:hover .bs-open { background: var(--primary); }
 @media (max-width: 700px) { .course-sections .big-section { min-height: 230px; } .bs-open { padding: 10px 22px; } }
+
+/* ---------- Carousel: full-window scenes ---------- */
+.hc-slide:not(.hc-coding) { padding: 0; overflow: hidden; background: none; }
+.scene { position: absolute; inset: 0; overflow: hidden; }
+.scene-hills { position: absolute; left: 0; right: 0; bottom: -2px; width: 100%; height: 34%; }
+.scene-hills path:last-child { fill: #cfe8dc; }
+.scene-cloud { position: absolute; opacity: 0.8; }
+.scene-cloud.c1 { left: 52%; top: 4%; }
+.scene-cloud.c2 { left: 14%; top: 30%; }
+.scene-pic { position: absolute; height: auto; transform: rotate(var(--r)); filter: drop-shadow(0 10px 12px rgba(40, 40, 70, 0.22)); animation: scene-bob 3.4s ease-in-out infinite alternate; }
+.hc-slide.on .scene-pic { animation: scene-pop 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) backwards, scene-bob 3.4s 0.6s ease-in-out infinite alternate; }
+@keyframes scene-bob { to { transform: rotate(var(--r)) translateY(-6%); } }
+@keyframes scene-pop { from { transform: rotate(var(--r)) scale(0.4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .scene-pic { animation: none !important; } }
