@@ -1,3 +1,4 @@
+import { WcBranch } from '../components/Watercolor';
 import { articlesOfSection, COURSES, findSection, SECTIONS, SUBJECTS, type Section } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -19,6 +20,7 @@ export function SectionsPage() {
   return (
     <main className="page sections-page">
       <section className="courses-hero">
+      <WcBranch className="banner-branch" size={190} />
         <span className="pill pill-dark">{t('Разделы Kidsland')}</span>
         <h1>{t('Выбери, чему учиться')}</h1>
         <p>{t('В каждом разделе есть курсы для самостоятельной учёбы и наставники для живых уроков. Первый урок с наставником бесплатный.')}</p>
@@ -56,6 +58,7 @@ function SectionHero({ section }: { section: Section }) {
   const t = useT();
   return (
     <section className="section-hero" style={{ ['--c' as string]: section.color }}>
+      <WcBranch className="banner-branch" size={190} />
       <span className="sec-icon sec-icon-xl">
         <Pic code={sectionPic(section.id)} size={84} />
       </span>

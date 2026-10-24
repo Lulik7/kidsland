@@ -1,3 +1,4 @@
+import { WcBranch } from '../components/Watercolor';
 import { CHILD_SAFETY_TIPS } from '@kidsland/shared';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -39,6 +40,7 @@ export function SupportPage() {
   return (
     <main className="page support-page">
       <section className="support-hero">
+      <WcBranch className="banner-branch" size={190} />
         <Sprite svg={HERO.robot('down')} size={96} className="float" />
         <div>
           <h1>{t('Служба поддержки')}</h1>

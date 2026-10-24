@@ -1,3 +1,4 @@
+import { WatercolorDefs } from './components/Watercolor';
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
@@ -123,6 +124,7 @@ export function App() {
   const t = useT();
   return (
     <>
+      <WatercolorDefs />
       <Header />
       <Routes>
         <Route path="/" element={<Landing />} />

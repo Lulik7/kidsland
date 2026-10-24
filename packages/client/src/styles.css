@@ -1,18 +1,21 @@
 :root {
   --bg: #ffffff;
-  --ink: #12245a;
-  --muted: #5b6890;
+  --ink: #34404f;
+  --muted: #6b7786;
   --card: #ffffff;
-  --line: #e3e9f6;
-  --primary: #ff6a00;
-  --primary-dark: #d45500;
+  --line: #f3d6c8;
+  --primary: #79c7a6;
+  --primary-dark: #5eae8c;
   --go: #2fc46b;
   --go-dark: #1f9a50;
-  --violet: #6c4cff;
+  --violet: #3f7ea6;
   --sun: #ffd23f;
   --radius: 24px;
   --shadow: 0 14px 40px rgba(18, 36, 90, 0.12);
-  --display: 'Montserrat Alternates', 'Rubik', 'Nunito', system-ui, sans-serif;
+  --display: 'Roboto Slab', 'Rubik', 'Nunito', system-ui, sans-serif;
+  --hand: 'Amatic SC', 'Rubik', system-ui, sans-serif;
+  --peach: #f4a58a;
+  --mint: #c3e6d6;
   --deep: #241d4f;
   --tint: 100%;
   --t-green: #17703f;
@@ -1279,34 +1282,96 @@ a.world, :root[data-theme='dark'] a.world { color: #fff; text-decoration: none; 
 }
 :root[data-theme='dark'] .pill-dark { background: rgba(255, 210, 63, 0.16); color: var(--sun); }
 
-/* Page banners in the space style: starry navy with a row of clouds at the bottom */
-:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) {
+.theory-card p { white-space: pre-line; }
+
+/* Watercolor style: white paper, hand-lettered headings, mint pill buttons, dashed peach cards */
+body { font-family: 'Roboto Slab', 'Nunito', system-ui, serif; }
+h1, h2, .section-title, .page-title, .hc-title, .course-card h3, .tutor-card h3, .feature h3, .subject-card h3, .big-section h3, .world h3, .theory-card h3 {
+  font-family: var(--hand);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.05;
+}
+h1 { font-size: clamp(2.8rem, 6vw, 4.4rem); }
+h2, .section-title { font-size: clamp(2.5rem, 5vw, 3.8rem); }
+.course-card h3, .tutor-card h3, .feature h3, .subject-card h3, .theory-card h3 { font-size: 1.9rem; }
+.big-section h3, .world h3 { font-size: 2.3rem; }
+.hc-title { font-size: clamp(2.2rem, 3.6vw, 3rem); }
+h1, h2 { color: #34404f; }
+.section-title::before, .section-title::after { content: none; }
+.btn { border-radius: 999px; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; box-shadow: 0 10px 24px color-mix(in srgb, var(--b) 45%, transparent); }
+.btn:active { transform: translateY(2px); }
+.btn-primary { --b: var(--primary); --b-dark: var(--primary-dark); --b-ink: #fff; }
+.btn-light { --b: #fff; --b-ink: var(--ink); box-shadow: 0 0 0 2px var(--line), 0 10px 24px rgba(52, 64, 79, 0.08); }
+.pill, .pill-dark { background: #fdeee6; color: #d9785a; border: 1.5px dashed #f2b8a2; }
+.feature, .course-card, .tutor-card, .subject-card, .card, .theory-card, .question, .read-card {
+  box-shadow: 0 8px 26px rgba(52, 64, 79, 0.06);
+  border: 2px dashed #f4c9b8;
+  border-radius: 36px;
+}
+.feature, .subject-card { border-top: 2px dashed #f4c9b8; }
+.course-card .cc-art { border-radius: 30px 30px 0 0; }
+.theory-card { border-left: 2px dashed #f4c9b8; }
+.video-card { background: linear-gradient(135deg, #f7b49a, #f39c7e); border-radius: 36px; }
+.soft-cta { background: #eef8f3; border: 2px dashed #bfe3d0; border-radius: 30px; }
+.tip { background: #fff6e6; }
+
+/* Landing hero on white paper */
+.hero { background: #fff; color: var(--ink); padding: 40px 16px 170px; }
+.hero-text p, .hc-caption p { color: var(--muted); }
+.hero-points { color: var(--ink); }
+.hc-title, .hc-title a { color: #34404f; }
+.hc-title a:hover { color: var(--primary-dark); }
+.hl { color: #3f7ea6; }
+.hl::after { background: rgba(121, 199, 166, 0.35); }
+.pill { color: #d9785a; }
+.hero-slogan { background: #fff; border: 2.5px solid #34404f; border-radius: 6px; box-shadow: 0 14px 30px rgba(52, 64, 79, 0.1); }
+.hs-main { color: #34404f; font-family: var(--hand); font-size: clamp(2rem, 3.6vw, 2.8rem) !important; }
+.hs-main b { font-size: clamp(3.2rem, 6.4vw, 5rem) !important; }
+.hs-main b { background: none; -webkit-background-clip: initial; background-clip: initial; color: #3f7ea6; }
+.hs-sub { color: #d9785a; font-family: var(--hand); font-size: clamp(1.9rem, 3.4vw, 2.6rem) !important; }
+.window { box-shadow: 0 20px 50px rgba(52, 64, 79, 0.15); }
+.wc { position: absolute; pointer-events: none; }
+.wc-balloon { left: -14px; top: 14px; width: 110px; height: 176px; }
+.wc-birds { left: 0; top: 250px; transform: scale(0.6); }
+.wc-c1 { left: 34%; top: 14px; }
+.wc-c2 { right: 3%; top: 40px; }
+.wc-c3 { right: 30%; bottom: 150px; }
+.wc-s1 { left: 47%; top: 6px; }
+.wc-s2 { right: 18%; top: 10px; }
+.wc-s3 { left: 30%; bottom: 190px; }
+.hero-sky .wc-plane { position: absolute; right: 1%; top: 46%; filter: url(#wc) saturate(0.65) brightness(1.08); opacity: 0.95; animation: float 4s ease-in-out infinite; }
+.wc-hills { position: absolute; left: 0; right: 0; bottom: -2px; width: 100%; height: 160px; pointer-events: none; z-index: 2; }
+@media (max-width: 900px) {
+  .wc-balloon, .wc-birds, .wc-c3, .wc-s3, .hero-sky .wc-plane { display: none; }
+  .hero { padding-bottom: 130px; }
+  .wc-hills { height: 110px; }
+}
+
+/* Page banners: soft watercolor wash with a leafy branch */
+:is(.tutors-hero, .courses-hero, .section-hero, .support-hero) {
   position: relative;
   overflow: hidden;
-  color: #fff;
-  padding-bottom: 64px;
+  border-radius: 40px;
+  border: 2px dashed #bfe3d0;
+  box-shadow: none;
   background:
-    radial-gradient(1.6px 1.6px at 30px 40px, #fff, transparent 60%),
-    radial-gradient(1.2px 1.2px at 170px 110px, rgba(255, 255, 255, 0.7), transparent 60%),
-    radial-gradient(2px 2px at 260px 30px, rgba(255, 230, 160, 0.9), transparent 60%),
-    radial-gradient(1.2px 1.2px at 110px 160px, rgba(255, 255, 255, 0.6), transparent 60%),
-    radial-gradient(700px 300px at 85% 0%, rgba(90, 120, 230, 0.45), transparent 70%),
-    linear-gradient(170deg, #0b1a45, #16306f);
-  background-size: 300px 200px, 300px 200px, 300px 200px, 300px 200px, auto, auto;
+    radial-gradient(260px 160px at 92% 10%, rgba(169, 211, 232, 0.55), transparent 70%),
+    radial-gradient(320px 200px at 8% 100%, rgba(195, 230, 214, 0.7), transparent 70%),
+    radial-gradient(220px 140px at 60% 0%, rgba(246, 203, 181, 0.45), transparent 70%),
+    #fbfefc;
 }
-:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero)::after {
-  content: '';
-  position: absolute;
-  left: -20px;
-  right: -20px;
-  bottom: -2px;
-  height: 56px;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 40px 70px, var(--bg) 46px, transparent 47px) 0 0 / 150px 56px repeat-x,
-    radial-gradient(circle at 110px 80px, var(--bg) 52px, transparent 53px) 0 0 / 150px 56px repeat-x;
+:is(.tutors-hero, .courses-hero, .section-hero, .support-hero) p { color: var(--muted); }
+.banner-branch { right: -20px; bottom: -14px; opacity: 0.9; }
+
+/* Mint speckled paper behind lists of cards */
+.courses-page, .tutors-page, .sections-page {
+  background-image: radial-gradient(rgba(121, 199, 166, 0.13) 1.4px, transparent 1.6px), radial-gradient(rgba(121, 199, 166, 0.09) 1.2px, transparent 1.4px);
+  background-size: 22px 18px, 31px 27px;
+  background-position: 0 0, 11px 9px;
 }
-:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) :is(p, .muted) { color: #d6def8; }
-:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) a:not(.btn) { color: #ffd23f; }
-:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) .pill-dark { background: rgba(255, 255, 255, 0.16); color: #fff; }
-.theory-card p { white-space: pre-line; }
+.topbar { box-shadow: 0 2px 0 #f6e3da; }
+.page-title, :is(.tutors-hero, .courses-hero, .section-hero, .support-hero, .ch-text, .lesson-top) h1 { font-size: clamp(2.6rem, 5.4vw, 4rem); }
+.lesson-top h1 { line-height: 1; }
+.tab.on { background: var(--primary); color: #fff; box-shadow: 0 8px 20px rgba(121, 199, 166, 0.4); }
+.theory-card h3 { font-size: 2.1rem; }

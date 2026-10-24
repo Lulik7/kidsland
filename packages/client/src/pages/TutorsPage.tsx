@@ -1,3 +1,4 @@
+import { WcBranch } from '../components/Watercolor';
 import { findSection, LANGUAGES, TOPICS, TUTOR_SECTIONS } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -40,6 +41,7 @@ export function TutorsPage() {
   return (
     <main className="page tutors-page">
       <section className="tutors-hero">
+      <WcBranch className="banner-branch" size={190} />
         <div>
           <span className="pill pill-dark">{t('Наставники Kidsland')}</span>
           <h1>{t('Живые уроки один на один')}</h1>

@@ -9,7 +9,7 @@ import { HeroCarousel } from '../components/HeroCarousel';
 import { RobotGuide } from '../components/RobotGuide';
 import { WorldScene } from '../components/WorldScene';
 import { Globe } from '../components/Globe';
-import { Clouds } from '../components/Clouds';
+import { WcBalloon, WcBirds, WcCloud, WcHills, WcStar } from '../components/Watercolor';
 import { Sprite } from '../components/Sprite';
 import { TutorCard } from '../components/TutorCard';
 import { avatarSvg, COIN, GOAL, HERO, WALL } from '../game/sprites';
@@ -51,12 +51,15 @@ export function Landing() {
           {Array.from({ length: 28 }, (_, i) => (
             <span key={i} className="twinkle" style={{ left: `${(i * 37) % 100}%`, top: `${(i * 53) % 85}%`, animationDelay: `${(i % 7) * 0.4}s` }} />
           ))}
-          <Pic code="2604" size={150} className="hs-comet" />
-          <Pic code="1f30e" size={260} className="hs-earth" />
-          <Pic code="1fa90" size={96} className="hs-saturn float" />
-          <Pic code="1f319" size={70} className="hs-moon float" />
-          <Pic code="1f9d1-200d-1f680" size={92} className="hs-astro" />
-          <Pic code="1f680" size={110} className="hs-rocket" />
+          <WcBalloon className="wc-balloon float" size={150} />
+          <WcBirds className="wc-birds" />
+          <WcCloud className="wc-c1" size={130} />
+          <WcCloud className="wc-c2" size={160} color="#b9dbe9" />
+          <WcCloud className="wc-c3" size={110} color="#f6cbb5" />
+          <WcStar className="wc-s1" size={44} />
+          <WcStar className="wc-s2" size={30} color="#7fbad6" />
+          <WcStar className="wc-s3" size={36} color="#f2c879" />
+          <Pic code="2708" size={120} className="wc-plane" />
         </div>
         <div className="hero-inner">
           <div className="hero-text">
@@ -85,7 +88,7 @@ export function Landing() {
             <HeroCarousel />
           </div>
         </div>
-        <Clouds />
+        <WcHills />
       </section>
 
       <section className="wrap globe-section">
