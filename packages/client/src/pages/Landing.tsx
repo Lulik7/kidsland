@@ -162,7 +162,7 @@ export function Landing() {
               <div key={key} className="world" style={{ background: `linear-gradient(150deg, ${th.bg2}, ${th.bg})` }}>
                 <div className="world-art">
                   <Sprite svg={WALL[key]} size={56} className="world-wall" />
-                  <Sprite svg={HERO[key]('right')} size={110} className="world-hero" />
+                  <Sprite svg={HERO[key]('right')} size={110} className={`world-hero world-hero-${key}`} />
                   <Sprite svg={GOAL[key]} size={60} className="world-goal" />
                 </div>
                 <h3>{t(th.name)}</h3>

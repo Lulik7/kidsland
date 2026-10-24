@@ -103,10 +103,23 @@ const makeScenes = (t: T): Scene[] => [
   },
 ];
 
+// Neural and Google voices sound much livelier than the old system ones (like Microsoft Irina).
+const GOOD_VOICE = /natural|online|neural|google|svetlana|dariya|dmitry|milena|katya|yuri/i;
+
 function voiceFor(lang: string): SpeechSynthesisVoice | null {
-  const voices = window.speechSynthesis?.getVoices() ?? [];
-  return voices.find((v) => v.lang.toLowerCase().startsWith(lang)) ?? null;
+  const voices = (window.speechSynthesis?.getVoices() ?? []).filter((v) => v.lang.toLowerCase().startsWith(lang));
+  return voices.find((v) => GOOD_VOICE.test(v.name)) ?? voices[0] ?? null;
 }
+
+/**
+ * Voice settings per language. Russian system voices crackle at a very high pitch and read slowly,
+ * so they get a softer pitch and a faster pace to sound as lively as the English one.
+ */
+const TONE: Record<string, { pitch: [number, number]; rate: [number, number] }> = {
+  ru: { pitch: [1.45, 1.65], rate: [1.35, 1.5] },
+  en: { pitch: [1.75, 2], rate: [1.12, 1.27] },
+};
+const between = ([a, b]: [number, number]) => a + Math.random() * (b - a);
 
 let audio: AudioContext | null = null;
 
@@ -158,8 +171,9 @@ function robotSay(text: string, voice: SpeechSynthesisVoice, onEnd: () => void):
       const u = new SpeechSynthesisUtterance(list[i]);
       u.voice = voice;
       u.lang = voice.lang;
-      u.pitch = 1.75 + Math.random() * 0.25;
-      u.rate = 1.12 + Math.random() * 0.15;
+      const tone = TONE[voice.lang.slice(0, 2).toLowerCase()] ?? TONE.en;
+      u.pitch = between(tone.pitch);
+      u.rate = between(tone.rate);
       u.onend = () => step(i + 1);
       u.onerror = () => step(i + 1);
       window.speechSynthesis.speak(u);

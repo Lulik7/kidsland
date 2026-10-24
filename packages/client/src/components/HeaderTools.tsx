@@ -91,7 +91,7 @@ function A11yPanel({ onClose }: { onClose: () => void }) {
               <span className="muted small">{t(o.hint)}</span>
             </span>
             <input type="checkbox" role="switch" checked={a11y[o.key]} onChange={(e) => setA11y({ [o.key]: e.target.checked })} />
-            <i className="switch" aria-hidden />
+            <i className="a11y-switch" aria-hidden />
           </label>
         ))}
         <div className="modal-actions">
