@@ -1,17 +1,17 @@
 :root {
-  --bg: #fff7ec;
-  --ink: #241d4f;
-  --muted: #6e6890;
+  --bg: #ffffff;
+  --ink: #12245a;
+  --muted: #5b6890;
   --card: #ffffff;
-  --line: #efe3d0;
-  --primary: #ff6b3d;
-  --primary-dark: #d94a1e;
+  --line: #e3e9f6;
+  --primary: #ff6a00;
+  --primary-dark: #d45500;
   --go: #2fc46b;
   --go-dark: #1f9a50;
   --violet: #6c4cff;
   --sun: #ffd23f;
   --radius: 24px;
-  --shadow: 0 14px 40px rgba(36, 29, 79, 0.12);
+  --shadow: 0 14px 40px rgba(18, 36, 90, 0.12);
   --display: 'Montserrat Alternates', 'Rubik', 'Nunito', system-ui, sans-serif;
   --deep: #241d4f;
   --tint: 100%;
@@ -67,7 +67,7 @@ img { display: block; }
 /* Buttons: chunky "3D" game buttons */
 .btn {
   --b: var(--card);
-  --b-dark: color-mix(in srgb, #e4dccd var(--tint), var(--line));
+  --b-dark: color-mix(in srgb, #d9e0f0 var(--tint), var(--line));
   --b-ink: var(--ink);
   display: inline-flex;
   align-items: center;
@@ -93,7 +93,7 @@ img { display: block; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn-primary { --b: var(--primary); --b-dark: var(--primary-dark); --b-ink: #fff; }
 .btn-go { --b: var(--go); --b-dark: var(--go-dark); --b-ink: #fff; }
-.btn-light { --b: var(--card); --b-dark: color-mix(in srgb, #e4dccd var(--tint), var(--line)); }
+.btn-light { --b: var(--card); --b-dark: color-mix(in srgb, #d9e0f0 var(--tint), var(--line)); }
 .btn-ghost { background: transparent; box-shadow: none; color: var(--ink); }
 .btn-ghost:hover:not(:disabled) { background: rgba(36, 29, 79, 0.06); box-shadow: none; transform: none; }
 .btn-xl { padding: 15px 30px; font-size: 1.15rem; border-radius: 18px; }
@@ -108,7 +108,7 @@ img { display: block; }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-weight: 900; font-size: 0.95rem; }
 .chip-xp { background: color-mix(in srgb, #e9e3ff var(--tint), var(--card)); color: var(--t-violet); }
 .chip-coin { background: color-mix(in srgb, #fff3c4 var(--tint), var(--card)); color: var(--t-amber); }
-.chip-star { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 2px color-mix(in srgb, #f1e6cf var(--tint), var(--card)); }
+.chip-star { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 2px color-mix(in srgb, #e3e9f6 var(--tint), var(--card)); }
 
 /* Header */
 .topbar {
@@ -1246,7 +1246,7 @@ a.world, :root[data-theme='dark'] a.world { color: #fff; text-decoration: none; 
 @media (max-width: 600px) { .lt-pic { width: 76px; height: 76px; } .theory-card .tc-pic { width: 52px; height: 52px; } }
 
 /* Space style: starry navy page, puffy clouds, cartoon 3D pictures */
-body {
+:root[data-theme='dark'] body {
   background-color: var(--bg);
   background-image:
     radial-gradient(1.6px 1.6px at 20px 30px, rgba(255, 255, 255, 0.75), transparent 60%),
@@ -1278,3 +1278,34 @@ body {
   .hero { padding-bottom: 150px; }
 }
 :root[data-theme='dark'] .pill-dark { background: rgba(255, 210, 63, 0.16); color: var(--sun); }
+
+/* Page banners in the space style: starry navy with a row of clouds at the bottom */
+:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  padding-bottom: 64px;
+  background:
+    radial-gradient(1.6px 1.6px at 30px 40px, #fff, transparent 60%),
+    radial-gradient(1.2px 1.2px at 170px 110px, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(2px 2px at 260px 30px, rgba(255, 230, 160, 0.9), transparent 60%),
+    radial-gradient(1.2px 1.2px at 110px 160px, rgba(255, 255, 255, 0.6), transparent 60%),
+    radial-gradient(700px 300px at 85% 0%, rgba(90, 120, 230, 0.45), transparent 70%),
+    linear-gradient(170deg, #0b1a45, #16306f);
+  background-size: 300px 200px, 300px 200px, 300px 200px, 300px 200px, auto, auto;
+}
+:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero)::after {
+  content: '';
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  bottom: -2px;
+  height: 56px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 40px 70px, var(--bg) 46px, transparent 47px) 0 0 / 150px 56px repeat-x,
+    radial-gradient(circle at 110px 80px, var(--bg) 52px, transparent 53px) 0 0 / 150px 56px repeat-x;
+}
+:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) :is(p, .muted) { color: #d6def8; }
+:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) a:not(.btn) { color: #ffd23f; }
+:root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) .pill-dark { background: rgba(255, 255, 255, 0.16); color: #fff; }
