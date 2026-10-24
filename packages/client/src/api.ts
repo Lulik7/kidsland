@@ -78,15 +78,22 @@ export const tokenStore = {
 
 async function request<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
   const token = tokenStore.get();
-  const res = await fetch(`/api${path}`, {
-    method: init.method ?? 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
-  });
-  const data = await res.json().catch(() => ({}));
+  let res: Response;
+  try {
+    res = await fetch(`/api${path}`, {
+      method: init.method ?? 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    });
+  } catch {
+    throw new ApiError(0, 'Нет связи с сайтом. Проверьте интернет или перезапустите npm run dev:client.');
+  }
+  const data = await res.json().catch(() => null);
+  // No JSON body means the API itself did not answer (e.g. the dev proxy could not reach it).
+  if (!data) throw new ApiError(res.status, 'Сервер не отвечает. Проверьте, что запущен npm run dev:server.');
   if (!res.ok) throw new ApiError(res.status, data.error ?? 'Что-то пошло не так');
   return data as T;
 }
