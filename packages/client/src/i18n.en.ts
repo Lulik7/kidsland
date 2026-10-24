@@ -678,4 +678,12 @@ export const EN: Record<string, string> = {
   "Учимся понимать себя и других: эмоции, дружба, благодарность, спокойствие, детская йога и семейные ценности.": "We learn to understand ourselves and others: emotions, friendship, gratitude, calm, kids' yoga and family values.",
   "В духовном развитии читаем статьи о чувствах, доброте, благодарности и семейных традициях, а ещё занимаемся детской йогой.": "In Personal growth we read articles about feelings, kindness, gratitude and family traditions, and we also do kids' yoga.",
   "Детская йога": "Kids' yoga",
+  "В разделе «Наука и опыты» изучаем звёзды и планеты, узнаём законы физики, ставим безопасные опыты дома вместе со взрослыми и показываем фокусы.": "In Science and experiments we explore stars and planets, learn the laws of physics, do safe experiments at home with an adult and perform magic tricks.",
+  "Рисуем карандашом и красками, а в досуге лепим, плетём, вяжем, шьём и готовим простые блюда.": "We draw with pencil and paints, and in hobbies we model, weave, knit, sew and cook simple dishes.",
+  "Космос, физика, опыты и фокусы": "Space, physics, experiments and magic tricks",
+  "Изучаем звёзды и планеты, узнаём, как устроен мир вокруг, ставим безопасные опыты из того, что есть дома, и учимся показывать фокусы.": "We explore stars and planets, find out how the world around us works, do safe experiments with things from home and learn to perform magic tricks.",
+  "Рукоделие, кухня и шитьё": "Crafts, cooking and sewing",
+  "Занятия руками, которые успокаивают и развивают: гербарий, лепка, макраме, узлы, вязание, шитьё, кулинария и поделки.": "Hands-on activities that calm and develop: herbarium, modelling, macramé, knots, knitting, sewing, cooking and crafts.",
+  "Ставим безопасные опыты и показываем фокусы": "We do safe experiments and perform magic tricks",
+  "Шьём и вяжем": "We sew and knit",
 };
