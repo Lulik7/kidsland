@@ -1,4 +1,7 @@
-import { useT } from '../i18n';
+import { isRtl, useLang } from '../i18n';
+
+/** SVG text on a path is laid out left to right, so right-to-left text is put into visual order by hand. */
+const visualOrder = (text: string) => (text.match(/[A-Za-z0-9]+|./gu) ?? []).reverse().join('');
 
 // Continents drawn on a strip twice the globe's width; the strip slides behind a round window, so the globe turns.
 const LAND = [
@@ -21,19 +24,19 @@ function Strip({ x }: { x: number }) {
 
 /** A turning Earth with a spinning ring of welcome text around it. */
 export function Globe() {
-  const t = useT();
+  const { lang, t } = useLang();
   const text = t('Добро пожаловать в KidsLand!');
-  const english = 'Welcome to KidsLand!';
-  // The ring always greets in English too; in English mode it simply repeats.
-  const ring = text === english ? `${english} ★ ${english} ★ ${english} ★ ` : `${text} ★ ${english} ★ `;
+  const shown = isRtl(lang) ? visualOrder(text) : text;
+  // The ring greets in the interface language only, repeated around the globe.
+  const ring = `${shown} ★ ${shown} ★ `;
   return (
     <div className="globe" role="img" aria-label={text}>
       <svg className="globe-ring" viewBox="0 0 400 400" aria-hidden>
         <defs>
           <path id="globe-ring-path" d="M200 200m-172 0a172 172 0 1 1 344 0a172 172 0 1 1-344 0" />
         </defs>
-        <text>
-          <textPath href="#globe-ring-path" textLength="1060" lengthAdjust="spacing">
+        <text style={{ unicodeBidi: 'bidi-override', direction: 'ltr' }}>
+          <textPath href="#globe-ring-path" xlinkHref="#globe-ring-path" textLength="1060" lengthAdjust="spacing">
             {ring}
           </textPath>
         </text>

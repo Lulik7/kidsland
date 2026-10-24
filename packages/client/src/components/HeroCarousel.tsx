@@ -11,16 +11,14 @@ const DELAY = 5000;
 export function HeroCarousel() {
   const t = useT();
   const [i, setI] = useState(0);
-  const [paused, setPaused] = useState(false);
   useEffect(() => {
-    if (paused) return;
     const id = window.setTimeout(() => setI((n) => (n + 1) % SECTIONS.length), DELAY);
     return () => window.clearTimeout(id);
-  }, [i, paused]);
+  }, [i]);
   const sec = SECTIONS[i];
 
   return (
-    <div className="hero-carousel" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div className="hero-carousel">
       <div className="window">
         <div className="window-bar">
           <i /><i /><i />
@@ -56,19 +54,7 @@ export function HeroCarousel() {
           </>
         )}
       </div>
-      <div className="hc-dots" aria-label={t('Разделы Kidsland')}>
-        {SECTIONS.map((s, k) => (
-          <button
-            key={s.id}
-            aria-label={t(s.name)}
-            aria-current={k === i}
-            title={t(s.name)}
-            className={k === i ? 'on' : ''}
-            style={{ ['--c' as string]: s.color }}
-            onClick={() => setI(k)}
-          />
-        ))}
-      </div>
+      <div className="hc-progress" key={`p-${sec.id}`} style={{ ['--c' as string]: sec.color, animationDuration: `${DELAY}ms` }} aria-hidden />
     </div>
   );
 }

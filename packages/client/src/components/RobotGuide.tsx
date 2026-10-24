@@ -167,7 +167,8 @@ const makeScenes = (t: T): Scene[] => [
 
 function voiceFor(lang: string): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis?.getVoices() ?? [];
-  return voices.find((v) => v.lang.toLowerCase().startsWith(lang)) ?? null;
+  const NAMES: Record<string, RegExp> = { ru: /russian|русск/i, en: /english/i, el: /greek|ελλην/i, he: /hebrew|עברית/i };
+  return voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith(lang)) ?? voices.find((v) => NAMES[lang]?.test(v.name)) ?? null;
 }
 
 let audio: AudioContext | null = null;
@@ -251,10 +252,18 @@ export function RobotGuide() {
   const timer = useRef<number | undefined>(undefined);
   const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
+  const [voiceCount, setVoiceCount] = useState(0);
+
   // Chrome loads the voice list lazily; ask early so it is ready by the time Play is pressed.
   useEffect(() => {
-    if (canSpeak) window.speechSynthesis.getVoices();
+    if (!canSpeak) return;
+    const update = () => setVoiceCount(window.speechSynthesis.getVoices().length);
+    update();
+    window.speechSynthesis.addEventListener('voiceschanged', update);
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', update);
   }, [canSpeak]);
+  // The computer has voices, but none for the interface language: tell the viewer why it is silent.
+  const noVoice = canSpeak && sound && voiceCount > 0 && !voiceFor(lang);
 
   useEffect(() => {
     if (!playing) return;
@@ -315,6 +324,7 @@ export function RobotGuide() {
             <span>{t('3 минуты · со звуком')}</span>
           </button>
         )}
+        {started && noVoice && <div className="rg-novoice">{t('На этом компьютере нет голоса для этого языка, поэтому робот показывает текст. Голос можно добавить в настройках Windows: «Время и язык» → «Речь», или открыть сайт в браузере Microsoft Edge.')}</div>}
         {started && (
           <div className="rg-sub">
             <b>{s.title}.</b> {s.text}

@@ -1088,7 +1088,7 @@ html.a11y-contrast .muted { color: var(--ink); }
 .globe-ball { position: absolute; inset: 15%; width: 70%; height: 70%; filter: drop-shadow(0 18px 24px rgba(23, 87, 168, 0.35)); animation: float 5s ease-in-out infinite; }
 .globe-land { animation: globe-turn 14s linear infinite; }
 @keyframes globe-turn { to { transform: translateX(-380px); } }
-.globe-ring { position: absolute; inset: 0; width: 100%; height: 100%; animation: ws-turn 22s linear infinite; overflow: visible; }
+.globe-ring { direction: ltr; unicode-bidi: isolate; position: absolute; inset: 0; width: 100%; height: 100%; animation: ws-turn 22s linear infinite; overflow: visible; }
 .globe-ring text { font-family: var(--display); font-weight: 800; font-size: 25px; fill: var(--violet); letter-spacing: 1px; }
 .globe-orbit { position: absolute; inset: 6%; border: 2px dashed color-mix(in srgb, var(--violet) 35%, transparent); border-radius: 50%; animation: ws-turn 9s linear infinite reverse; }
 .globe-orbit i { position: absolute; top: -9px; left: 50%; width: 18px; height: 18px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 14px var(--sun); }
@@ -1161,7 +1161,8 @@ button.topic-chip { font: inherit; font-weight: 800; cursor: pointer; }
 @media (max-width: 600px) { .article { padding: 20px; } }
 /* The Kidsland slogan is the main headline; "learn to code by playing" is secondary. */
 .hero-slogan { padding: 18px 24px; gap: 8px; }
-.hs-main { font-size: clamp(2rem, 4.4vw, 3.4rem); line-height: 1.12; }
+.hs-main { font-size: clamp(1.4rem, 2.6vw, 2.1rem); line-height: 1.2; }
+.hs-main b { font-size: clamp(2.2rem, 4.6vw, 3.6rem); line-height: 1.05; }
 .hs-sub { font-size: clamp(1.35rem, 2.6vw, 2rem); }
 .hero h1 { font-size: clamp(1.35rem, 2.3vw, 1.85rem); margin: 18px 0 10px; }
 .hero h1 .hl::after { height: 6px; bottom: -2px; }
@@ -1210,3 +1211,10 @@ button.topic-chip { font: inherit; font-weight: 800; cursor: pointer; }
 @keyframes hc-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .hero-inner { z-index: 2; }
 .planet-b { left: 40%; bottom: 40px; }
+
+.hc-progress { height: 4px; margin-top: 16px; border-radius: 4px; background: var(--c); transform-origin: left; animation: hc-progress linear both; opacity: 0.8; }
+[dir='rtl'] .hc-progress { transform-origin: right; }
+@keyframes hc-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.hc-slide.on { animation: hc-slide-in 0.6s ease both; }
+@keyframes hc-slide-in { from { transform: translateX(30px); } to { transform: none; } }
+.rg-novoice { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 3; background: rgba(255, 210, 63, 0.95); color: #241d4f; border-radius: 12px; padding: 8px 12px; font-weight: 700; font-size: 0.85rem; }

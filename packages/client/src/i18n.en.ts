@@ -842,4 +842,5 @@ export const EN: Record<string, string> = {
   "Пост не отправлен, модератор получил уведомление.": "The post wasn't sent, a moderator has been notified.",
   "Уберите контакты из описания: общение идёт только через платформу.": "Remove contacts from the description: all communication goes through the platform.",
   "мин · теория, викторина ·": "min · theory, quiz ·",
+  "На этом компьютере нет голоса для этого языка, поэтому робот показывает текст. Голос можно добавить в настройках Windows: «Время и язык» → «Речь», или открыть сайт в браузере Microsoft Edge.": "This computer has no voice for this language, so the robot shows the text. You can add a voice in Windows Settings: “Time & language” → “Speech”, or open the site in Microsoft Edge.",
 };
