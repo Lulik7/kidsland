@@ -9,11 +9,13 @@ import { HeroCarousel } from '../components/HeroCarousel';
 import { RobotGuide } from '../components/RobotGuide';
 import { WorldScene } from '../components/WorldScene';
 import { Globe } from '../components/Globe';
+import { Clouds } from '../components/Clouds';
 import { Sprite } from '../components/Sprite';
 import { TutorCard } from '../components/TutorCard';
 import { avatarSvg, COIN, GOAL, HERO, WALL } from '../game/sprites';
 import { plural } from '../plural';
 import { THEMES } from '../themes';
+import { Pic } from '../pics';
 import { useT } from '../i18n';
 
 const FEATURES = [
@@ -49,9 +51,12 @@ export function Landing() {
           {Array.from({ length: 28 }, (_, i) => (
             <span key={i} className="twinkle" style={{ left: `${(i * 37) % 100}%`, top: `${(i * 53) % 85}%`, animationDelay: `${(i % 7) * 0.4}s` }} />
           ))}
-          <div className="planet planet-a" />
-          <div className="planet planet-b" />
-          <Sprite svg={HERO.space('right')} size={90} className="float rocket-fly" />
+          <Pic code="2604" size={150} className="hs-comet" />
+          <Pic code="1f30e" size={260} className="hs-earth" />
+          <Pic code="1fa90" size={96} className="hs-saturn float" />
+          <Pic code="1f319" size={70} className="hs-moon float" />
+          <Pic code="1f9d1-200d-1f680" size={92} className="hs-astro" />
+          <Pic code="1f680" size={110} className="hs-rocket" />
         </div>
         <div className="hero-inner">
           <div className="hero-text">
@@ -80,9 +85,7 @@ export function Landing() {
             <HeroCarousel />
           </div>
         </div>
-        <svg className="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden>
-          <path d="M0 40 C240 90 480 0 720 30 C960 60 1200 10 1440 40 V90 H0Z" fill="var(--bg)" />
-        </svg>
+        <Clouds />
       </section>
 
       <section className="wrap globe-section">

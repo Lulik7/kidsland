@@ -12,7 +12,7 @@
   --sun: #ffd23f;
   --radius: 24px;
   --shadow: 0 14px 40px rgba(36, 29, 79, 0.12);
-  --display: 'Rubik', 'Nunito', system-ui, sans-serif;
+  --display: 'Montserrat Alternates', 'Rubik', 'Nunito', system-ui, sans-serif;
   --deep: #241d4f;
   --tint: 100%;
   --t-green: #17703f;
@@ -25,23 +25,23 @@
 
 /* Dark theme: pale tints are mixed into the dark card colour via --tint */
 :root[data-theme='dark'] {
-  --bg: #221d3f;
+  --bg: #142456;
   --ink: #f1eeff;
-  --muted: #aaa4cc;
-  --card: #2e2858;
-  --line: #463e7a;
-  --deep: #17132f;
+  --muted: #aab6e0;
+  --card: #213574;
+  --line: #34498f;
+  --deep: #0d1a42;
   --tint: 16%;
   --t-green: #6fe3a2;
   --t-red: #ff9b85;
   --t-amber: #ffd36b;
   --t-violet: #c3b5ff;
-  --topbar: rgba(34, 29, 63, 0.92);
+  --topbar: rgba(16, 30, 74, 0.92);
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
 :root[data-theme='dark'] a:not(.btn) { color: #a996ff; }
-:root[data-theme='dark'] .check-bar { background: rgba(46, 40, 88, 0.96); }
+:root[data-theme='dark'] .check-bar { background: rgba(33, 53, 116, 0.96); }
 :root[data-theme='dark'] img, :root[data-theme='dark'] video { filter: brightness(0.92); }
 
 * { box-sizing: border-box; }
@@ -74,8 +74,8 @@ img { display: block; }
   justify-content: center;
   gap: 8px;
   border: 0;
-  border-radius: 16px;
-  padding: 11px 20px;
+  border-radius: 999px;
+  padding: 11px 22px;
   font: inherit;
   font-family: var(--display);
   font-weight: 700;
@@ -131,10 +131,10 @@ img { display: block; }
 /* Landing */
 .hero {
   position: relative;
-  background: radial-gradient(1200px 600px at 75% 20%, #5a3fd6 0%, transparent 60%), linear-gradient(160deg, #1b1650 0%, #2c1f7a 55%, #4b2fa8 100%);
+  background: radial-gradient(900px 500px at 70% 10%, rgba(78, 110, 220, 0.45) 0%, transparent 60%), linear-gradient(170deg, #0b1a45 0%, #13286a 60%, #1c3784 100%);
   color: #fff;
   overflow: hidden;
-  padding: 56px 16px 110px;
+  padding: 56px 16px 190px;
 }
 .hero-sky { position: absolute; inset: 0; pointer-events: none; }
 .twinkle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fff; opacity: 0.7; animation: twinkle 2.4s ease-in-out infinite; }
@@ -1244,3 +1244,37 @@ a.world, :root[data-theme='dark'] a.world { color: #fff; text-decoration: none; 
 .big-section .bs-icon .pic3d, .course-card .cc-art .pic3d { transition: transform 0.25s; }
 .big-section:hover .bs-icon .pic3d, .course-card:hover .cc-art .pic3d { transform: scale(1.12) rotate(-4deg); }
 @media (max-width: 600px) { .lt-pic { width: 76px; height: 76px; } .theory-card .tc-pic { width: 52px; height: 52px; } }
+
+/* Space style: starry navy page, puffy clouds, cartoon 3D pictures */
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1.6px 1.6px at 20px 30px, rgba(255, 255, 255, 0.75), transparent 60%),
+    radial-gradient(1.2px 1.2px at 140px 90px, rgba(255, 255, 255, 0.55), transparent 60%),
+    radial-gradient(2px 2px at 230px 170px, rgba(255, 255, 255, 0.6), transparent 60%),
+    radial-gradient(1.2px 1.2px at 90px 210px, rgba(255, 255, 255, 0.45), transparent 60%),
+    radial-gradient(1.6px 1.6px at 270px 40px, rgba(255, 230, 160, 0.7), transparent 60%);
+  background-size: 300px 260px;
+  background-attachment: fixed;
+}
+.clouds { position: absolute; left: 0; right: 0; bottom: -2px; width: 100%; height: 150px; pointer-events: none; z-index: 2; }
+.clouds-back circle { fill: #c9d6ff; opacity: 0.28; }
+.hero-sky .pic3d { position: absolute; }
+.hs-comet { left: 0.5%; bottom: 40px; transform: rotate(10deg); animation: comet 9s ease-in-out infinite; }
+@keyframes comet { 50% { translate: 30px 18px; } }
+.hs-earth { left: 30%; bottom: -110px; width: 320px; height: 320px; opacity: 0.95; animation: spin-slow 60s linear infinite; }
+@keyframes spin-slow { to { rotate: 360deg; } }
+.hs-saturn { right: 4%; top: 6%; }
+.hs-moon { left: 30%; top: 8%; }
+.hs-astro { right: 6%; bottom: 100px; animation: float 4s ease-in-out infinite; }
+.hs-rocket { right: 0.5%; top: 34%; width: 84px; height: 84px; animation: rocket-hop 5s ease-in-out infinite; }
+@keyframes rocket-hop { 50% { translate: -14px -26px; } }
+.hero-inner { z-index: 3; }
+.section-title { position: relative; }
+.section-title::before, .section-title::after { content: '✦'; color: var(--sun); font-size: 0.6em; vertical-align: middle; margin: 0 14px; opacity: 0.85; }
+@media (max-width: 900px) {
+  .hs-earth { width: 160px; height: 160px; left: auto; right: -40px; bottom: 60px; }
+  .hs-astro, .hs-rocket, .hs-moon, .hs-comet { display: none; }
+  .hero { padding-bottom: 150px; }
+}
+:root[data-theme='dark'] .pill-dark { background: rgba(255, 210, 63, 0.16); color: var(--sun); }
