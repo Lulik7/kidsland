@@ -53,7 +53,7 @@ export function Dialog({ lines, lang }: { lines: DialogLine[]; lang: string }) {
       {lines.map((l, i) => (
         <div key={i} className={`bubble ${l.who === first ? 'left' : 'right'}${playing === i ? ' playing' : ''}`}>
           <span className="who">{l.who}</span>
-          <button type="button" className="bubble-line" onClick={() => say(l.line, lang, l.who === first ? 0 : 1)} lang={lang}>
+          <button type="button" className="bubble-line" onClick={() => say(l.line, lang, l.who === first ? 0 : 1)} lang={lang} dir="auto">
             {l.line}
           </button>
           {showTr && l.read && <span className="bubble-read">{l.read}</span>}
@@ -71,7 +71,7 @@ export function ReadingText({ text, translation, reading, lang }: { text: string
   const [read, setRead] = useState(false);
   return (
     <div className="reading">
-      <p className="reading-text" lang={lang}>
+      <p className="reading-text" lang={lang} dir="auto">
         {text}
       </p>
       <div className="dialog-tools">
