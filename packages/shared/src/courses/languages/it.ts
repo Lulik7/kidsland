@@ -1,10 +1,15 @@
 import type { LanguageData } from './build';
+import { IT_EXTRA_1 } from './it-extra-1';
+import { IT_EXTRA_2 } from './it-extra-2';
+import { IT_EXTRA_3 } from './it-extra-3';
 
 export const ITALIAN: LanguageData = {
   topic: 'lang-it',
   name: 'Итальянский',
   inName: 'по-итальянски',
   color: '#1f9d55',
+  speak: 'it-IT',
+  extra: IT_EXTRA_1 + IT_EXTRA_2 + IT_EXTRA_3,
   notes: {
     0: 'На итальянском говорят в Италии, Сан-Марино, Ватикане и части Швейцарии. Это язык оперы и музыки: многие музыкальные слова, например «форте» и «пиано», итальянские.',
     2: 'Итальянские слова читаются почти так, как пишутся. Сочетание ch читается как «к», а ci и ce как «чи» и «че».',
