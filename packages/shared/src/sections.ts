@@ -28,6 +28,31 @@ export const SECTIONS: Section[] = [
     topics: SUBJECTS.filter((s) => s.section === 'coding').map((s) => ({ id: s.id, name: s.name })),
   },
   {
+    id: 'science',
+    name: 'Наука и опыты',
+    tagline: 'Космос, физика и эксперименты',
+    description: 'Изучаем звёзды и планеты, узнаём, как устроен мир вокруг, и ставим безопасные опыты из того, что есть дома.',
+    color: '#0fa3b1',
+    topics: [
+      { id: 'astronomy', name: 'Астрономия' },
+      { id: 'physics', name: 'Физика' },
+      { id: 'experiments', name: 'Опыты и эксперименты' },
+    ],
+  },
+  {
+    id: 'chess',
+    name: 'Шахматы',
+    tagline: 'Фигуры, тактика и первые победы',
+    description: 'Учимся ходить фигурами, ставить мат, решать задачи и думать на несколько ходов вперёд.',
+    color: '#5b5f73',
+    topics: [
+      { id: 'chess-basics', name: 'Шахматы с нуля' },
+      { id: 'chess-tactics', name: 'Тактика и задачи' },
+      { id: 'chess-openings', name: 'Дебюты и планы' },
+      { id: 'chess-tournaments', name: 'Подготовка к турнирам' },
+    ],
+  },
+  {
     id: 'music',
     name: 'Музыка',
     tagline: 'Инструменты и вокал',
@@ -64,8 +89,8 @@ export const SECTIONS: Section[] = [
   {
     id: 'leisure',
     name: 'Досуг',
-    tagline: 'Рукоделие и поделки',
-    description: 'Занятия руками, которые успокаивают и развивают: гербарий, лепка, макраме, узлы, вязание и поделки.',
+    tagline: 'Рукоделие, кухня и фокусы',
+    description: 'Занятия руками, которые успокаивают и развивают: гербарий, лепка, макраме, узлы, вязание, шитьё, кулинария, поделки и фокусы.',
     color: '#2fb59a',
     topics: [
       { id: 'herbarium', name: 'Гербарий' },
@@ -75,6 +100,9 @@ export const SECTIONS: Section[] = [
       { id: 'crochet', name: 'Вязание крючком' },
       { id: 'knitting', name: 'Вязание спицами' },
       { id: 'crafts', name: 'Поделки' },
+      { id: 'cooking', name: 'Кулинария' },
+      { id: 'sewing', name: 'Шитьё' },
+      { id: 'magic', name: 'Фокусы' },
     ],
   },
   {

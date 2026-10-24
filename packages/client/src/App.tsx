@@ -13,6 +13,7 @@ import { CoursesPage } from './pages/CoursesPage';
 import { DemoLesson } from './pages/DemoLesson';
 import { LessonPage } from './pages/LessonPage';
 import { SectionPage, SectionsPage } from './pages/SectionsPage';
+import { BeAdminPage } from './pages/BeAdminPage';
 import { SupportPage } from './pages/SupportPage';
 import { KidsPage } from './pages/KidsPage';
 import { Landing } from './pages/Landing';
@@ -48,10 +49,11 @@ function menuFor(user: User | null): MenuItem[] {
   const courses = { to: '/courses', label: 'Курсы' };
   const tutors = { to: '/tutors', label: 'Наставники' };
   const support = { to: '/support', label: 'Поддержка' };
-  if (!user) return [home, sections, { to: '/register', label: 'Играть' }, courses, tutors, support];
-  if (user.role === 'tutor') return [home, sections, { to: '/tutor', label: 'Кабинет' }, courses, tutors, support];
-  if (user.role === 'admin') return [home, sections, { to: '/admin', label: 'Админ' }, courses, tutors, support];
-  return [home, sections, { to: '/kids', label: 'Играть' }, courses, tutors, { to: '/parent', label: 'Кабинет' }, support];
+  const beAdmin = { to: '/be-admin', label: 'Побудь админом' };
+  if (!user) return [home, sections, { to: '/register', label: 'Играть' }, courses, tutors, beAdmin, support];
+  if (user.role === 'tutor') return [home, sections, { to: '/tutor', label: 'Кабинет' }, courses, tutors, beAdmin, support];
+  if (user.role === 'admin') return [home, sections, { to: '/admin', label: 'Админ' }, courses, tutors, beAdmin, support];
+  return [home, sections, { to: '/kids', label: 'Играть' }, courses, tutors, beAdmin, { to: '/parent', label: 'Кабинет' }, support];
 }
 
 function Header() {
@@ -128,6 +130,7 @@ export function App() {
         <Route path="/tutors" element={<TutorsPage />} />
         <Route path="/tutors/:id" element={<TutorPage />} />
         <Route path="/sections" element={<SectionsPage />} />
+        <Route path="/be-admin" element={<BeAdminPage />} />
         <Route path="/sections/:sectionId" element={<SectionPage />} />
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/courses/:courseId" element={<CoursePage />} />

@@ -67,6 +67,23 @@ export function SubjectIcon({ subject, size = 48 }: { subject: SubjectId; size?:
           <path d="M12 12L24 36L36 12M12 12h24" stroke="#fff" strokeWidth="3" fill="none" opacity=".7" />
         </svg>
       );
+    case 'science':
+      return (
+        <svg {...common}>
+          <circle cx="24" cy="24" r="5" fill="#fff" />
+          <ellipse cx="24" cy="24" rx="19" ry="7.5" stroke="#fff" strokeWidth="3" fill="none" />
+          <ellipse cx="24" cy="24" rx="19" ry="7.5" stroke="#fff" strokeWidth="3" fill="none" transform="rotate(60 24 24)" />
+          <ellipse cx="24" cy="24" rx="19" ry="7.5" stroke="#fff" strokeWidth="3" fill="none" transform="rotate(-60 24 24)" />
+        </svg>
+      );
+    case 'chess':
+      return (
+        <svg {...common}>
+          <path d="M18 8h3v3h6V8h3v3h3v6l-4 4v9h-10v-9l-4-4v-6h3z" fill="#fff" />
+          <rect x="12" y="32" width="24" height="5" rx="2" fill="#fff" />
+          <rect x="9" y="38" width="30" height="5" rx="2" fill="#fff" opacity=".8" />
+        </svg>
+      );
     case 'music':
       return (
         <svg {...common}>

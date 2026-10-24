@@ -154,6 +154,18 @@ export interface SupportThread {
   lastMessage?: string;
 }
 
+export interface CommunityPost {
+  id: string;
+  authorName: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  reviewNote?: string | null;
+  reviewedAt?: string | null;
+  author?: { id: string; email: string; role: User['role'] };
+}
+
 export interface SafetyFlag {
   id: string;
   context: string;
@@ -296,6 +308,13 @@ export const api = {
   adminSetStatus: (id: string, status: 'open' | 'closed') =>
     request<{ thread: SupportThread }>(`/support/admin/threads/${id}/status`, { method: 'POST', body: { status } }),
   safetyFlags: () => request<{ flags: SafetyFlag[] }>('/support/admin/safety-flags'),
+  posts: () => request<{ posts: CommunityPost[] }>('/posts'),
+  myPosts: () => request<{ posts: CommunityPost[] }>('/posts/mine'),
+  createPost: (post: { authorName: string; title: string; body: string }) =>
+    request<{ post: CommunityPost }>('/posts', { method: 'POST', body: post }),
+  adminPosts: (status: 'pending' | 'approved' | 'rejected') => request<{ posts: CommunityPost[] }>(`/posts/admin?status=${status}`),
+  reviewPost: (id: string, decision: 'approve' | 'reject', note?: string) =>
+    request<{ post: CommunityPost }>(`/posts/admin/${id}/review`, { method: 'POST', body: { decision, note } }),
 
   room: (bookingId: string, after: string | null, board: number) => {
     const q = new URLSearchParams({ board: String(board) });

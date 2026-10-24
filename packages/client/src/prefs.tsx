@@ -1,3 +1,4 @@
+import { LANGS } from './i18n';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export type ThemeMode = 'light' | 'dark';
@@ -77,7 +78,7 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
       if (!text) return;
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text.slice(0, 600));
-      u.lang = document.documentElement.lang === 'en' ? 'en-US' : 'ru-RU';
+      u.lang = LANGS.find((l) => l.id === document.documentElement.lang)?.speech ?? 'ru-RU';
       u.rate = 0.95;
       speechSynthesis.speak(u);
     };

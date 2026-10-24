@@ -1,7 +1,19 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { EL } from './i18n.el';
 import { EN } from './i18n.en';
+import { HE } from './i18n.he';
 
-export type Lang = 'ru' | 'en';
+export type Lang = 'ru' | 'en' | 'el' | 'he';
+
+/** Interface languages in switcher order; Hebrew is written right to left. */
+export const LANGS: { id: Lang; label: string; name: string; speech: string }[] = [
+  { id: 'ru', label: 'RU', name: 'Русский', speech: 'ru-RU' },
+  { id: 'en', label: 'EN', name: 'English', speech: 'en-US' },
+  { id: 'el', label: 'EL', name: 'Ελληνικά', speech: 'el-GR' },
+  { id: 'he', label: 'HE', name: 'עברית', speech: 'he-IL' },
+];
+const DICTS: Record<Lang, Record<string, string> | null> = { ru: null, en: EN, el: EL, he: HE };
+export const isRtl = (l: Lang) => l === 'he';
 const KEY = 'kidsland.lang';
 
 type Vars = Record<string, string | number>;
@@ -17,7 +29,8 @@ const fill = (s: string, vars?: Vars) => (vars ? s.replace(/\{(\w+)\}/g, (_, k) 
 
 function stored(): Lang {
   try {
-    return localStorage.getItem(KEY) === 'en' ? 'en' : 'ru';
+    const l = localStorage.getItem(KEY);
+    return LANGS.some((x) => x.id === l) ? (l as Lang) : 'ru';
   } catch {
     return 'ru';
   }
@@ -26,8 +39,8 @@ function stored(): Lang {
 const Ctx = createContext<LangCtx>({ lang: 'ru', setLang: () => {}, t: fill });
 
 /**
- * The interface is written in Russian; Russian strings are the keys. In English mode a string is looked up
- * in the EN dictionary and falls back to Russian, so untranslated text (like lesson content) still shows.
+ * The interface is written in Russian; Russian strings are the keys. In other languages a string is looked up
+ * in that language's dictionary, then in English, then falls back to Russian, so untranslated text (like lesson content) still shows.
  */
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(stored);
@@ -41,8 +54,9 @@ export function LangProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     document.documentElement.lang = lang;
+    document.documentElement.dir = isRtl(lang) ? 'rtl' : 'ltr';
   }, [lang]);
-  const t = useCallback<T>((ru, vars) => fill(lang === 'en' ? (EN[ru] ?? ru) : ru, vars), [lang]);
+  const t = useCallback<T>((ru, vars) => fill(lang === 'ru' ? ru : (DICTS[lang]?.[ru] ?? EN[ru] ?? ru), vars), [lang]);
   return <Ctx.Provider value={{ lang, setLang, t }}>{children}</Ctx.Provider>;
 }
 

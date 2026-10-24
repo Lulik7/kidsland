@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLang, useT } from '../i18n';
+import { LANGS, useLang, useT } from '../i18n';
 import { usePrefs, type A11y, type FontScale } from '../prefs';
 
 /** Language switch, light/dark theme switch and the accessibility panel button. */
@@ -9,11 +9,33 @@ export function HeaderTools() {
   const { theme, setTheme } = usePrefs();
   const t = useT();
   const [panel, setPanel] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   return (
     <div className="htools">
-      <button className="htool" onClick={() => setLang(lang === 'ru' ? 'en' : 'ru')} aria-label={t('Язык интерфейса')} title={t('Язык интерфейса')}>
-        {lang === 'ru' ? 'EN' : 'RU'}
-      </button>
+      <div className="lang-menu">
+        <button className="htool" onClick={() => setLangOpen((o) => !o)} aria-expanded={langOpen} aria-label={t('Язык интерфейса')} title={t('Язык интерфейса')}>
+          {LANGS.find((l) => l.id === lang)?.label}
+        </button>
+        {langOpen && (
+          <ul className="lang-list" role="menu">
+            {LANGS.map((l) => (
+              <li key={l.id}>
+                <button
+                  role="menuitemradio"
+                  aria-checked={l.id === lang}
+                  className={l.id === lang ? 'on' : ''}
+                  onClick={() => {
+                    setLang(l.id);
+                    setLangOpen(false);
+                  }}
+                >
+                  <b>{l.label}</b> {l.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <button
         className="htool"
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

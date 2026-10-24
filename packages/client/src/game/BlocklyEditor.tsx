@@ -1,7 +1,7 @@
 import { countBlocks, type BlockType, type Program } from '@kidsland/shared';
 import * as Blockly from 'blockly';
 import { useEffect, useImperativeHandle, useRef, type Ref } from 'react';
-import { useLang } from '../i18n';
+import { isRtl, useLang } from '../i18n';
 import { defineBlocks, KIDS_THEME, loadProgram, toolboxFor, workspaceToProgram } from './blocks';
 
 export interface EditorHandle {
@@ -29,6 +29,7 @@ export function BlocklyEditor({ availableBlocks, initialProgram, onBlockCount, r
     defineBlocks(lang, t);
     const ws = Blockly.inject(hostRef.current!, {
       toolbox: toolboxFor(availableBlocks),
+      rtl: isRtl(lang),
       trashcan: true,
       renderer: 'zelos',
       theme: KIDS_THEME,

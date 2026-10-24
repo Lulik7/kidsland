@@ -9,6 +9,7 @@ import { authRouter } from './routes/auth';
 import { bookingsRouter } from './routes/bookings';
 import { childrenRouter } from './routes/children';
 import { lessonRoomRouter } from './routes/lessonRoom';
+import { postsRouter } from './routes/posts';
 import { supportRouter } from './routes/support';
 import { tutorCabinetRouter } from './routes/tutorCabinet';
 import { tutorsRouter } from './routes/tutors';
@@ -32,6 +33,7 @@ export function createApp(db: Db) {
   app.use('/api/bookings', lessonRoomRouter(db));
   app.use('/api/bookings', bookingsRouter(db));
   app.use('/api/support', supportRouter(db));
+  app.use('/api/posts', postsRouter(db));
   app.use('/api/tutor', tutorCabinetRouter(db));
 
   // Public catalogue for the landing page: titles and themes only, no level configs.

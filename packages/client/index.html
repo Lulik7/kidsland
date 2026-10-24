@@ -8,7 +8,9 @@
     <script>
       try {
         if (localStorage.getItem('kidsland.theme') === 'dark') document.documentElement.dataset.theme = 'dark';
-        if (localStorage.getItem('kidsland.lang') === 'en') document.documentElement.lang = 'en';
+        var l = localStorage.getItem('kidsland.lang');
+        if (l === 'en' || l === 'el' || l === 'he') document.documentElement.lang = l;
+        if (l === 'he') document.documentElement.dir = 'rtl';
       } catch (e) {}
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -159,4 +159,18 @@ CREATE TABLE IF NOT EXISTS safety_flags (
   reason     text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- "Be an admin" posts: anyone signed in writes one, a real admin approves it before it is shown.
+CREATE TABLE IF NOT EXISTS community_posts (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  author_id   uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  author_name text NOT NULL,
+  title       text NOT NULL,
+  body        text NOT NULL,
+  status      text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  review_note text,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  reviewed_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS community_posts_status_idx ON community_posts(status, created_at DESC);
 `;

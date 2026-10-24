@@ -1,6 +1,8 @@
 import type { BlockType, Program, Statement } from '@kidsland/shared';
 import * as Blockly from 'blockly';
+import * as El from 'blockly/msg/el';
 import * as En from 'blockly/msg/en';
+import * as He from 'blockly/msg/he';
 import * as Ru from 'blockly/msg/ru';
 import type { Lang, T } from '../i18n';
 import { COIN, toDataUrl } from './sprites';
@@ -49,7 +51,7 @@ let definedFor: Lang | null = null;
 export function defineBlocks(lang: Lang, t: T) {
   if (definedFor === lang) return;
   definedFor = lang;
-  Blockly.setLocale((lang === 'en' ? En : Ru) as unknown as { [key: string]: string });
+  Blockly.setLocale(({ ru: Ru, en: En, el: El, he: He }[lang]) as unknown as { [key: string]: string });
   Blockly.common.defineBlocksWithJsonArray([
     {
       type: START,

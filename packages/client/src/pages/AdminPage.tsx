@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { api, type SafetyFlag, type SupportMessage, type SupportThread } from '../api';
+import { api, type CommunityPost, type SafetyFlag, type SupportMessage, type SupportThread } from '../api';
 import { ChatBox, usePolling } from '../components/ChatBox';
 import { fmtDateTime } from '../format';
 
 const roleName = { parent: 'родитель', tutor: 'наставник', admin: 'админ' } as const;
 
 export function AdminPage() {
-  const [tab, setTab] = useState<'support' | 'safety'>('support');
+  const [tab, setTab] = useState<'support' | 'posts' | 'safety'>('support');
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [notes, setNotes] = useState<Record<string, string>>({});
   const [threads, setThreads] = useState<SupportThread[]>([]);
   const [current, setCurrent] = useState<string | null>(null);
   const [thread, setThread] = useState<SupportThread | null>(null);
@@ -17,6 +19,7 @@ export function AdminPage() {
   usePolling(() => {
     api.adminThreads().then((r) => setThreads(r.threads)).catch((e) => setError(e.message));
     api.safetyFlags().then((r) => setFlags(r.flags)).catch(() => {});
+    api.adminPosts('pending').then((r) => setPosts(r.posts)).catch(() => {});
   }, 10_000, []);
 
   usePolling(
@@ -40,6 +43,9 @@ export function AdminPage() {
         <div className="tabs">
           <button className={tab === 'support' ? 'tab on' : 'tab'} onClick={() => setTab('support')}>
             Обращения {unread > 0 && <span className="badge">{unread}</span>}
+          </button>
+          <button className={tab === 'posts' ? 'tab on' : 'tab'} onClick={() => setTab('posts')}>
+            Посты на проверку {posts.length > 0 && <span className="badge">{posts.length}</span>}
           </button>
           <button className={tab === 'safety' ? 'tab on' : 'tab'} onClick={() => setTab('safety')}>
             Безопасность {flags.length > 0 && <span className="badge">{flags.length}</span>}
@@ -98,6 +104,52 @@ export function AdminPage() {
             )}
           </div>
         </div>
+      ) : tab === 'posts' ? (
+        <div className="card">
+          <h2 className="card-title">Посты «Побудь админом»</h2>
+          <p className="muted small">Пост увидят все только после одобрения. При отказе автор увидит ваш комментарий.</p>
+          {posts.length === 0 ? (
+            <p className="muted">Новых постов нет.</p>
+          ) : (
+            <div className="flag-list">
+              {posts.map((p) => (
+                <div key={p.id} className="flag">
+                  <div className="flag-head">
+                    <b>{p.authorName}</b>
+                    <span className="muted small">{p.author?.email} · {fmtDateTime(p.createdAt)}</span>
+                  </div>
+                  <h3 className="post-title">{p.title}</h3>
+                  <blockquote className="post-body">{p.body}</blockquote>
+                  <input
+                    placeholder="Комментарий автору (необязательно)"
+                    value={notes[p.id] ?? ''}
+                    onChange={(e) => setNotes({ ...notes, [p.id]: e.target.value })}
+                  />
+                  <div className="post-actions">
+                    <button
+                      className="btn btn-go"
+                      onClick={async () => {
+                        await api.reviewPost(p.id, 'approve', notes[p.id]);
+                        setPosts((ps) => ps.filter((x) => x.id !== p.id));
+                      }}
+                    >
+                      Одобрить и опубликовать
+                    </button>
+                    <button
+                      className="btn btn-light"
+                      onClick={async () => {
+                        await api.reviewPost(p.id, 'reject', notes[p.id]);
+                        setPosts((ps) => ps.filter((x) => x.id !== p.id));
+                      }}
+                    >
+                      Отклонить
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <div className="card">
           <h2 className="card-title">Заблокированные сообщения</h2>
@@ -113,7 +165,7 @@ export function AdminPage() {
                   <div className="flag-head">
                     <b>{f.user?.email ?? 'удалённый пользователь'}</b>
                     <span className="chip chip-muted">{f.user ? roleName[f.user.role] : ''}</span>
-                    <span className="muted small">{fmtDateTime(f.createdAt)} · {f.context.startsWith('lesson') ? 'чат урока' : 'профиль наставника'}</span>
+                    <span className="muted small">{fmtDateTime(f.createdAt)} · {f.context.startsWith('lesson') ? 'чат урока' : f.context === 'post' ? 'пост «Побудь админом»' : 'профиль наставника'}</span>
                   </div>
                   <div className="flag-reason">{f.reason}</div>
                   <blockquote>{f.body}</blockquote>

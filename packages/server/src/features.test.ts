@@ -99,6 +99,25 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
     expect(report.body.child.xp).toBe(30);
   });
 
+  it('sends "be an admin" posts to a real admin before showing them', async () => {
+    expect((await request(app!).post('/api/posts').send({ authorName: 'Маша', title: 'Привет', body: 'Мой первый пост на сайте!' })).status).toBe(401);
+    const blocked = await request(app!).post('/api/posts').set(auth(parent)).send({ authorName: 'Маша', title: 'Пишите мне', body: 'Мой номер +7 999 123-45-67, звоните' });
+    expect(blocked.status).toBe(422);
+    const created = await request(app!).post('/api/posts').set(auth(parent)).send({ authorName: 'Маша, 9 лет', title: 'Мой вулкан', body: "Сделала вулкан из соды и уксуса, было очень весело!" });
+    expect(created.status).toBe(201);
+    expect(created.body.post.status).toBe('pending');
+    const isPublic = async () => (await request(app!).get('/api/posts')).body.posts.some((p: { id: string }) => p.id === created.body.post.id);
+    expect(await isPublic()).toBe(false);
+    expect((await request(app!).get('/api/posts/admin').set(auth(parent))).status).toBe(403);
+    const queue = await request(app!).get('/api/posts/admin?status=pending').set(auth(admin));
+    expect(queue.body.posts.some((p: { id: string }) => p.id === created.body.post.id)).toBe(true);
+    const ok = await request(app!).post(`/api/posts/admin/${created.body.post.id}/review`).set(auth(admin)).send({ decision: 'approve' });
+    expect(ok.body.post.status).toBe('approved');
+    expect(await isPublic()).toBe(true);
+    const mine = await request(app!).get('/api/posts/mine').set(auth(parent));
+    expect(mine.body.posts[0].status).toBe('approved');
+  });
+
   it('runs a support conversation between a user and the admin', async () => {
     expect((await request(app!).get('/api/support').set(auth(parent))).body.thread).toBeNull();
     const sent = await request(app!).post('/api/support/messages').set(auth(parent)).send({ body: 'Как отменить урок?' });

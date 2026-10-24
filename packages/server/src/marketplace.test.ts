@@ -47,7 +47,7 @@ describe.skipIf(!url)('marketplace', () => {
       expect(t.ageMin).toBeLessThanOrEqual(13);
       expect(t.ageMax).toBeGreaterThanOrEqual(13);
     }
-    expect((await request(app!).get('/api/tutors?subject=cooking')).status).toBe(400);
+    expect((await request(app!).get('/api/tutors?subject=skydiving')).status).toBe(400);
     const music = await request(app!).get('/api/tutors?section=music');
     expect(music.body.tutors.length).toBeGreaterThan(0);
     for (const t of music.body.tutors) expect(t.subjects.some((s: string) => ['guitar', 'piano', 'violin', 'drums', 'flute', 'saxophone', 'ukulele', 'accordion', 'cello', 'vocal'].includes(s))).toBe(true);
