@@ -184,3 +184,113 @@ export function WcHouse({ className = '', size = 170 }: P) {
     </svg>
   );
 }
+
+/** A big soft blue watercolor stain to put text on. */
+export function WcBlob({ className = '', color = '#9fcbe0' }: { className?: string; color?: string }) {
+  return (
+    <svg className={`wc ${className}`} viewBox="0 0 400 380" preserveAspectRatio="none" aria-hidden>
+      <defs>
+        <filter id="wc-blob" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="4" seed="7" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" result="d" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="3" result="spots" />
+          <feColorMatrix in="spots" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -0.7 1.05" result="wash" />
+          <feComposite in="d" in2="wash" operator="in" />
+        </filter>
+      </defs>
+      <g filter="url(#wc-blob)">
+        <path d="M200 14c90-6 170 50 184 140 14 96-40 196-150 214C120 386 30 330 18 230 6 128 90 20 200 14z" fill={color} opacity="0.75" />
+        <path d="M150 70c60-20 150 0 170 80s-40 170-120 170S70 260 80 170c6-50 30-86 70-100z" fill={color} opacity="0.45" />
+      </g>
+    </svg>
+  );
+}
+
+/** Round eucalyptus leaves on a curved stem. */
+export function WcLeaves({ className = '', size = 260, flip = false }: P & { flip?: boolean }) {
+  const leaves: [number, number, number, number][] = [
+    [60, 40, 34, 30], [120, 70, 40, -20], [70, 120, 44, 40], [150, 150, 38, -30], [90, 200, 46, 20], [170, 240, 36, -40], [110, 290, 42, 30],
+  ];
+  return (
+    <svg className={`wc ${className}`} width={size} height={size * 1.3} viewBox="0 0 240 320" style={flip ? { transform: 'scaleX(-1)' } : undefined} aria-hidden>
+      <g filter="url(#wc)">
+        <path d="M20 10C90 60 80 140 120 190s30 90 10 130" stroke="#7fae9c" strokeWidth="3" fill="none" />
+        {leaves.map(([x, y, r, rot], i) => (
+          <ellipse key={i} cx={x} cy={y} rx={r} ry={r * 0.8} transform={`rotate(${rot} ${x} ${y})`} fill={i % 2 ? '#a9d4c4' : '#c6e3d6'} opacity="0.85" />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+/** Pink blossoms with orange berries and long leaves. */
+export function WcFlowers({ className = '', size = 260 }: P) {
+  const berries: [number, number][] = [[150, 40], [170, 70], [140, 90], [190, 30], [200, 100], [120, 60]];
+  return (
+    <svg className={`wc ${className}`} width={size} height={size * 1.3} viewBox="0 0 240 320" aria-hidden>
+      <g filter="url(#wc)">
+        <path d="M120 320C110 220 150 150 170 60M120 320C90 240 60 200 40 150M120 320c20-60 60-110 100-130" stroke="#6f9f8c" strokeWidth="3" fill="none" />
+        <path d="M60 210c-30-40-20-90 10-110 10 40 10 80-10 110z" fill="#8fb9a6" opacity="0.8" />
+        <path d="M190 220c40-30 50-70 40-100-30 20-50 60-40 100z" fill="#7fae9c" opacity="0.8" />
+        <path d="M100 260c-40-10-60-40-60-70 30 10 50 40 60 70z" fill="#a9d4c4" opacity="0.8" />
+        {berries.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={8 + (i % 3) * 2} fill="#f0a58a" opacity="0.85" />
+        ))}
+        {[[70, 150, 34], [160, 170, 40], [110, 210, 28]].map(([x, y, r], i) => (
+          <g key={i}>
+            {[0, 72, 144, 216, 288].map((a) => (
+              <ellipse key={a} cx={x} cy={y - r * 0.55} rx={r * 0.42} ry={r * 0.6} transform={`rotate(${a + i * 20} ${x} ${y})`} fill="#f6c3d0" opacity="0.8" />
+            ))}
+            <circle cx={x} cy={y} r={r * 0.22} fill="#e98aa6" />
+          </g>
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+/** A plump little bird with a crest. */
+export function WcBird({ className = '', size = 110 }: P) {
+  return (
+    <svg className={`wc ${className}`} width={size} height={size * 1.2} viewBox="0 0 100 120" aria-hidden>
+      <g filter="url(#wc)">
+        <path d="M50 8c4 6 2 10-2 12M54 10c6 2 8 8 4 12M46 10c-6 2-6 8-2 12" stroke="#7a6aa8" strokeWidth="2" fill="none" />
+        <ellipse cx="50" cy="60" rx="30" ry="34" fill="#f3b8b0" />
+        <ellipse cx="56" cy="70" rx="20" ry="22" fill="#fbe0d6" />
+        <path d="M24 56c-16 6-22 20-18 30 10-4 18-12 22-20z" fill="#d98d8a" />
+        <circle cx="58" cy="46" r="3" fill="#3b2a35" />
+        <path d="M76 50l12 4-12 4z" fill="#e9a35c" />
+        <path d="M44 94v16M56 94v16M40 110h8M52 110h8" stroke="#a07a6a" strokeWidth="2" />
+        {[[40, 66], [46, 76], [36, 80]].map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r="2" fill="#c86f78" opacity="0.7" />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+/** A spotted blue whale with a tail fluke and a striped pink belly. */
+export function WcWhale({ className = '', size = 240 }: P) {
+  return (
+    <svg className={`wc ${className}`} width={size} height={size * 0.6} viewBox="0 0 300 180" aria-hidden>
+      <g filter="url(#wc)">
+        {/* tail fluke */}
+        <path d="M40 92C26 70 8 62 2 66c10 10 18 22 24 34-8 10-18 24-20 34 8 2 24-8 38-26z" fill="#86b6d0" />
+        {/* body */}
+        <path d="M36 98c20-40 80-70 150-70 60 0 104 26 110 62 4 30-24 52-70 56-60 6-120-10-160-30-14-6-24-12-30-18z" fill="#a7cde2" />
+        {/* belly with pleats */}
+        <path d="M120 128c50 14 110 16 150 2 14-6 22-16 26-30-30 30-110 34-176 28z" fill="#f2d3da" />
+        {[150, 175, 200, 225, 250].map((x) => (
+          <path key={x} d={`M${x} 136c6 2 14 2 22 0`} stroke="#d9a6b2" strokeWidth="1.6" fill="none" />
+        ))}
+        {/* flipper */}
+        <path d="M170 120c-6 22-24 38-44 44 4-18 20-36 44-44z" fill="#86b6d0" />
+        <circle cx="250" cy="88" r="4.5" fill="#2f4f75" />
+        <path d="M262 108c10 2 22 0 30-6" stroke="#5f8fae" strokeWidth="2" fill="none" />
+        {[[120, 60], [150, 50], [180, 46], [100, 78], [140, 74], [200, 60], [220, 70], [170, 70]].map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={2.5 + (i % 3)} fill="#2f6f95" opacity="0.6" />
+        ))}
+      </g>
+    </svg>
+  );
+}

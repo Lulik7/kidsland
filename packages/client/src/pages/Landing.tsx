@@ -9,7 +9,7 @@ import { HeroCarousel } from '../components/HeroCarousel';
 import { RobotGuide } from '../components/RobotGuide';
 import { WorldScene } from '../components/WorldScene';
 import { Globe } from '../components/Globe';
-import { WcBalloon, WcBirds, WcCloud, WcHills, WcHorse, WcHouse, WcStar } from '../components/Watercolor';
+import { WcBalloon, WcBird, WcBirds, WcBlob, WcCloud, WcFlowers, WcHills, WcHorse, WcHouse, WcLeaves, WcStar, WcWhale } from '../components/Watercolor';
 import { Sprite } from '../components/Sprite';
 import { TutorCard } from '../components/TutorCard';
 import { avatarSvg, COIN, GOAL, HERO, WALL } from '../game/sprites';
@@ -238,8 +238,10 @@ export function Landing() {
 
       <section className="wrap">
         <div className="safety">
-          <div className="safety-icon" aria-hidden>🛡</div>
-          <div>
+          <WcBird className="safety-bird" size={84} />
+          <WcWhale className="safety-whale" size={230} />
+          <WcBlob className="safety-wash" color="#bfdcea" />
+          <div className="safety-text">
             <h2>{t('Безопасность детей на первом месте')}</h2>
             <p>
               {t('Общение с наставником идёт только на сайте. Система блокирует сообщения с телефонами, почтой, адресами, ссылками на мессенджеры и просьбами прислать фото, а модератор видит каждую такую попытку.')}
@@ -256,10 +258,12 @@ export function Landing() {
 
       <section className="wrap">
         <div className="final-cta">
-          <Sprite svg={HERO.robot('down')} size={96} className="float" />
-          <div>
+          <WcLeaves className="cta-leaves" size={230} />
+          <WcFlowers className="cta-flowers" size={240} />
+          <WcBlob className="cta-blob" />
+          <div className="cta-text">
+            <p className="cta-kicker">{t('Регистрация бесплатная, банковская карта не нужна.')}</p>
             <h2>{t('Первый уровень проходится за 2 минуты')}</h2>
-            <p>{t('Регистрация бесплатная, банковская карта не нужна.')}</p>
           </div>
           <Link to={playLink} className="btn btn-primary btn-xl">
             {t('Начать')}

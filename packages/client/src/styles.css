@@ -1472,3 +1472,35 @@ h1, h2 { color: #34404f; }
 .done-lessons li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .done-mark { color: var(--primary-dark); font-weight: 800; }
 .done-course .concept-row > b { white-space: nowrap; }
+
+/* ---------- Watercolor safety and final call-to-action ---------- */
+.safety {
+  position: relative; overflow: hidden; display: grid; justify-items: center; text-align: center; gap: 14px; background: #fff; color: var(--ink);
+  border: 2px dashed #f4c9b8; border-radius: 40px; padding: 96px 36px 40px; box-shadow: none; min-height: 420px;
+}
+.safety > * { position: relative; z-index: 1; }
+.safety-text { max-width: 640px; }
+.safety h2 { color: var(--ink); font-size: clamp(2.2rem, 4vw, 3.2rem); }
+.safety p { color: var(--muted); }
+.safety ul { list-style: none; padding: 0; display: grid; gap: 8px; justify-items: center; }
+.safety li { padding: 8px 20px; border-radius: 999px; background: #fde3d6; color: #b4643f; }
+.safety li:nth-child(2) { background: #dcecf6; color: #3f6f95; }
+.safety-bird { position: absolute !important; top: 14px; left: 50%; transform: translateX(-50%); }
+.safety-whale { position: absolute !important; left: -20px; bottom: 10px; z-index: 0 !important; opacity: 0.95; }
+.safety-wash { position: absolute !important; right: -80px; top: 30px; width: 420px; height: 400px; z-index: 0 !important; opacity: 0.6; }
+.final-cta {
+  position: relative; overflow: hidden; display: grid; justify-items: center; text-align: center; gap: 22px; color: var(--ink);
+  background: #fff; box-shadow: none; border-radius: 40px; padding: 70px 24px; min-height: 380px; align-content: center;
+}
+.final-cta > * { position: relative; z-index: 1; }
+.cta-blob { position: absolute !important; left: 50%; top: 50%; width: min(620px, 92%); height: 120%; transform: translate(-50%, -50%); z-index: 0 !important; }
+.cta-leaves { position: absolute !important; left: -20px; top: -30px; z-index: 0 !important; }
+.cta-flowers { position: absolute !important; right: -10px; bottom: -40px; z-index: 0 !important; }
+.final-cta h2 { color: var(--ink); font-size: clamp(2.6rem, 6vw, 4.4rem); margin: 0; line-height: 1; }
+.cta-kicker { color: #4f5d6d !important; font-size: 1.15rem; margin: 0 0 8px; }
+.final-cta .btn { --b: var(--primary); --b-dark: var(--primary-dark); --b-ink: #fff; }
+@media (max-width: 760px) {
+  .safety-whale, .safety-wash { opacity: 0.35; }
+  .cta-leaves, .cta-flowers { opacity: 0.45; width: 140px; height: 182px; }
+  .safety { padding-top: 90px; }
+}
