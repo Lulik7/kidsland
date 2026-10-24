@@ -17,11 +17,15 @@ describe('courses', () => {
     for (const c of COURSES) if (c.topic) expect(TOPIC_IDS).toContain(c.topic);
   });
 
-  it('has 70 lessons in coding and in music', () => {
-    const count = (section: string) =>
-      COURSES.filter((c) => SUBJECTS.find((s) => s.id === c.subject)?.section === section).reduce((n, c) => n + c.lessons.length, 0);
-    expect(count('coding')).toBe(70);
-    expect(count('music')).toBe(70);
+  it('has three levels with at least 20 lessons in every course section', () => {
+    // Languages are being filled language by language.
+    for (const sec of SECTIONS.filter((x) => !x.articlesOnly && x.id !== 'languages')) {
+      const courses = COURSES.filter((c) => SUBJECTS.find((s) => s.id === c.subject)?.section === sec.id);
+      for (const level of ['beginner', 'intermediate', 'advanced']) {
+        const n = courses.filter((c) => c.level === level).reduce((k, c) => k + c.lessons.length, 0);
+        expect(n, `${sec.id} ${level}`).toBeGreaterThanOrEqual(20);
+      }
+    }
   });
 
   it('has articles for every topic of article-only sections', () => {

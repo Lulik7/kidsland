@@ -22,10 +22,12 @@ import { CHESS_COURSES, CHESS_MORE } from './chess';
 import { ART_COURSES, ART_MORE } from './art';
 import { LEISURE_COURSES, LEISURE_MORE } from './leisure';
 import { ANIMALS_COURSES, ANIMALS_MORE } from './animals';
+import { MUSIC_LEVEL_COURSES } from './musicLevels';
+import { PYTHON_PRO_MORE } from './pythonExtra';
 
 /** Extra lessons for the short intro courses, keyed by course id. */
-const MORE_LESSONS: Record<string, Lesson[]> = { ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE, ...ANIMALS_MORE };
-const EXTRA_COURSES: Course[] = [...SCIENCE_COURSES, ...CHESS_COURSES, ...ART_COURSES, ...LEISURE_COURSES, ...ANIMALS_COURSES];
+const MORE_LESSONS: Record<string, Lesson[]> = { 'python-pro': PYTHON_PRO_MORE, ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE, ...ANIMALS_MORE };
+const EXTRA_COURSES: Course[] = [...SCIENCE_COURSES, ...CHESS_COURSES, ...ART_COURSES, ...LEISURE_COURSES, ...ANIMALS_COURSES, ...MUSIC_LEVEL_COURSES];
 
 export * from './types';
 
@@ -54,7 +56,8 @@ export const COURSES: Course[] = [
   logicCourse, logicMidCourse, logicProCourse,
 ]
   .map(withExtraTheory)
-  .concat(MUSIC_COURSES, INTRO_COURSES.map((c) => ({ ...c, lessons: [...c.lessons, ...(MORE_LESSONS[c.id] ?? [])] })), EXTRA_COURSES);
+  .concat(MUSIC_COURSES, INTRO_COURSES, EXTRA_COURSES)
+  .map((c) => (MORE_LESSONS[c.id] ? { ...c, lessons: [...c.lessons, ...MORE_LESSONS[c.id]] } : c));
 
 /** Share of points needed to pass a lesson. */
 export const LESSON_PASS_RATIO = 0.6;
