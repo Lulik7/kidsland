@@ -1,10 +1,11 @@
 import type { Course } from '../types';
 import { languageCourses } from './build';
 import { GERMAN } from './de';
+import { GREEK } from './el';
 import { ENGLISH } from './en';
 import { SPANISH } from './es';
 import { FRENCH } from './fr';
 import { ITALIAN } from './it';
 
 /** Three levels of 20 lessons for every foreign language of the «Иностранные языки» section. */
-export const LANGUAGE_COURSES: Course[] = [ENGLISH, FRENCH, GERMAN, ITALIAN, SPANISH].flatMap(languageCourses);
+export const LANGUAGE_COURSES: Course[] = [ENGLISH, FRENCH, GERMAN, ITALIAN, SPANISH, GREEK].flatMap(languageCourses);

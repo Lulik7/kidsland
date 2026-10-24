@@ -3,7 +3,7 @@ import { PLAN } from './curriculum';
 
 /**
  * A foreign language filled into the common plan. `lines` has one line per plan lesson (60):
- * five words and the phrase of the lesson, separated by «;», each with its reading in square
+ * five words and the phrase of the lesson, separated by «;» after the closing bracket, each with its reading in square
  * brackets, for example `cat [кэт]`. `notes` adds a language-specific section to a lesson (0-based).
  */
 export interface LanguageData {
@@ -45,7 +45,7 @@ function single(id: string, prompt: string, right: string, wrong: string[], seed
 export function languageCourses(lang: LanguageData): Course[] {
   if (lang.lines.length !== PLAN.length) throw new Error(`${lang.topic}: ${lang.lines.length} lines, expected ${PLAN.length}`);
   const parsed = lang.lines.map((line, i) => {
-    const parts = line.split(';').map((p) => p.trim()).filter(Boolean);
+    const parts = line.split(/(?<=\])\s*;/).map((p) => p.trim()).filter(Boolean);
     if (parts.length !== 6) throw new Error(`${lang.topic} line ${i + 1}: ${parts.length} items, expected 6`);
     return parts.map((p) => parseItem(p, `${lang.topic} line ${i + 1}`));
   });
