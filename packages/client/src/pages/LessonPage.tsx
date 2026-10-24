@@ -12,6 +12,7 @@ import { useCourseProgress } from '../courses/useChild';
 import { COIN, HERO } from '../game/sprites';
 import { useLang } from '../i18n';
 import { ChessBoard } from '../components/ChessBoard';
+import { Dialog, ReadingText, WordsListen } from '../components/LessonExtras';
 import { musicDiagrams } from '../components/music';
 import { useLocal, useTc } from '../content';
 import { CHESS_DIAGRAMS } from '../content/chess';
@@ -266,7 +267,14 @@ export function LessonPage() {
             <article key={i} className="theory-card">
               {pic && <Pic code={pic} size={72} className="tc-pic" />}
               {s.title && <h3>{s.title}</h3>}
-              <p>{s.text}</p>
+              {s.dialog ? (
+                <Dialog lines={s.dialog} lang={s.speak ?? 'en-GB'} />
+              ) : s.translation ? (
+                <ReadingText text={s.text} translation={s.translation} lang={s.speak} />
+              ) : (
+                s.text && <p>{s.text}</p>
+              )}
+              {s.speak && !s.dialog && !s.translation && <WordsListen text={s.text} lang={s.speak} />}
               {s.code && <pre className="code">{s.code}</pre>}
               {s.tip && <div className="tip">⭐ {s.tip}</div>}
             {i === 0 && diagrams.length > 0 && (

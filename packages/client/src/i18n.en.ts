@@ -862,4 +862,8 @@ export const EN: Record<string, string> = {
   "Пройденные темы и уроки": "Completed topics and lessons",
   "Пока нет пройденных уроков. Когда ребёнок отметит урок прочитанным или сдаст викторину, он появится здесь.": "No lessons completed yet. When your child marks a lesson as read or passes a quiz, it will appear here.",
   "и ещё {n}": "and {n} more",
+  "Послушать": "Listen",
+  "Слушать диалог": "Listen to the dialogue",
+  "Скрыть перевод": "Hide translation",
+  "Показать перевод": "Show translation",
 };

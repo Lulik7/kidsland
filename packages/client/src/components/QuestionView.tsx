@@ -1,6 +1,8 @@
 import type { Answer, Question } from '@kidsland/shared';
 import { useMemo } from 'react';
 import { useT } from '../i18n';
+import { say } from '../speech';
+import { ListenButton } from './LessonExtras';
 
 /** Deterministic shuffle that never returns the original order (when there are 2+ items). */
 export function shuffled(items: string[], seed: string): string[] {
@@ -132,6 +134,7 @@ export function QuestionView({ q, n, value, onChange, result, orig }: Props) {
         {checked && <span className="q-mark" aria-label={result ? t('Верно') : t('Неверно')}>{result ? '✓' : '✗'}</span>}
       </div>
       {q.code && <pre className="code">{q.code}</pre>}
+      {q.audio && <ListenButton onPlay={() => say(q.audio!, q.audioLang ?? 'en-GB', 0, 0.8)} />}
       {body}
       {checked && q.explain && <p className="q-explain">💡 {q.explain}</p>}
     </div>

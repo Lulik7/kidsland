@@ -1,5 +1,6 @@
-import type { Course, CourseLevel, Lesson, Question } from '../types';
+import type { Course, CourseLevel, Lesson, LessonSection, Question } from '../types';
 import { PLAN } from './curriculum';
+import { extraSections, parseExtra } from './extra';
 
 /**
  * A foreign language filled into the common plan. `lines` has one line per plan lesson (60):
@@ -15,6 +16,10 @@ export interface LanguageData {
   color: string;
   lines: string[];
   notes?: Record<number, string>;
+  /** Speech language for listening (like 'en-GB'). */
+  speak?: string;
+  /** Grammar, dialogues, reading texts and practice in the format of `parseExtra`. */
+  extra?: string;
 }
 
 interface Item {
@@ -50,6 +55,9 @@ export function languageCourses(lang: LanguageData): Course[] {
     return parts.map((p) => parseItem(p, `${lang.topic} line ${i + 1}`));
   });
 
+  const lessonIds = PLAN.map((_, n) => `${lang.topic}-${Math.floor(n / 20) + 1}-${(n % 20) + 1}`);
+  const extras = lang.extra ? parseExtra(lang.extra, lessonIds, lang.speak ?? '') : new Map();
+
   return LEVELS.map(({ level, suffix, tagline, ages }, li) => {
     const id = `${lang.topic}-${li + 1}`;
     const lessons: Lesson[] = PLAN.slice(li * 20, li * 20 + 20).map((plan, k) => {
@@ -58,12 +66,16 @@ export function languageCourses(lang: LanguageData): Course[] {
       const words = items.slice(0, 5);
       const phrase = items[5];
       const lessonId = `${id}-${k + 1}`;
-      const sections = [
-        { title: 'Новые слова', text: words.map((w, j) => `${w.word} [${w.reading}] — ${plan.words[j]}`).join('\n') },
-        { title: 'Фраза урока', text: `${phrase.word} [${phrase.reading}] — ${plan.phrase}` },
+      const extra = extras.get(n);
+      const more = extra ? extraSections(extra, lang.speak ?? '') : { before: [], after: [] };
+      const sections: LessonSection[] = [
+        { title: 'Новые слова', text: words.map((w, j) => `${w.word} [${w.reading}] — ${plan.words[j]}`).join('\n'), speak: lang.speak },
+        { title: 'Фраза урока', text: `${phrase.word} [${phrase.reading}] — ${plan.phrase}`, speak: lang.speak },
+        ...more.before,
+        ...(lang.notes?.[n] ? [{ title: 'Это интересно', text: lang.notes[n] }] : []),
+        ...more.after,
         { title: 'Как запомнить', text: plan.tip },
       ];
-      if (lang.notes?.[n]) sections.splice(2, 0, { title: 'Это интересно', text: lang.notes[n] });
       const a = n % 5;
       const b = (n + 2) % 5;
       const other = (m: number) => parsed[(n + m) % parsed.length][5].word;
@@ -72,7 +84,7 @@ export function languageCourses(lang: LanguageData): Course[] {
         single(`${lessonId}-q2`, `Что значит «${words[b].word}»?`, plan.words[b], [plan.words[(b + 1) % 5], plan.words[(b + 4) % 5]], n + 1),
         single(`${lessonId}-q3`, `Как ${lang.inName} «${plan.phrase}»?`, phrase.word, [other(1), other(7)], n + 2),
       ];
-      return { id: lessonId, title: plan.title, minutes: 10, sections, practice: [], quiz };
+      return { id: lessonId, title: plan.title, minutes: extra ? 25 : 10, sections, practice: extra?.practice ?? [], quiz };
     });
     return {
       id,

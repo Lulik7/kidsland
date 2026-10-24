@@ -7,6 +7,9 @@ interface QuestionBase {
   code?: string;
   /** Shown after answering, right or wrong. */
   explain?: string;
+  /** Text read aloud by the browser for listening tasks, in `audioLang` (like 'en-GB'). */
+  audio?: string;
+  audioLang?: string;
 }
 
 export type Question =
@@ -20,11 +23,25 @@ export type Question =
 export type Answer = number | number[] | string | string[];
 export type Answers = Record<string, Answer>;
 
+export interface DialogLine {
+  who: string;
+  /** The line in the language being learnt. */
+  line: string;
+  /** Its Russian translation. */
+  tr: string;
+}
+
 export interface LessonSection {
   title?: string;
   text: string;
   code?: string;
   tip?: string;
+  /** A dialogue to read and listen to, line by line. */
+  dialog?: DialogLine[];
+  /** A translation the child can open after reading `text` on their own. */
+  translation?: string;
+  /** Language for reading `text` or the dialogue aloud (like 'en-GB'); the page shows a listen button. */
+  speak?: string;
 }
 
 export interface Lesson {
