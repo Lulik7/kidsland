@@ -1,10 +1,13 @@
 import type { LanguageData } from './build';
+import { KA_EXTRA_1 } from './ka-extra-1';
 
 export const GEORGIAN: LanguageData = {
   topic: 'lang-ka',
   name: 'Грузинский',
   inName: 'по-грузински',
   color: '#d6453d',
+  speak: 'ka-GE',
+  extra: KA_EXTRA_1,
   notes: {
     0: 'На грузинском говорят в Грузии. Это очень древний язык, у него своя письменность, которой больше полутора тысяч лет.',
     1: 'Грузинский алфавит называется мхедрули, в нём 33 буквы. Заглавных букв нет совсем, а пишут слева направо, как по-русски.',
