@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { fmtTime } from '../format';
-import { useT } from '../i18n';
+import { tSentences, useT } from '../i18n';
 
 export interface ChatItem {
   id: string;
@@ -66,7 +66,7 @@ export function ChatBox({
         ))}
       </div>
       {note && <div className="chat-note">{note}</div>}
-      {error && <div className="error chat-error">{error}</div>}
+      {error && <div className="error chat-error">{tSentences(t, error)}</div>}
       <form className="chat-form" onSubmit={send}>
         <input value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} maxLength={1000} disabled={disabled} aria-label={t('Сообщение')} />
         <button className="btn btn-primary" disabled={busy || disabled || !text.trim()}>

@@ -17,7 +17,7 @@ interface DemoTutor {
   hours: number[];
 }
 
-const DEMO_TUTORS: DemoTutor[] = [
+export const DEMO_TUTORS: DemoTutor[] = [
   {
     email: 'anna.demo@kidsland.local',
     displayName: 'Анна Смирнова',

@@ -6,17 +6,19 @@ import { canJoin } from '../components/BookingCard';
 import { usePolling } from '../components/ChatBox';
 import { Classroom } from '../components/Classroom';
 import { TutorAvatar } from '../components/TutorAvatar';
-import { fmtDateTime } from '../format';
+import { fmtDateTime, personName } from '../format';
+import { useT, type T } from '../i18n';
 
-function untilText(ms: number) {
+function untilText(ms: number, t: T) {
   const min = Math.ceil(ms / 60_000);
-  if (min < 60) return `${min} мин`;
+  if (min < 60) return t('{n} мин', { n: min });
   const h = Math.floor(min / 60);
-  if (h < 48) return `${h} ч ${min % 60} мин`;
-  return `${Math.floor(h / 24)} дн.`;
+  if (h < 48) return t('{h} ч {m} мин', { h, m: min % 60 });
+  return t('{n} дн.', { n: Math.floor(h / 24) });
 }
 
 export function LessonRoom() {
+  const t = useT();
   const { id = '' } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -59,7 +61,7 @@ export function LessonRoom() {
     [id, booking?.status, messages.at(-1)?.id],
   );
 
-  if (!booking) return <div className="center-note">{error ?? 'Загружаем урок…'}</div>;
+  if (!booking) return <div className="center-note">{error ?? t('Загружаем урок…')}</div>;
 
   const isTutor = user?.role === 'tutor';
   const back = isTutor ? '/tutor' : '/parent';
@@ -80,24 +82,24 @@ export function LessonRoom() {
 
   const video = open ? (
     <div className="video-room">
-      <iframe src={room} title="Онлайн-урок" allow="camera; microphone; fullscreen; display-capture; autoplay" />
+      <iframe src={room} title={t('Онлайн-урок')} allow="camera; microphone; fullscreen; display-capture; autoplay" />
       <a className="video-pop" href={booking.meetingLink} target="_blank" rel="noreferrer">
-        Открыть видео в новой вкладке
+        {t('Открыть видео в новой вкладке')}
       </a>
     </div>
   ) : (
     <div className="video-wait">
       {now < start ? (
         <>
-          <div className="countdown">{untilText(start - now)}</div>
-          <b>до начала урока</b>
-          <p>Видео включится за 10 минут до начала. Доска и чат уже работают.</p>
+          <div className="countdown">{untilText(start - now, t)}</div>
+          <b>{t('до начала урока')}</b>
+          <p>{t('Видео включится за 10 минут до начала. Доска и чат уже работают.')}</p>
         </>
       ) : (
         <>
-          <b>Урок завершён</b>
+          <b>{t('Урок завершён')}</b>
           <Link to={`/tutors/${booking.tutor.id}`} className="btn btn-primary">
-            Записаться снова
+            {t('Записаться снова')}
           </Link>
         </>
       )}
@@ -109,22 +111,22 @@ export function LessonRoom() {
       <div className="lesson-head card">
         <TutorAvatar name={booking.tutor.displayName} size={56} />
         <div className="lesson-info">
-          <h1>Урок с наставником {booking.tutor.displayName}</h1>
+          <h1>{t('Урок с наставником')} {personName(booking.tutor.displayName)}</h1>
           <span className="muted">
-            {fmtDateTime(booking.startsAt)} · {booking.durationMin} мин · ученик {booking.child.nickname}
-            {booking.isTrial && ' · пробный урок'}
+            {fmtDateTime(booking.startsAt)} · {t('{n} мин', { n: booking.durationMin })} · {t('ученик')} {booking.child.nickname}
+            {booking.isTrial && ` · ${t('пробный урок')}`}
           </span>
         </div>
         <Link to={back} className="btn btn-light">
-          Назад
+          {t('Назад')}
         </Link>
       </div>
 
       {booking.status === 'cancelled' ? (
         <div className="card center-card">
-          <h2>Урок отменён</h2>
+          <h2>{t('Урок отменён')}</h2>
           <Link to="/tutors" className="btn btn-primary">
-            Выбрать другое время
+            {t('Выбрать другое время')}
           </Link>
         </div>
       ) : (
@@ -141,7 +143,7 @@ export function LessonRoom() {
             id: m.id,
             body: m.body,
             mine: m.isTutor === isTutor,
-            author: m.isTutor ? booking.tutor.displayName : booking.child.nickname,
+            author: m.isTutor ? personName(booking.tutor.displayName) : booking.child.nickname,
             createdAt: m.createdAt,
           }))}
           onSend={async (body) => {

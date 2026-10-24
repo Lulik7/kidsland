@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,7 @@
     <link rel="icon" href="/favicon.svg" />
     <script>
       try {
-        if (localStorage.getItem('kidsland.theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+        document.documentElement.dataset.theme = 'dark';
         var l = localStorage.getItem('kidsland.lang');
         if (l === 'en' || l === 'el' || l === 'he') document.documentElement.lang = l;
         if (l === 'he') document.documentElement.dir = 'rtl';

@@ -119,7 +119,7 @@ export function ParentDashboard() {
             </div>
             <div className="tile">
               <span className="tile-label">{t('Последняя игра')}</span>
-              <b className="tile-text">{relativeDays(report.lastPlayedAt)}</b>
+              <b className="tile-text">{relativeDays(report.lastPlayedAt, t)}</b>
             </div>
           </div>
 

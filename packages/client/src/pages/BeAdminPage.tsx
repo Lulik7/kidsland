@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { api, type CommunityPost } from '../api';
 import { useAuth } from '../auth';
 import { fmtDateTime } from '../format';
-import { useT } from '../i18n';
+import { tSentences, useT } from '../i18n';
 
 const STATUS = {
   pending: { label: 'На проверке', cls: 'st-pending' },
@@ -76,7 +76,7 @@ export function BeAdminPage() {
                 <textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={6} maxLength={3000} required />
               </label>
               <p className="muted small">{t('Не пиши телефон, адрес, почту и не проси фото: такие посты блокируются.')}</p>
-              {error && <div className="error">{error}</div>}
+              {error && <div className="error">{tSentences(t, error)}</div>}
               {sent && <div className="success">{t('Пост отправлен на проверку администратору!')}</div>}
               <button className="btn btn-primary" disabled={busy}>
                 {busy ? t('Отправляем…') : t('Отправить на проверку')}

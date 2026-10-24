@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Tutor } from '../api';
-import { fmtDateTime, languageName, rub, subjectName } from '../format';
+import { fmtDateTime, languageName, personName, rub, subjectName } from '../format';
 import { StarIcon } from './Icons';
 import { TutorAvatar } from './TutorAvatar';
 import { useT } from '../i18n';
@@ -13,13 +13,13 @@ export function TutorCard({ tutor: tu, childId }: { tutor: Tutor; childId?: stri
       <div className="tc-top">
         <TutorAvatar name={tu.displayName} size={68} />
         <div className="tc-who">
-          <h3>{tu.displayName}</h3>
+          <h3>{personName(tu.displayName)}</h3>
           <span className="tc-rating">
             <StarIcon on size={16} /> <b>{tu.rating.toFixed(1)}</b> <span className="muted">· {tu.reviewsCount}{' '}{t('отзывов')}</span>
           </span>
         </div>
       </div>
-      <p className="tc-headline">{tu.headline}</p>
+      <p className="tc-headline">{t(tu.headline)}</p>
       <div className="tags">
         {tu.subjects.map((s) => (
           <span key={s} className="tag">
@@ -31,7 +31,7 @@ export function TutorCard({ tutor: tu, childId }: { tutor: Tutor; childId?: stri
         <span>
           {tu.ageMin}–{tu.ageMax}{' '}{t('лет')}
         </span>
-        <span>{tu.languages.map(languageName).join(', ')}</span>
+        <span>{tu.languages.map((l) => t(languageName(l))).join(', ')}</span>
       </div>
       <div className="tc-foot">
         <div>

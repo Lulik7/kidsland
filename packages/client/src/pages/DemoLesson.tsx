@@ -7,6 +7,8 @@ import { Classroom } from '../components/Classroom';
 import { Sprite } from '../components/Sprite';
 import { TutorAvatar } from '../components/TutorAvatar';
 import { avatarSvg } from '../game/sprites';
+import { personName } from '../format';
+import { useT } from '../i18n';
 
 const TEACHER = 'Анна Смирнова';
 type P = [number, number];
@@ -57,6 +59,10 @@ const SCRIPT: Step[] = [
 ];
 
 export function DemoLesson() {
+  const t = useT();
+  const tRef = useRef(t);
+  tRef.current = t;
+  const teacher = personName(TEACHER);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [speaking, setSpeaking] = useState('');
@@ -65,8 +71,9 @@ export function DemoLesson() {
   const ids = useRef(0);
 
   const later = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
-  const say = (body: string, mine = false) => {
-    setChat((c) => [...c, { id: String(++ids.current), body, mine, author: mine ? 'Ты' : TEACHER, createdAt: new Date().toISOString() }]);
+  const say = (text: string, mine = false) => {
+    const body = mine ? text : tRef.current(text);
+    setChat((c) => [...c, { id: String(++ids.current), body, mine, author: mine ? tRef.current('Ты') : personName(TEACHER), createdAt: new Date().toISOString() }]);
     if (!mine) setSpeaking(body);
   };
   const animate = (path: P[], color: string, width: number) => {
@@ -97,7 +104,7 @@ export function DemoLesson() {
     if (unsafe) throw new Error(`${unsafe}. Сообщение не отправлено, модератор получил уведомление.`);
     say(text, true);
     if (stage === 'answer') {
-      if (/(^|\D)3(\D|$)|(^|\s)три(\s|$|[.!])/i.test(text)) {
+      if (/(^|\D)3(\D|$)|(^|\s)(три|three|τρία|שלוש|שלושה)(\s|$|[.!])/i.test(text)) {
         later(900, () => say('Верно, 3 шага! Потом поворот налево и ещё 2 шага вверх.'));
         later(3200, () => say('Теперь твоя очередь: возьми карандаш и обведи на доске клетку, где робот повернёт.'));
         later(3300, () => setStage('draw'));
@@ -123,13 +130,13 @@ export function DemoLesson() {
   const video = (
     <div className="demo-video">
       <div className={`dv-tile teacher${speaking ? ' talking' : ''}`}>
-        <TutorAvatar name={TEACHER} size={96} />
-        <span className="dv-name">{TEACHER} · учитель</span>
+        <TutorAvatar name={teacher} size={96} />
+        <span className="dv-name">{teacher} · {t('учитель')}</span>
         {speaking && <span className="dv-sub">{speaking}</span>}
       </div>
       <div className="dv-tile me">
         <Sprite svg={avatarSvg('monster-3')} size={64} />
-        <span className="dv-name">Ты</span>
+        <span className="dv-name">{t('Ты')}</span>
       </div>
     </div>
   );
@@ -137,17 +144,17 @@ export function DemoLesson() {
   return (
     <main className="page lesson">
       <div className="lesson-head card">
-        <TutorAvatar name={TEACHER} size={56} />
+        <TutorAvatar name={teacher} size={56} />
         <div className="lesson-info">
-          <h1>Демо-урок: робот в лабиринте</h1>
-          <span className="muted">Так выглядит онлайн-урок с наставником: видео, общая доска и чат. Это имитация, учитель здесь ненастоящий.</span>
+          <h1>{t('Демо-урок: робот в лабиринте')}</h1>
+          <span className="muted">{t('Так выглядит онлайн-урок с наставником: видео, общая доска и чат. Это имитация, учитель здесь ненастоящий.')}</span>
         </div>
         <Link to="/tutors" className="btn btn-primary">
-          Записаться на урок
+          {t('Записаться на урок')}
         </Link>
       </div>
-      {stage === 'draw' && <div className="demo-hint">✏️ Нарисуй что-нибудь на доске: обведи клетку, где робот поворачивает.</div>}
-      {stage === 'answer' && <div className="demo-hint">💬 Ответь учителю в чате справа.</div>}
+      {stage === 'draw' && <div className="demo-hint">✏️ {t('Нарисуй что-нибудь на доске: обведи клетку, где робот поворачивает.')}</div>}
+      {stage === 'answer' && <div className="demo-hint">💬 {t('Ответь учителю в чате справа.')}</div>}
       <Classroom
         video={video}
         strokes={strokes}

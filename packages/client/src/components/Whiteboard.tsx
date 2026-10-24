@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import type { Stroke } from '../api';
+import { useT } from '../i18n';
 
 const COLORS = ['#241d4f', '#ff6b3d', '#2fc46b', '#4c97ff', '#9966ff', '#ffab19'];
 const WIDTHS = [3, 6, 12];
@@ -33,13 +34,14 @@ export function Whiteboard({
   strokes,
   onStroke,
   onClear,
-  label = 'Доска',
+  label,
 }: {
   strokes: Stroke[];
   onStroke?: (s: Stroke) => void;
   onClear?: () => void;
   label?: string;
 }) {
+  const t = useT();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const current = useRef<Stroke | null>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -101,7 +103,7 @@ export function Whiteboard({
   return (
     <div className="board">
       <div className="board-tools">
-        <b className="board-label">{label}</b>
+        <b className="board-label">{label ?? t('Доска')}</b>
         {onStroke && (
           <>
             <div className="swatches">
@@ -114,23 +116,23 @@ export function Whiteboard({
                     setColor(c);
                     setTool('pen');
                   }}
-                  aria-label={`Цвет ${c}`}
+                  aria-label={`${t('Цвет')} ${c}`}
                 />
               ))}
             </div>
             <div className="widths">
               {WIDTHS.map((w) => (
-                <button key={w} className={width === w ? 'wbtn on' : 'wbtn'} onClick={() => setWidth(w)} aria-label={`Толщина ${w}`}>
+                <button key={w} className={width === w ? 'wbtn on' : 'wbtn'} onClick={() => setWidth(w)} aria-label={`${t('Толщина')} ${w}`}>
                   <i style={{ width: w + 2, height: w + 2 }} />
                 </button>
               ))}
             </div>
             <button className={tool === 'eraser' ? 'wbtn on tool' : 'wbtn tool'} onClick={() => setTool('eraser')}>
-              Ластик
+              {t('Ластик')}
             </button>
             {onClear && (
               <button className="wbtn tool" onClick={onClear}>
-                Очистить
+                {t('Очистить')}
               </button>
             )}
           </>

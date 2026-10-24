@@ -6,7 +6,6 @@ import { usePrefs, type A11y, type FontScale } from '../prefs';
 /** Language switch, light/dark theme switch and the accessibility panel button. */
 export function HeaderTools() {
   const { lang, setLang } = useLang();
-  const { theme, setTheme } = usePrefs();
   const t = useT();
   const [panel, setPanel] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -36,23 +35,6 @@ export function HeaderTools() {
           </ul>
         )}
       </div>
-      <button
-        className="htool"
-        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        aria-label={theme === 'dark' ? t('Светлая тема') : t('Тёмная тема')}
-        title={theme === 'dark' ? t('Светлая тема') : t('Тёмная тема')}
-      >
-        {theme === 'dark' ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
-            <circle cx="12" cy="12" r="5" fill="currentColor" />
-            <path d="M12 1v3M12 20v3M1 12h3M20 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
-            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor" />
-          </svg>
-        )}
-      </button>
       <button className="htool htool-a11y" onClick={() => setPanel(true)} aria-label={t('Особые возможности')} title={t('Особые возможности')}>
         Aa
       </button>

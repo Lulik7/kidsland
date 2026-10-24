@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { api, type Booking } from '../api';
 import { avatarSvg } from '../game/sprites';
-import { fmtDateTime, rub } from '../format';
+import { fmtDateTime, personName, rub } from '../format';
 import { useT } from '../i18n';
 import { Sprite } from './Sprite';
 import { TutorAvatar } from './TutorAvatar';
@@ -20,7 +20,7 @@ type Viewer = 'parent' | 'tutor';
 export function BookingCard({ booking: b, viewer, onChange }: { booking: Booking; viewer: Viewer; onChange: (b: Booking) => void }) {
   const t = useT();
   const [asking, setAsking] = useState(false);
-  const who = viewer === 'parent' ? b.tutor.displayName : b.child.nickname;
+  const who = viewer === 'parent' ? personName(b.tutor.displayName) : b.child.nickname;
   const c = b.cancellation;
   return (
     <div className={`booking${b.status === 'cancelled' ? ' cancelled' : ''}`}>
@@ -97,7 +97,7 @@ function CancelDialog({ booking: b, viewer, onClose, onDone }: { booking: Bookin
       <div className="modal cancel-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-title" onClick={(e) => e.stopPropagation()}>
         <h2 id="cancel-title">{t('Отменить урок?')}</h2>
         <p className="muted">
-          {fmtDateTime(b.startsAt)} · {viewer === 'parent' ? b.tutor.displayName : b.child.nickname}
+          {fmtDateTime(b.startsAt)} · {viewer === 'parent' ? personName(b.tutor.displayName) : b.child.nickname}
         </p>
         <fieldset className="reasons">
           <legend>{t('Выберите причину. Мы сообщим её {to}.', { to })}</legend>

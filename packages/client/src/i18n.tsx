@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { setFormatLang } from './format';
 import { EL } from './i18n.el';
 import { EN } from './i18n.en';
 import { HE } from './i18n.he';
@@ -57,8 +58,12 @@ export function LangProvider({ children }: { children: ReactNode }) {
     document.documentElement.dir = isRtl(lang) ? 'rtl' : 'ltr';
   }, [lang]);
   const t = useCallback<T>((ru, vars) => fill(lang === 'ru' ? ru : (DICTS[lang]?.[ru] ?? EN[ru] ?? ru), vars), [lang]);
+  setFormatLang(lang);
   return <Ctx.Provider value={{ lang, setLang, t }}>{children}</Ctx.Provider>;
 }
 
 export const useLang = () => useContext(Ctx);
 export const useT = () => useContext(Ctx).t;
+
+/** Translates a server message sentence by sentence, e.g. "<safety reason>. <what happened>." */
+export const tSentences = (t: T, msg: string) => msg.split('. ').map((p) => t(p)).join('. ');

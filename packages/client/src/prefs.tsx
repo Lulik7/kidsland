@@ -49,7 +49,7 @@ function write(key: string, value: string) {
 const Ctx = createContext<Prefs>({ theme: 'light', setTheme: () => {}, a11y: A11Y_DEFAULT, setA11y: () => {}, resetA11y: () => {} });
 
 export function PrefsProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>(() => (read<string>(THEME_KEY, 'light') === 'dark' ? 'dark' : 'light'));
+  const [theme, setThemeState] = useState<ThemeMode>('dark');
   const [a11y, setA11yState] = useState<A11y>(() => read(A11Y_KEY, A11Y_DEFAULT));
 
   useEffect(() => {

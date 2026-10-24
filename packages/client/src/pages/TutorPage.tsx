@@ -7,7 +7,7 @@ import { StarIcon } from '../components/Icons';
 import { Sprite } from '../components/Sprite';
 import { TutorAvatar } from '../components/TutorAvatar';
 import { avatarSvg } from '../game/sprites';
-import { dayKey, fmtDateTime, fmtTime, languageName, rub, subjectName } from '../format';
+import { dayKey, fmtDateTime, fmtTime, languageName, personName, rub, subjectName } from '../format';
 import { useT } from '../i18n';
 
 /** Turns YouTube / Vimeo page links into embeddable URLs; other links are shown as a plain link. */
@@ -113,8 +113,8 @@ export function TutorPage() {
           <div className="tp-head">
             <TutorAvatar name={tutor.displayName} size={96} />
             <div>
-              <h1>{tutor.displayName}</h1>
-              <p className="tp-headline">{tutor.headline}</p>
+              <h1>{personName(tutor.displayName)}</h1>
+              <p className="tp-headline">{t(tutor.headline)}</p>
               <span className="tc-rating">
                 <StarIcon on size={18} /> <b>{tutor.rating.toFixed(1)}</b> <span className="muted">· {tutor.reviewsCount}{' '}{t('отзывов')}</span>
               </span>
@@ -136,7 +136,7 @@ export function TutorPage() {
             </div>
             <div>
               <dt>{t('Язык уроков')}</dt>
-              <dd>{tutor.languages.map(languageName).join(', ')}</dd>
+              <dd>{tutor.languages.map((l) => t(languageName(l))).join(', ')}</dd>
             </div>
             <div>
               <dt>{t('Стоимость')}</dt>
@@ -157,7 +157,7 @@ export function TutorPage() {
             </a>
           ) : null}
           <h2 className="card-title">{t('О себе')}</h2>
-          <p className="tp-bio">{tutor.bio}</p>
+          <p className="tp-bio">{t(tutor.bio)}</p>
         </section>
 
         <aside className="card booking-panel">
@@ -239,7 +239,7 @@ export function TutorPage() {
             <TutorAvatar name={tutor.displayName} size={84} />
             <h2>{t('Вы записаны!')}</h2>
             <p>
-              {fmtDateTime(booked.startsAt)}{t(', урок с наставником')}{' '}{tutor.displayName}{t('. Ученик:')}{' '}{booked.child.nickname}.
+              {fmtDateTime(booked.startsAt)}{t(', урок с наставником')}{' '}{personName(tutor.displayName)}{t('. Ученик:')}{' '}{booked.child.nickname}.
               {booked.isTrial && t(' Это бесплатный пробный урок.')}
             </p>
             <p className="small">{t('Ссылка на урок появится в кабинете родителя. Войти можно за 10 минут до начала.')}</p>

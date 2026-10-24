@@ -5,6 +5,7 @@ import { api, type Booking, type Slot, type Tutor, type TutorProfileInput } from
 import { BookingCard } from '../components/BookingCard';
 import { TutorAvatar } from '../components/TutorAvatar';
 import { dayKey, fmtDay, fmtTime } from '../format';
+import { tSentences, useT } from '../i18n';
 
 type Tab = 'lessons' | 'schedule' | 'profile';
 const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
@@ -23,6 +24,7 @@ const toInput = (t: Tutor): TutorProfileInput => ({
 });
 
 export function TutorCabinet() {
+  const t = useT();
   const [tutor, setTutor] = useState<Tutor | null>(null);
   const [tab, setTab] = useState<Tab>('lessons');
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function TutorCabinet() {
       .catch((e) => setError(e.message));
   }, []);
 
-  if (!tutor) return <div className="center-note">{error ?? 'Загружаем…'}</div>;
+  if (!tutor) return <div className="center-note">{error ?? t('Загружаем…')}</div>;
 
   return (
     <main className="page cabinet">
@@ -45,15 +47,15 @@ export function TutorCabinet() {
         <div className="cab-who">
           <TutorAvatar name={tutor.displayName} size={64} />
           <div>
-            <h1 className="page-title left">Кабинет наставника</h1>
+            <h1 className="page-title left">{t('Кабинет наставника')}</h1>
             <span className={`chip ${tutor.isPublished ? 'chip-free' : 'chip-muted'}`}>
-              {tutor.isPublished ? 'Профиль виден родителям' : 'Профиль скрыт: заполните и опубликуйте'}
+              {tutor.isPublished ? t('Профиль виден родителям') : t('Профиль скрыт: заполните и опубликуйте')}
             </span>
           </div>
         </div>
         {tutor.isPublished && (
           <Link to={`/tutors/${tutor.id}`} className="btn btn-light">
-            Как видят родители
+            {t('Как видят родители')}
           </Link>
         )}
       </div>
@@ -66,7 +68,7 @@ export function TutorCabinet() {
           ] as [Tab, string][]
         ).map(([k, label]) => (
           <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'tab on' : 'tab'} onClick={() => setTab(k)}>
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
@@ -78,9 +80,9 @@ export function TutorCabinet() {
           <aside className="profile-side">
             <VideoIntro tutor={tutor} onSaved={setTutor} />
             <div className="card safety-card">
-              <h2 className="card-title">🛡 Правила работы с детьми</h2>
+              <h2 className="card-title">{t('🛡 Правила работы с детьми')}</h2>
               <ul>
-                {TUTOR_SAFETY_RULES.map((r) => <li key={r}>{r}</li>)}
+                {TUTOR_SAFETY_RULES.map((r) => <li key={r}>{t(r)}</li>)}
               </ul>
             </div>
           </aside>
@@ -94,6 +96,7 @@ const MAX_VIDEO_MB = 100;
 
 /** Uploading a video file for the profile; a YouTube link still works through the form. */
 function VideoIntro({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => void }) {
+  const t = useT();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -103,18 +106,18 @@ function VideoIntro({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => v
     if (!file) return;
     setMsg(null);
     if (!['video/mp4', 'video/webm', 'video/quicktime'].includes(file.type)) {
-      return setMsg({ ok: false, text: 'Подойдёт видео в формате MP4, WebM или MOV.' });
+      return setMsg({ ok: false, text: t('Подойдёт видео в формате MP4, WebM или MOV.') });
     }
     if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
-      return setMsg({ ok: false, text: `Файл больше ${MAX_VIDEO_MB} МБ. Сожмите видео или загрузите его на YouTube и вставьте ссылку.` });
+      return setMsg({ ok: false, text: t('Файл больше {n} МБ. Сожмите видео или загрузите его на YouTube и вставьте ссылку.', { n: MAX_VIDEO_MB }) });
     }
     setBusy(true);
     try {
       const r = await api.uploadVideo(file);
       onSaved(r.tutor);
-      setMsg({ ok: true, text: 'Видео загружено и появилось в профиле.' });
+      setMsg({ ok: true, text: t('Видео загружено и появилось в профиле.') });
     } catch (e) {
-      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Не удалось загрузить' });
+      setMsg({ ok: false, text: e instanceof Error ? tSentences(t, e.message) : t('Не удалось загрузить') });
     } finally {
       setBusy(false);
       if (input.current) input.current.value = '';
@@ -123,23 +126,23 @@ function VideoIntro({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => v
 
   return (
     <div className="card video-intro">
-      <h2 className="card-title">🎬 Видео-знакомство</h2>
+      <h2 className="card-title">{t('🎬 Видео-знакомство')}</h2>
       <p className="muted small">
-        Расскажите о себе за 1–2 минуты: как проходят уроки и чем вы увлекаетесь. Профили с видео выбирают чаще.
+        {t('Расскажите о себе за 1–2 минуты: как проходят уроки и чем вы увлекаетесь. Профили с видео выбирают чаще.')}
       </p>
       {uploaded ? (
         <div className="video">
           <video src={uploaded} controls preload="metadata" playsInline />
         </div>
       ) : tutor.videoUrl ? (
-        <p className="small">Сейчас в профиле видео по ссылке: <a href={tutor.videoUrl} target="_blank" rel="noreferrer">{tutor.videoUrl}</a></p>
+        <p className="small">{t('Сейчас в профиле видео по ссылке:')} <a href={tutor.videoUrl} target="_blank" rel="noreferrer">{tutor.videoUrl}</a></p>
       ) : (
-        <div className="video-empty">Видео пока нет</div>
+        <div className="video-empty">{t('Видео пока нет')}</div>
       )}
       <input ref={input} type="file" accept="video/mp4,video/webm,video/quicktime" hidden onChange={(e) => upload(e.target.files?.[0])} />
       <div className="form-actions">
         <button className="btn btn-primary" disabled={busy} onClick={() => input.current?.click()}>
-          {busy ? 'Загружаем…' : uploaded ? 'Заменить видео' : 'Загрузить видео'}
+          {busy ? t('Загружаем…') : uploaded ? t('Заменить видео') : t('Загрузить видео')}
         </button>
         {tutor.videoUrl && (
           <button
@@ -151,30 +154,31 @@ function VideoIntro({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => v
               setMsg(null);
             }}
           >
-            Удалить
+            {t('Удалить')}
           </button>
         )}
       </div>
-      <span className="muted small">MP4, WebM или MOV до {MAX_VIDEO_MB} МБ. Или вставьте ссылку на YouTube в форме профиля.</span>
+      <span className="muted small">{t('MP4, WebM или MOV до {n} МБ. Или вставьте ссылку на YouTube в форме профиля.', { n: MAX_VIDEO_MB })}</span>
       {msg && <div className={msg.ok ? 'success' : 'error'}>{msg.text}</div>}
     </div>
   );
 }
 
 function Lessons() {
+  const t = useT();
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   useEffect(() => {
     api.bookings().then((r) => setBookings(r.bookings));
   }, []);
-  if (!bookings) return <div className="center-note">Загружаем…</div>;
+  if (!bookings) return <div className="center-note">{t('Загружаем…')}</div>;
   const upcoming = bookings.filter(
     (b) => (b.status === 'scheduled' || b.status === 'cancelled') && new Date(b.startsAt).getTime() > Date.now() - 3_600_000,
   );
   return (
     <section className="card">
-      <h2 className="card-title">Ближайшие уроки</h2>
+      <h2 className="card-title">{t('Ближайшие уроки')}</h2>
       {upcoming.length === 0 ? (
-        <p className="muted">Записей пока нет. Добавьте свободное время во вкладке «Расписание».</p>
+        <p className="muted">{t('Записей пока нет. Добавьте свободное время во вкладке «Расписание».')}</p>
       ) : (
         <div className="booking-list">
           {upcoming.map((b) => (
@@ -187,6 +191,7 @@ function Lessons() {
 }
 
 function Schedule() {
+  const t = useT();
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const tomorrow = new Date(Date.now() + 86_400_000);
   const [date, setDate] = useState(dayKey(tomorrow));
@@ -210,11 +215,11 @@ function Schedule() {
     const startsAt = hours.map((h) => new Date(y, mo - 1, d, h).toISOString());
     try {
       const r = await api.addSlots(startsAt);
-      setMsg(r.added ? `Добавлено слотов: ${r.added}` : 'Эти слоты уже есть');
+      setMsg(r.added ? t('Добавлено слотов: {n}', { n: r.added }) : t('Эти слоты уже есть'));
       setHours([]);
       void load();
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Ошибка');
+      setMsg(e instanceof Error ? tSentences(t, e.message) : t('Ошибка'));
     }
   };
 
@@ -223,19 +228,19 @@ function Schedule() {
       await api.deleteSlot(id);
       void load();
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : 'Ошибка');
+      window.alert(e instanceof Error ? tSentences(t, e.message) : t('Ошибка'));
     }
   };
 
   return (
     <div className="dash-grid">
       <section className="card">
-        <h2 className="card-title">Добавить свободное время</h2>
+        <h2 className="card-title">{t('Добавить свободное время')}</h2>
         <label>
-          День
+          {t('День')}
           <input type="date" value={date} min={dayKey(new Date())} onChange={(e) => setDate(e.target.value)} />
         </label>
-        <span className="field-label">Начало урока (по вашему времени)</span>
+        <span className="field-label">{t('Начало урока (по вашему времени)')}</span>
         <div className="times">
           {HOURS.map((h) => (
             <button key={h} className={hours.includes(h) ? 'time on' : 'time'} onClick={() => setHours((hs) => (hs.includes(h) ? hs.filter((x) => x !== h) : [...hs, h]))}>
@@ -244,16 +249,16 @@ function Schedule() {
           ))}
         </div>
         <button className="btn btn-primary" disabled={hours.length === 0} onClick={add}>
-          Добавить {hours.length > 0 ? `(${hours.length})` : ''}
+          {t('Добавить')} {hours.length > 0 ? `(${hours.length})` : ''}
         </button>
         {msg && <p className="small muted">{msg}</p>}
       </section>
       <section className="card">
-        <h2 className="card-title">Ваше расписание</h2>
+        <h2 className="card-title">{t('Ваше расписание')}</h2>
         {!slots ? (
-          <p className="muted">Загружаем…</p>
+          <p className="muted">{t('Загружаем…')}</p>
         ) : grouped.length === 0 ? (
-          <p className="muted">Свободного времени пока нет.</p>
+          <p className="muted">{t('Свободного времени пока нет.')}</p>
         ) : (
           <div className="sched">
             {grouped.map(([key, list]) => (
@@ -264,9 +269,9 @@ function Schedule() {
                     <span key={s.id} className={`slot-pill${s.booked ? ' booked' : ''}`}>
                       {fmtTime(s.startsAt)}
                       {s.booked ? (
-                        ' · запись'
+                        ` · ${t('запись')}`
                       ) : (
-                        <button aria-label="Удалить слот" onClick={() => remove(s.id)}>
+                        <button aria-label={t('Удалить слот')} onClick={() => remove(s.id)}>
                           ×
                         </button>
                       )}
@@ -283,6 +288,7 @@ function Schedule() {
 }
 
 function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => void }) {
+  const t = useT();
   const [p, setP] = useState<TutorProfileInput>(toInput(tutor));
   useEffect(() => setP((x) => ({ ...x, videoUrl: tutor.videoUrl ?? '' })), [tutor.videoUrl]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -299,9 +305,9 @@ function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => 
       const r = await api.saveTutorProfile({ ...p, isPublished: publish ?? p.isPublished });
       onSaved(r.tutor);
       setP(toInput(r.tutor));
-      setMsg({ ok: true, text: r.tutor.isPublished ? 'Сохранено. Профиль виден родителям.' : 'Сохранено.' });
+      setMsg({ ok: true, text: r.tutor.isPublished ? t('Сохранено. Профиль виден родителям.') : t('Сохранено.') });
     } catch (err) {
-      setMsg({ ok: false, text: err instanceof Error ? err.message : 'Ошибка' });
+      setMsg({ ok: false, text: err instanceof Error ? tSentences(t, err.message) : t('Ошибка') });
     } finally {
       setBusy(false);
     }
@@ -311,69 +317,69 @@ function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => 
     <form className="card profile-form" onSubmit={save}>
       <div className="form-grid">
         <label>
-          Имя и фамилия
+          {t('Имя и фамилия')}
           <input value={p.displayName} onChange={(e) => set('displayName', e.target.value)} required minLength={2} />
         </label>
         <label>
-          Коротко о ваших уроках
-          <input value={p.headline} onChange={(e) => set('headline', e.target.value)} placeholder="Например: Python для начинающих" maxLength={120} />
+          {t('Коротко о ваших уроках')}
+          <input value={p.headline} onChange={(e) => set('headline', e.target.value)} placeholder={t('Например: Python для начинающих')} maxLength={120} />
         </label>
       </div>
       <label>
-        О себе
-        <textarea rows={5} value={p.bio} onChange={(e) => set('bio', e.target.value)} maxLength={2000} placeholder="Опыт, подход к урокам, чем занимаетесь с детьми" />
+        {t('О себе')}
+        <textarea rows={5} value={p.bio} onChange={(e) => set('bio', e.target.value)} maxLength={2000} placeholder={t('Опыт, подход к урокам, чем занимаетесь с детьми')} />
       </label>
       <label>
-        Видео-знакомство: ссылка на YouTube или Vimeo (или загрузите файл справа)
-        <input value={p.videoUrl.startsWith('/api/uploads/') ? '' : p.videoUrl} disabled={p.videoUrl.startsWith('/api/uploads/')} onChange={(e) => set('videoUrl', e.target.value)} placeholder={p.videoUrl.startsWith('/api/uploads/') ? 'Загружен файл с видео' : 'https://youtu.be/…'} />
+        {t('Видео-знакомство: ссылка на YouTube или Vimeo (или загрузите файл справа)')}
+        <input value={p.videoUrl.startsWith('/api/uploads/') ? '' : p.videoUrl} disabled={p.videoUrl.startsWith('/api/uploads/')} onChange={(e) => set('videoUrl', e.target.value)} placeholder={p.videoUrl.startsWith('/api/uploads/') ? t('Загружен файл с видео') : 'https://youtu.be/…'} />
       </label>
-      <span className="field-label">Предметы</span>
+      <span className="field-label">{t('Предметы')}</span>
       {TUTOR_SECTIONS.map((sec) => (
         <div key={sec.id} className="subject-group">
-          <b>{sec.name}</b>
+          <b>{t(sec.name)}</b>
           <div className="chips-row">
             {sec.topics.map((s) => (
               <button type="button" key={s.id} className={p.subjects.includes(s.id) ? 'fchip on' : 'fchip'} onClick={() => toggle('subjects', s.id)}>
-                {s.name}
+                {t(s.name)}
               </button>
             ))}
           </div>
         </div>
       ))}
-      <span className="field-label">Языки</span>
+      <span className="field-label">{t('Языки')}</span>
       <div className="chips-row">
         {LANGUAGES.map((l) => (
           <button type="button" key={l.id} className={p.languages.includes(l.id) ? 'fchip on' : 'fchip'} onClick={() => toggle('languages', l.id)}>
-            {l.name}
+            {t(l.name)}
           </button>
         ))}
       </div>
       <div className="form-grid three">
         <label>
-          Возраст от
+          {t('Возраст от')}
           <input type="number" min={4} max={18} value={p.ageMin} onChange={(e) => set('ageMin', Number(e.target.value))} />
         </label>
         <label>
-          до
+          {t('до')}
           <input type="number" min={4} max={18} value={p.ageMax} onChange={(e) => set('ageMax', Number(e.target.value))} />
         </label>
         <label>
-          Цена урока, ₽
+          {t('Цена урока, ₽')}
           <input type="number" min={0} max={50000} step={100} value={p.hourlyRate} onChange={(e) => set('hourlyRate', Number(e.target.value))} />
         </label>
       </div>
       {msg && <div className={msg.ok ? 'success' : 'error'}>{msg.text}</div>}
       <div className="form-actions">
         <button className="btn btn-light" disabled={busy}>
-          Сохранить
+          {t('Сохранить')}
         </button>
         {tutor.isPublished ? (
           <button type="button" className="btn btn-ghost" disabled={busy} onClick={(e) => save(e, false)}>
-            Скрыть профиль
+            {t('Скрыть профиль')}
           </button>
         ) : (
           <button type="button" className="btn btn-primary" disabled={busy} onClick={(e) => save(e, true)}>
-            Сохранить и опубликовать
+            {t('Сохранить и опубликовать')}
           </button>
         )}
       </div>
