@@ -113,8 +113,7 @@ export function parseExtra(text: string, lessonIds: string[], speak: string): Ma
         default:
           if (mode === 'dialog') {
             const d = extra.dialogs[extra.dialogs.length - 1];
-            const { line, tr } = pair(row, where);
-            d.lines.push({ who: d.lines.length % 2 ? d.b : d.a, line, tr });
+            d.lines.push({ who: d.lines.length % 2 ? d.b : d.a, ...pair(row, where) });
           } else if (mode === 'text') {
             extra.text.push(pair(row, where));
           } else {

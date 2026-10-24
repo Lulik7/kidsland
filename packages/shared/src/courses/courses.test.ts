@@ -99,6 +99,8 @@ describe('language lessons', () => {
       expect(l.sections.some((s) => s.title === 'Текст для чтения'), l.id).toBe(true);
       expect(l.practice.length, l.id).toBeGreaterThanOrEqual(5);
       expect(JSON.stringify(l).includes('\u00ad'), l.id).toBe(false);
+      if (/^lang-(el|he|ka|ja|zh)-/.test(l.id))
+        for (const s of l.sections) for (const d of s.dialog ?? []) expect(d.read, `${l.id}: ${d.line}`).toBeTruthy();
     }
   });
 });
