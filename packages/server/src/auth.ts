@@ -32,3 +32,12 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     res.status(401).json({ error: 'Сессия истекла, войдите снова' });
   }
 }
+
+export function requireRole(...roles: AuthUser['role'][]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Недостаточно прав для этого действия' });
+    }
+    next();
+  };
+}

@@ -1,7 +1,7 @@
 import { findForbiddenBlock, runProgram, validateProgram, type Program } from '@kidsland/shared';
 import { Router } from 'express';
 import { z } from 'zod';
-import { requireAuth } from '../auth';
+import { requireAuth, requireRole } from '../auth';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
 import { getChildForUser, isPremiumUser, levelsForChild, publicLevel } from '../levels';
@@ -31,7 +31,7 @@ const publicChild = (c: Awaited<ReturnType<typeof getChildForUser>>, completedLe
 
 export function childrenRouter(db: Db) {
   const r = Router();
-  r.use(requireAuth);
+  r.use(requireAuth, requireRole('parent', 'admin'));
 
   r.get('/', async (req, res) => {
     const { rows } = await db.query(
@@ -78,6 +78,55 @@ export function childrenRouter(db: Db) {
       level.id,
     ]);
     res.json({ level: publicLevel(level, true), savedProgram: rows[0]?.code_snippet ?? null });
+  });
+
+  /** Parent dashboard report: per-level results, mastery per concept and whether the base course is done. */
+  r.get('/:childId/report', async (req, res) => {
+    const child = await getChildForUser(db, req.params.childId, req.user!.id);
+    const { rows } = await db.query(
+      `SELECT l.slug, l.title, l.theme, l.order_index, l.is_premium, l.config_json->'concepts' AS concepts,
+              gp.stars, gp.attempts, gp.completed_at, gp.updated_at
+         FROM levels l
+         LEFT JOIN game_progress gp ON gp.level_id = l.id AND gp.child_id = $1
+        ORDER BY l.order_index`,
+      [child.id],
+    );
+    const levels = rows.map((l) => ({
+      slug: l.slug,
+      title: l.title,
+      theme: l.theme,
+      order: l.order_index,
+      isPremium: l.is_premium,
+      concepts: l.concepts as string[],
+      stars: l.stars ?? 0,
+      attempts: l.attempts ?? 0,
+      completed: l.completed_at !== null,
+      completedAt: l.completed_at,
+      lastPlayedAt: l.updated_at,
+    }));
+    const concepts: Record<string, { done: number; total: number }> = {};
+    for (const l of levels) {
+      for (const c of l.concepts) {
+        concepts[c] ??= { done: 0, total: 0 };
+        concepts[c].total++;
+        if (l.completed) concepts[c].done++;
+      }
+    }
+    const base = levels.filter((l) => !l.isPremium);
+    const lastPlayed = levels.map((l) => l.lastPlayedAt).filter(Boolean).sort().at(-1) ?? null;
+    res.json({
+      child: publicChild(child, levels.filter((l) => l.completed).map((l) => l.slug)),
+      levels,
+      concepts,
+      totals: {
+        completed: levels.filter((l) => l.completed).length,
+        levels: levels.length,
+        stars: levels.reduce((n, l) => n + l.stars, 0),
+        attempts: levels.reduce((n, l) => n + l.attempts, 0),
+      },
+      baseCourseCompleted: base.length > 0 && base.every((l) => l.completed),
+      lastPlayedAt: lastPlayed,
+    });
   });
 
   /**

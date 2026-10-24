@@ -1,10 +1,11 @@
 import type { Theme } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, type LevelSummary } from '../api';
+import { api, type LevelSummary, type Tutor } from '../api';
 import { useAuth } from '../auth';
 import { DemoBoard } from '../components/DemoBoard';
 import { Sprite } from '../components/Sprite';
+import { TutorCard } from '../components/TutorCard';
 import { avatarSvg, COIN, GOAL, HERO, WALL } from '../game/sprites';
 import { plural } from '../plural';
 import { THEMES } from '../themes';
@@ -32,8 +33,10 @@ const Check = () => (
 export function Landing() {
   const { user } = useAuth();
   const [levels, setLevels] = useState<LevelSummary[]>([]);
+  const [tutors, setTutors] = useState<Tutor[]>([]);
   useEffect(() => {
     api.publicLevels().then((r) => setLevels(r.levels)).catch(() => setLevels([]));
+    api.tutors({ sort: 'rating' }).then((r) => setTutors(r.tutors.slice(0, 3))).catch(() => setTutors([]));
   }, []);
   const free = levels.filter((l) => !l.isPremium).length;
   const playLink = user ? '/kids' : '/register';
@@ -175,6 +178,23 @@ export function Landing() {
         </div>
       </section>
 
+      {tutors.length > 0 && (
+        <section className="wrap">
+          <h2 className="section-title">Наставники для живых уроков</h2>
+          <p className="section-sub">Когда игра пройдена, наставник поможет перейти к Scratch, Python или созданию сайтов. Первый урок бесплатно.</p>
+          <div className="tutor-grid">
+            {tutors.map((t) => (
+              <TutorCard key={t.id} tutor={t} />
+            ))}
+          </div>
+          <div className="center-row">
+            <Link to="/tutors" className="btn btn-light btn-xl">
+              Все наставники
+            </Link>
+          </div>
+        </section>
+      )}
+
       <section className="wrap">
         <div className="final-cta">
           <Sprite svg={HERO.robot('down')} size={96} className="float" />
@@ -188,7 +208,10 @@ export function Landing() {
         </div>
       </section>
 
-      <footer className="footer">© {new Date().getFullYear()} Kidsland. Программирование для детей.</footer>
+      <footer className="footer">
+        <span>© {new Date().getFullYear()} Kidsland. Программирование для детей.</span>
+        <Link to="/register?role=tutor">Стать наставником</Link>
+      </footer>
     </main>
   );
 }

@@ -5,9 +5,12 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, role?: 'parent' | 'tutor', displayName?: string) => Promise<void>;
   logout: () => void;
 }
+
+/** Where a user lands after signing in. */
+export const homeFor = (user: User) => (user.role === 'tutor' ? '/tutor' : '/kids');
 
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -30,8 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(r.user);
   }, []);
 
-  const register = useCallback(async (email: string, password: string) => {
-    const r = await api.register(email, password);
+  const register = useCallback(async (email: string, password: string, role?: 'parent' | 'tutor', displayName?: string) => {
+    const r = await api.register(email, password, role, displayName);
     tokenStore.set(r.token);
     setUser(r.user);
   }, []);

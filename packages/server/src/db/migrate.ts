@@ -1,9 +1,10 @@
 import { LEVELS } from '@kidsland/shared';
 import type { Db } from './pool';
+import { seedDemoTutors } from './demoTutors';
 import { SCHEMA_SQL } from './schema';
 
 /** Creates tables and upserts the built-in levels (matched by slug). Safe to run on every start. */
-export async function migrate(db: Db): Promise<void> {
+export async function migrate(db: Db, opts: { demoTutors?: boolean } = {}): Promise<void> {
   await db.query(SCHEMA_SQL);
   for (const [i, level] of LEVELS.entries()) {
     await db.query(
@@ -16,4 +17,5 @@ export async function migrate(db: Db): Promise<void> {
       [level.slug, level.title, level.description, level.theme, i + 1, level.config, level.isPremium, level.xpReward],
     );
   }
+  if (opts.demoTutors ?? true) await seedDemoTutors(db);
 }

@@ -12,5 +12,7 @@ export const config = {
   // In production a real secret is mandatory; locally a dev default keeps setup simple.
   jwtSecret: required('JWT_SECRET', isProd ? undefined : 'dev-only-secret'),
   jwtExpiresIn: '7d' as const,
+  // Video lessons run on Jitsi Meet; point this at a self-hosted Jitsi or 8x8 JaaS domain in production.
+  jitsiDomain: process.env.JITSI_DOMAIN ?? 'meet.jit.si',
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
 };

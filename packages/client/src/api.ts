@@ -1,4 +1,4 @@
-import type { Concept, FailReason, LevelConfig, Program, Theme } from '@kidsland/shared';
+import type { BookingStatus, Concept, FailReason, LevelConfig, Program, Theme } from '@kidsland/shared';
 
 export interface User {
   id: string;
@@ -47,6 +47,70 @@ export interface AttemptResult {
   child: { xp: number; coins: number };
 }
 
+export interface Tutor {
+  id: string;
+  displayName: string;
+  headline: string;
+  bio: string;
+  videoUrl: string | null;
+  avatar: string | null;
+  subjects: string[];
+  languages: string[];
+  ageMin: number;
+  ageMax: number;
+  hourlyRate: number;
+  rating: number;
+  reviewsCount: number;
+  isPublished: boolean;
+  nextSlot?: string | null;
+  freeSlots?: number;
+}
+
+export interface Slot {
+  id: string;
+  startsAt: string;
+  durationMin: number;
+  booked?: boolean;
+}
+
+export interface Booking {
+  id: string;
+  status: BookingStatus;
+  startsAt: string;
+  durationMin: number;
+  isTrial: boolean;
+  price: number;
+  meetingLink: string;
+  tutor: { id: string; displayName: string; avatar: string | null };
+  child: { id: string; nickname: string; avatarUrl: string | null };
+}
+
+export interface ChildReport {
+  child: Child;
+  levels: {
+    slug: string;
+    title: string;
+    theme: Theme;
+    order: number;
+    isPremium: boolean;
+    concepts: Concept[];
+    stars: number;
+    attempts: number;
+    completed: boolean;
+    completedAt: string | null;
+    lastPlayedAt: string | null;
+  }[];
+  concepts: Partial<Record<Concept, { done: number; total: number }>>;
+  totals: { completed: number; levels: number; stars: number; attempts: number };
+  baseCourseCompleted: boolean;
+  lastPlayedAt: string | null;
+}
+
+export type TutorProfileInput = Pick<
+  Tutor,
+  'displayName' | 'headline' | 'bio' | 'subjects' | 'languages' | 'ageMin' | 'ageMax' | 'hourlyRate' | 'isPublished'
+> & { videoUrl: string; avatar?: string };
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -91,6 +155,7 @@ async function request<T>(path: string, init: { method?: string; body?: unknown 
   } catch {
     throw new ApiError(0, 'Нет связи с сайтом. Проверьте интернет или перезапустите npm run dev:client.');
   }
+  if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => null);
   // No JSON body means the API itself did not answer (e.g. the dev proxy could not reach it).
   if (!data) throw new ApiError(res.status, 'Сервер не отвечает. Проверьте, что запущен npm run dev:server.');
@@ -99,8 +164,8 @@ async function request<T>(path: string, init: { method?: string; body?: unknown 
 }
 
 export const api = {
-  register: (email: string, password: string) =>
-    request<{ token: string; user: User }>('/auth/register', { method: 'POST', body: { email, password } }),
+  register: (email: string, password: string, role: 'parent' | 'tutor' = 'parent', displayName?: string) =>
+    request<{ token: string; user: User }>('/auth/register', { method: 'POST', body: { email, password, role, displayName } }),
   login: (email: string, password: string) =>
     request<{ token: string; user: User }>('/auth/login', { method: 'POST', body: { email, password } }),
   me: () => request<{ user: User }>('/auth/me'),
@@ -113,4 +178,24 @@ export const api = {
     request<{ level: LevelDetail; savedProgram: Program | null }>(`/children/${childId}/levels/${slug}`),
   submit: (childId: string, levelSlug: string, program: Program) =>
     request<AttemptResult>(`/children/${childId}/attempts`, { method: 'POST', body: { levelSlug, program } }),
+  report: (childId: string) => request<ChildReport>(`/children/${childId}/report`),
+
+  tutors: (filters: { subject?: string; language?: string; age?: number; sort?: string }) => {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== '') q.set(k, String(v));
+    return request<{ tutors: Tutor[] }>(`/tutors?${q}`);
+  },
+  tutor: (id: string) => request<{ tutor: Tutor; slots: Slot[] }>(`/tutors/${id}`),
+  bookings: () => request<{ bookings: Booking[] }>('/bookings'),
+  booking: (id: string) => request<{ booking: Booking }>(`/bookings/${id}`),
+  book: (slotId: string, childId: string) =>
+    request<{ booking: Booking }>('/bookings', { method: 'POST', body: { slotId, childId } }),
+  cancelBooking: (id: string) => request<{ booking: Booking }>(`/bookings/${id}/cancel`, { method: 'POST' }),
+
+  myTutorProfile: () => request<{ tutor: Tutor }>('/tutor/profile'),
+  saveTutorProfile: (p: TutorProfileInput) => request<{ tutor: Tutor }>('/tutor/profile', { method: 'PUT', body: p }),
+  mySlots: () => request<{ slots: Slot[] }>('/tutor/slots'),
+  addSlots: (startsAt: string[], durationMin = 45) =>
+    request<{ added: number }>('/tutor/slots', { method: 'POST', body: { startsAt, durationMin } }),
+  deleteSlot: (id: string) => request<void>(`/tutor/slots/${id}`, { method: 'DELETE' }),
 };

@@ -5,7 +5,10 @@ import type { Db } from './db/pool';
 import { errorHandler } from './errors';
 import { levelsForChild, publicLevel } from './levels';
 import { authRouter } from './routes/auth';
+import { bookingsRouter } from './routes/bookings';
 import { childrenRouter } from './routes/children';
+import { tutorCabinetRouter } from './routes/tutorCabinet';
+import { tutorsRouter } from './routes/tutors';
 
 export function createApp(db: Db) {
   const app = express();
@@ -18,6 +21,9 @@ export function createApp(db: Db) {
 
   app.use('/api/auth', authRouter(db));
   app.use('/api/children', childrenRouter(db));
+  app.use('/api/tutors', tutorsRouter(db));
+  app.use('/api/bookings', bookingsRouter(db));
+  app.use('/api/tutor', tutorCabinetRouter(db));
 
   // Public catalogue for the landing page: titles and themes only, no level configs.
   app.get('/api/levels', async (_req, res) => {

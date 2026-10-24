@@ -9,6 +9,8 @@ const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8, 'Пароль должен быть не короче 8 символов').max(100),
   phone: z.string().trim().max(32).optional(),
+  role: z.enum(['parent', 'tutor']).default('parent'),
+  displayName: z.string().trim().min(2).max(60).optional(),
 });
 
 const loginSchema = z.object({
@@ -38,17 +40,34 @@ const publicUser = (u: UserRow) => ({
 export function authRouter(db: Db) {
   const r = Router();
 
-  // Self-registration is for parents only; tutors and admins are provisioned separately (Stage 3).
+  // Parents and tutors can sign up themselves; admins are provisioned directly in the database.
   r.post('/register', async (req, res) => {
     const body = registerSchema.parse(req.body);
     const hash = await bcrypt.hash(body.password, 10);
-    const { rows } = await db.query<UserRow>(
-      `INSERT INTO users (email, password_hash, phone) VALUES ($1, $2, $3)
-       ON CONFLICT (email) DO NOTHING RETURNING *`,
-      [body.email, hash, body.phone ?? null],
-    );
-    if (!rows[0]) throw new HttpError(409, 'Этот email уже зарегистрирован');
-    res.status(201).json({ token: signToken(rows[0]), user: publicUser(rows[0]) });
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows } = await client.query<UserRow>(
+        `INSERT INTO users (email, password_hash, phone, role) VALUES ($1, $2, $3, $4)
+         ON CONFLICT (email) DO NOTHING RETURNING *`,
+        [body.email, hash, body.phone ?? null, body.role],
+      );
+      if (!rows[0]) throw new HttpError(409, 'Этот email уже зарегистрирован');
+      if (body.role === 'tutor') {
+        // Tutors start with an unpublished profile and appear in the catalogue once they publish it.
+        await client.query('INSERT INTO tutor_profiles (user_id, display_name) VALUES ($1, $2)', [
+          rows[0].id,
+          body.displayName ?? body.email.split('@')[0],
+        ]);
+      }
+      await client.query('COMMIT');
+      res.status(201).json({ token: signToken(rows[0]), user: publicUser(rows[0]) });
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
   });
 
   r.post('/login', async (req, res) => {
