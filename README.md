@@ -22,7 +22,7 @@ packages/
 Нужны Node.js 20+ и Docker (или свой PostgreSQL 13+).
 
 ```bash
-docker compose up -d                       # PostgreSQL на localhost:5432
+docker compose up -d                       # PostgreSQL на localhost:5433
 npm install
 cp packages/server/.env.example packages/server/.env
 npm run dev:server                         # API на http://localhost:4000, таблицы и уровни создаются сами
@@ -33,7 +33,7 @@ npm run dev:client                         # сайт на http://localhost:5173
 
 ```bash
 npm test                                   # движок и уровни
-TEST_DATABASE_URL=postgres://kidsland:kidsland@localhost:5432/kidsland npm test -w @kidsland/server   # API с базой
+TEST_DATABASE_URL=postgres://kidsland:kidsland@localhost:5433/kidsland npm test -w @kidsland/server   # API с базой
 ```
 
 ## API
