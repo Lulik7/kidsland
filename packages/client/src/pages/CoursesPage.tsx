@@ -1,7 +1,6 @@
-import { articlesOfSection, COURSE_LEVELS, COURSES, SECTIONS, SUBJECTS, type CourseLevel, type SubjectId } from '@kidsland/shared';
+import { COURSE_LEVELS, COURSES, SECTIONS, SUBJECTS, type CourseLevel, type SubjectId } from '@kidsland/shared';
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../auth';
 import { CourseCard } from '../components/CourseCard';
 import { KidHud } from '../components/KidHud';
 import { SubjectCard } from '../components/SubjectCard';
@@ -9,12 +8,10 @@ import { SubjectIcon } from '../components/SubjectIcon';
 import { coursesBase } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { useT } from '../i18n';
-import { plural } from '../plural';
 
 export function CoursesPage() {
   const t = useT();
   const { childId } = useParams();
-  const { user } = useAuth();
   const { child, progress, error } = useCourseProgress(childId);
   const [params, setParams] = useSearchParams();
   const initial = SUBJECTS.find((s) => s.id === params.get('subject'))?.id ?? '';
@@ -39,61 +36,23 @@ export function CoursesPage() {
   const base = coursesBase(childId);
   const sectionSubjects = SUBJECTS.filter((s) => s.section === section?.id);
   const subjects = sectionSubjects.filter((s) => !subject || s.id === subject);
-  const lessonsIn = (id: string) =>
-    COURSES.filter((c) => SUBJECTS.find((s) => s.id === c.subject)?.section === id).reduce((n, c) => n + c.lessons.length, 0);
 
   return (
     <main className="page courses-page">
-      {childId ? (
-        <KidHud childId={childId} child={child} />
-      ) : (
-        <section className="courses-hero">
-          <div>
-            <span className="pill pill-dark">{t('Учись сам, в своём темпе')}</span>
-            <h1>{t('Курсы Kidsland')}</h1>
-            <p>
-              {t(
-                'Программирование, наука и опыты, музыка, рисование, рукоделие, кулинария, языки, животные и духовное развитие. В уроках есть теория, задания, викторины и ответы на частые вопросы.',
-              )}
-            </p>
-            {!user && (
-              <div className="hero-cta">
-                <Link to="/register" className="btn btn-primary btn-xl">
-                  {t('Начать бесплатно')}
-                </Link>
-                <span className="muted small">{t('Без регистрации можно читать уроки и решать задания, но прогресс не сохранится.')}</span>
-              </div>
-            )}
-            {user?.role === 'parent' && (
-              <Link to="/kids" className="btn btn-primary">
-                {t('Выбрать ребёнка и сохранять прогресс')}
-              </Link>
-            )}
-          </div>
-        </section>
-      )}
+      {childId && <KidHud childId={childId} child={child} />}
+      {!section && <h1 className="page-title">{t('Курсы')}</h1>}
 
       {!section ? (
         <section className="course-sections">
-          <h2 className="track-title">{t('Выбери раздел')}</h2>
           <div className="big-sections">
             {SECTIONS.map((sec) => {
               const icon = SUBJECTS.find((x) => x.section === sec.id)?.id ?? 'spirit';
-              const articles = sec.articlesOnly ? articlesOfSection(sec.id).length : 0;
-              const n = sec.articlesOnly ? articles : lessonsIn(sec.id);
               const body = (
                 <>
                   <span className="bs-icon">
-                    <SubjectIcon subject={icon} size={56} />
+                    <SubjectIcon subject={icon} size={64} />
                   </span>
                   <h3>{t(sec.name)}</h3>
-                  <p>{t(sec.tagline)}</p>
-                  <span className="bs-count">
-                    {n}{' '}
-                    {sec.articlesOnly
-                      ? plural(n, [t('статья'), t('статьи'), t('статей')])
-                      : plural(n, [t('урок'), t('урока'), t('уроков')])}
-                  </span>
                 </>
               );
               return sec.articlesOnly ? (
