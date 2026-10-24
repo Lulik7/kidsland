@@ -1,7 +1,7 @@
 import { countBlocks, type BlockType, type Program } from '@kidsland/shared';
 import * as Blockly from 'blockly';
 import { useEffect, useImperativeHandle, useRef, type Ref } from 'react';
-import { defineBlocks, loadProgram, toolboxFor, workspaceToProgram } from './blocks';
+import { defineBlocks, KIDS_THEME, loadProgram, toolboxFor, workspaceToProgram } from './blocks';
 
 export interface EditorHandle {
   getProgram: () => Program;
@@ -27,7 +27,9 @@ export function BlocklyEditor({ availableBlocks, initialProgram, onBlockCount, r
       toolbox: toolboxFor(availableBlocks),
       trashcan: true,
       renderer: 'zelos',
-      zoom: { controls: true, startScale: 0.9 },
+      theme: KIDS_THEME,
+      grid: { spacing: 28, length: 3, colour: '#e3dcff', snap: false },
+      zoom: { controls: true, startScale: 0.95 },
       move: { scrollbars: true, drag: true, wheel: true },
       sounds: false,
       // Serve Blockly's cursors and icons ourselves instead of from blockly-demo.appspot.com.

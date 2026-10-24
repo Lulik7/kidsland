@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { Sprite } from '../components/Sprite';
+import { HERO } from '../game/sprites';
 
 export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const { login, register } = useAuth();
@@ -28,6 +30,11 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   return (
     <main className="auth">
       <form className="card auth-card" onSubmit={submit}>
+        <div className="auth-heroes" aria-hidden>
+          <Sprite svg={HERO.space('right')} size={56} className="float" />
+          <Sprite svg={HERO.robot('down')} size={64} />
+          <Sprite svg={HERO.ocean('right')} size={56} className="float" />
+        </div>
         <h1>{isLogin ? 'С возвращением!' : 'Аккаунт родителя'}</h1>
         <p className="muted">
           {isLogin ? 'Войдите, чтобы продолжить игру.' : 'Создайте аккаунт, а потом добавьте профиль ребёнка.'}

@@ -1,6 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth';
+import { Sprite } from './components/Sprite';
+import { HERO } from './game/sprites';
 import { AuthPage } from './pages/AuthPage';
 import { KidsPage } from './pages/KidsPage';
 import { Landing } from './pages/Landing';
@@ -21,13 +23,16 @@ function Header() {
   return (
     <header className="topbar">
       <Link to="/" className="logo">
-        <span>🚀</span> Kidsland
+        <Sprite svg={HERO.space('right')} size={34} />
+        <span>
+          Kids<b>land</b>
+        </span>
       </Link>
       <nav>
         {user ? (
           <>
             <Link to="/kids" className="btn btn-ghost">
-              Мои дети
+              Игроки
             </Link>
             <button className="btn btn-ghost" onClick={logout}>
               Выйти
