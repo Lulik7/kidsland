@@ -1464,3 +1464,11 @@ h1, h2 { color: #34404f; }
 @keyframes scene-bob { to { transform: rotate(var(--r)) translateY(-6%); } }
 @keyframes scene-pop { from { transform: rotate(var(--r)) scale(0.4); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .scene-pic { animation: none !important; } }
+
+/* ---------- Parent dashboard: finished lessons ---------- */
+.done-topics { display: grid; gap: 18px; }
+.done-course { border-inline-start: 4px solid var(--c); padding-inline-start: 12px; }
+.done-lessons { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.done-lessons li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.done-mark { color: var(--primary-dark); font-weight: 800; }
+.done-course .concept-row > b { white-space: nowrap; }

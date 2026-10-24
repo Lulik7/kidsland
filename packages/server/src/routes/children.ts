@@ -275,6 +275,11 @@ export function childrenRouter(db: Db) {
       },
       baseCourseCompleted: base.length > 0 && base.every((l) => l.completed),
       courses: courseSummary(courseRows).filter((c) => c.started),
+      // Lessons the child has finished, newest first: the parent sees real topics, not just game concepts.
+      lessons: courseRows
+        .filter((p) => p.completed_at !== null)
+        .sort((a, b) => b.completed_at!.getTime() - a.completed_at!.getTime())
+        .map((p) => ({ courseId: p.course_id, lessonId: p.lesson_id, score: p.best_score, max: p.max_score, completedAt: p.completed_at })),
       lastPlayedAt: lastPlayed,
     });
   });

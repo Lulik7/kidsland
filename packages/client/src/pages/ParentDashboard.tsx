@@ -1,4 +1,4 @@
-import { getCourse, type Concept } from '@kidsland/shared';
+import { findLesson, getCourse, SECTIONS, SUBJECTS, type Course } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Child, type ChildReport } from '../api';
@@ -12,11 +12,22 @@ import { relativeDays } from '../format';
 import { useTc } from '../content';
 import { useT } from '../i18n';
 
-const CONCEPTS: { id: Concept; name: string; hint: string }[] = [
-  { id: 'sequence', name: 'Последовательности', hint: 'Порядок команд' },
-  { id: 'loops', name: 'Циклы', hint: 'Повторение действий' },
-  { id: 'conditions', name: 'Условия', hint: '«Если…, то…»' },
-];
+type DoneLesson = ChildReport['lessons'][number] & { title: string };
+
+/** Finished lessons grouped by course, the most recently studied course first. */
+function groupLessons(list: ChildReport['lessons']): { course: Course; lessons: DoneLesson[] }[] {
+  const groups = new Map<string, { course: Course; lessons: DoneLesson[] }>();
+  for (const l of list) {
+    const found = findLesson(l.lessonId);
+    if (!found) continue;
+    const g = groups.get(found.course.id) ?? { course: found.course, lessons: [] };
+    g.lessons.push({ ...l, title: found.lesson.title });
+    groups.set(found.course.id, g);
+  }
+  return [...groups.values()];
+}
+
+const formatDate = (iso: string) => new Date(iso).toLocaleDateString(document.documentElement.lang || 'ru', { day: 'numeric', month: 'short' });
 
 export function ParentDashboard() {
   const t = useT();
@@ -127,29 +138,43 @@ export function ParentDashboard() {
 
           <div className="dash-grid">
             <section className="card">
-              <h2 className="card-title">{t('Освоенные темы')}</h2>
-              <div className="concepts">
-                {CONCEPTS.map((c) => {
-                  const v = report.concepts[c.id] ?? { done: 0, total: 0 };
-                  const pct = v.total ? Math.round((v.done / v.total) * 100) : 0;
-                  return (
-                    <div key={c.id} className="concept">
-                      <div className="concept-row">
-                        <span>
-                          <b>{t(c.name)}</b> <span className="muted small">{t(c.hint)}</span>
-                        </span>
-                        <b>{pct}%</b>
+              <h2 className="card-title">{t('Пройденные темы и уроки')}</h2>
+              {report.lessons.length === 0 ? (
+                <p className="muted">
+                  {t('Пока нет пройденных уроков. Когда ребёнок отметит урок прочитанным или сдаст викторину, он появится здесь.')}{' '}
+                  <Link to={`/kids/${report.child.id}/courses`}>{t('Открыть курсы')}</Link>
+                </p>
+              ) : (
+                <div className="done-topics">
+                  {groupLessons(report.lessons).map(({ course, lessons }) => {
+                    const section = SECTIONS.find((x) => x.id === SUBJECTS.find((sub) => sub.id === course.subject)?.section);
+                    return (
+                      <div key={course.id} className="done-course" style={{ ['--c' as string]: course.color }}>
+                        <div className="concept-row">
+                          <span>
+                            {section && <span className="muted small">{t(section.name)} · </span>}
+                            <b>{tc(course.title)}</b>
+                          </span>
+                          <b>
+                            {lessons.length} / {course.lessons.length}
+                          </b>
+                        </div>
+                        <ul className="done-lessons">
+                          {lessons.slice(0, 6).map((l) => (
+                            <li key={l.lessonId}>
+                              <span className="done-mark">✓</span>
+                              <span>{tc(l.title)}</span>
+                              {l.max > 0 && <span className="muted small">{l.score}/{l.max}</span>}
+                              <span className="muted small">{formatDate(l.completedAt)}</span>
+                            </li>
+                          ))}
+                          {lessons.length > 6 && <li className="muted small">{t('и ещё {n}', { n: lessons.length - 6 })}</li>}
+                        </ul>
                       </div>
-                      <div className="meter" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t(c.name)}>
-                        <i style={{ width: `${pct}%` }} />
-                      </div>
-                      <span className="muted small">
-                        {v.done}{' '}{t('из')}{' '}{v.total}{' '}{t('уровней')}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
             <section className="card">
               <h2 className="card-title">{t('Звёзды по уровням')}</h2>

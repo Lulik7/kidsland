@@ -106,6 +106,7 @@ export interface ChildReport {
   baseCourseCompleted: boolean;
   lastPlayedAt: string | null;
   courses: CourseSummary[];
+  lessons: { courseId: string; lessonId: string; score: number; max: number; completedAt: string }[];
 }
 
 export interface CourseSummary {
