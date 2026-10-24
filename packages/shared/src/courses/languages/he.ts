@@ -1,6 +1,7 @@
 import type { LanguageData } from './build';
 import { HE_EXTRA_1 } from './he-extra-1';
 import { HE_EXTRA_2 } from './he-extra-2';
+import { HE_EXTRA_3 } from './he-extra-3';
 
 export const HEBREW: LanguageData = {
   topic: 'lang-he',
@@ -8,7 +9,7 @@ export const HEBREW: LanguageData = {
   inName: 'на иврите',
   color: '#2c7fb8',
   speak: 'he-IL',
-  extra: HE_EXTRA_1 + HE_EXTRA_2,
+  extra: HE_EXTRA_1 + HE_EXTRA_2 + HE_EXTRA_3,
   notes: {
     0: 'На иврите говорят в Израиле. Это древний язык, который снова стал разговорным больше ста лет назад.',
     1: 'Иврит пишут и читают справа налево. В алфавите 22 буквы, и почти все они согласные: гласные часто не пишут, их угадывают по слову. Латинская h в подсказке читается как лёгкое «х», как в английском hello.',
