@@ -418,7 +418,7 @@ From the hill you can see the mountains. = С холма видно горы.
 R Что есть рядом с домом дедушки? | a river | the sea | a mountain
 Q There ___ many trees. | are | is | am
 W There is a river here.
-P sea | see | say
+P sea | say | sky
 S Напиши по-английски «дерево» | tree
 
 ## 33
@@ -594,7 +594,7 @@ It was a great day. = Это был отличный день.
 R Кого автор увидел в парке? | Max | Tom | his dog
 Q Yesterday I ___ to the park. | went | go | goes
 W Yesterday I was in the park.
-P saw | sow | so
+P saw | so | sea
 S Напиши прошедшее время от play | played
 
 ## 38
@@ -700,6 +700,6 @@ I want to speak English very well. = Я хочу говорить по-англ�
 R Что говорит автор, когда не понимает? | Repeat, please. | Thank you. | Goodbye.
 Q I don't ___. | understand | understands | understanding
 W Can you repeat, please?
-P know | now | no
+P know | now | new
 S Напиши по-английски «понимать» | understand
 `;

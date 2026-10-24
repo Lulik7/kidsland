@@ -90,11 +90,10 @@ describe('theory', () => {
 });
 
 describe('language lessons', () => {
-  it('give English lessons dialogues, a reading text and practice', () => {
-    const english = COURSES.filter((c) => c.topic === 'lang-en');
-    const lessons = english.flatMap((c) => c.lessons);
+  it('give full lessons dialogues, a reading text and practice', () => {
+    const lessons = COURSES.filter((c) => c.topic?.startsWith('lang-')).flatMap((c) => c.lessons);
     const full = lessons.filter((l) => l.sections.some((s) => s.dialog));
-    expect(full.length).toBe(60);
+    expect(full.filter((l) => l.id.startsWith('lang-en-')).length).toBe(60);
     for (const l of full) {
       expect(l.sections.filter((s) => s.dialog).length, l.id).toBe(4);
       expect(l.sections.some((s) => s.title === 'Текст для чтения'), l.id).toBe(true);

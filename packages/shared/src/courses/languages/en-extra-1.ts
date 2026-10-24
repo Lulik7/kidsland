@@ -127,7 +127,7 @@ I like books. = Я люблю книги.
 R Сколько книг? | nine | ten | eight
 Q I ___ ten fingers. | have | has | am
 W I have ten fingers.
-P eight | eat | ate
+P eight | eat | it
 S Напиши по-английски цифру 7 | seven
 
 ## 5
@@ -160,7 +160,7 @@ My favourite colour is blue. = Мой любимый цвет синий.
 R Какого цвета мяч? | red | blue | green
 Q The sun ___ yellow. | is | are | am
 W My favourite colour is blue.
-P red | read | bread
+P red | rod | bread
 S Напиши по-английски «зелёный» | green
 
 ## 6
@@ -493,7 +493,7 @@ At night I sleep. = Ночью я сплю.
 R Что автор делает вечером? | reads | sleeps | goes to school
 Q Good ___! (перед сном) | night | morning | day
 W Good morning, Mom!
-P night | knight | net
+P night | net | nut
 S Напиши по-английски «утро» | morning
 
 ## 16
@@ -594,7 +594,7 @@ Fruit is good for you. = Фрукты полезны.
 R Какая клубника? | red and sweet | green and sour | yellow
 Q Can I have a pear, ___? | please | thanks | sorry
 W Can I have a banana, please?
-P pear | peer | pair
+P pear | peer | pour
 S Напиши по-английски «виноград» | grapes
 
 ## 19

@@ -1,10 +1,15 @@
 import type { LanguageData } from './build';
+import { FR_EXTRA_1 } from './fr-extra-1';
+import { FR_EXTRA_2 } from './fr-extra-2';
+import { FR_EXTRA_3 } from './fr-extra-3';
 
 export const FRENCH: LanguageData = {
   topic: 'lang-fr',
   name: 'Французский',
   inName: 'по-французски',
   color: '#2f6fdb',
+  speak: 'fr-FR',
+  extra: FR_EXTRA_1 + FR_EXTRA_2 + FR_EXTRA_3,
   notes: {
     0: 'На французском говорят во Франции, Бельгии, Швейцарии, Канаде и многих странах Африки. Это один из официальных языков ООН.',
     2: 'Во французском ударение почти всегда падает на последний слог. А последние согласные часто не читаются: deux звучит как «дё».',
