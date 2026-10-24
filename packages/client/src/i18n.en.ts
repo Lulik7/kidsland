@@ -841,4 +841,5 @@ export const EN: Record<string, string> = {
   "Сообщение не отправлено, модератор получил уведомление.": "The message wasn't sent, a moderator has been notified.",
   "Пост не отправлен, модератор получил уведомление.": "The post wasn't sent, a moderator has been notified.",
   "Уберите контакты из описания: общение идёт только через платформу.": "Remove contacts from the description: all communication goes through the platform.",
+  "мин · теория, викторина ·": "min · theory, quiz ·",
 };

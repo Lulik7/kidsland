@@ -214,10 +214,12 @@ export function LessonPage() {
         <button role="tab" aria-selected={tab === 'theory'} className={tab === 'theory' ? 'tab on' : 'tab'} onClick={() => open('theory')}>
           {t('Теория')} {done && <span className="tab-ok">✓</span>}
         </button>
-        <button role="tab" aria-selected={tab === 'practice'} className={tab === 'practice' ? 'tab on' : 'tab'} onClick={() => open('practice')}>
-          {t('Задания')} <span className="tab-n">{lesson.practice.length}</span>
-          {outcomes.practice?.passed && <span className="tab-ok">✓</span>}
-        </button>
+        {lesson.practice.length > 0 && (
+          <button role="tab" aria-selected={tab === 'practice'} className={tab === 'practice' ? 'tab on' : 'tab'} onClick={() => open('practice')}>
+            {t('Задания')} <span className="tab-n">{lesson.practice.length}</span>
+            {outcomes.practice?.passed && <span className="tab-ok">✓</span>}
+          </button>
+        )}
         <button role="tab" aria-selected={tab === 'quiz'} className={tab === 'quiz' ? 'tab on' : 'tab'} onClick={() => open('quiz')}>
           {t('Викторина')} <span className="tab-n">{lesson.quiz.length}</span>
           {outcomes.quiz?.passed && <span className="tab-ok">✓</span>}
@@ -244,9 +246,11 @@ export function LessonPage() {
                   <p className="muted">{t('Хочешь закрепить? Выбери задания или викторину. Это по желанию.')}</p>
                 </div>
                 <div className="modal-actions">
-                  <button className="btn btn-light" onClick={() => open('practice')}>
-                    {t('Задания')}
-                  </button>
+                  {lesson.practice.length > 0 && (
+                    <button className="btn btn-light" onClick={() => open('practice')}>
+                      {t('Задания')}
+                    </button>
+                  )}
                   <button className="btn btn-light" onClick={() => open('quiz')}>
                     {t('Викторина')}
                   </button>

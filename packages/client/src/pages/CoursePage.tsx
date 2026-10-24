@@ -72,7 +72,15 @@ export function CoursePage() {
                   <span className="ll-main">
                     <b>{l.title}</b>
                     <span className="muted small">
-                      {l.minutes}{' '}{t('мин · теория,')}{' '}{l.practice.length}{' '}{t('задания, викторина ·')}{' '}{tasks}{' '}{t('вопросов')}
+                      {l.practice.length > 0 ? (
+                        <>
+                          {l.minutes}{' '}{t('мин · теория,')}{' '}{l.practice.length}{' '}{t('задания, викторина ·')}{' '}{tasks}{' '}{t('вопросов')}
+                        </>
+                      ) : (
+                        <>
+                          {l.minutes}{' '}{t('мин · теория, викторина ·')}{' '}{tasks}{' '}{t('вопросов')}
+                        </>
+                      )}
                     </span>
                   </span>
                   <span className="ll-side">

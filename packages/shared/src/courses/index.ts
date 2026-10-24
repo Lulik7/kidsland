@@ -17,6 +17,12 @@ import { EXTRA_THEORY } from './extraTheory';
 import { MORE_CODING_LESSONS } from './codingMore';
 import { MUSIC_COURSES } from './music';
 import { INTRO_COURSES } from './intro';
+import { SCIENCE_COURSES, SCIENCE_MORE } from './science';
+import { CHESS_COURSES, CHESS_MORE } from './chess';
+
+/** Extra lessons for the short intro courses, keyed by course id. */
+const MORE_LESSONS: Record<string, Lesson[]> = { ...SCIENCE_MORE, ...CHESS_MORE };
+const EXTRA_COURSES: Course[] = [...SCIENCE_COURSES, ...CHESS_COURSES];
 
 export * from './types';
 
@@ -43,7 +49,9 @@ export const COURSES: Course[] = [
   gamesCourse, gamesMidCourse, gamesProCourse,
   unityCourse, unityMidCourse, unityProCourse,
   logicCourse, logicMidCourse, logicProCourse,
-].map(withExtraTheory).concat(MUSIC_COURSES, INTRO_COURSES);
+]
+  .map(withExtraTheory)
+  .concat(MUSIC_COURSES, INTRO_COURSES.map((c) => ({ ...c, lessons: [...c.lessons, ...(MORE_LESSONS[c.id] ?? [])] })), EXTRA_COURSES);
 
 /** Share of points needed to pass a lesson. */
 export const LESSON_PASS_RATIO = 0.6;
