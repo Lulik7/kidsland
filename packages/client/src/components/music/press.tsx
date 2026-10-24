@@ -1,0 +1,305 @@
+import { Callout, Figure, INK, Keyboard, MINT, PEACH, Staff, type Tc } from './parts';
+
+/** Piano: where to put the right hand for the first melody, fingers 1–5 on До–Соль. */
+export function PianoPress({ tc }: { tc: Tc }) {
+  return (
+    <Figure title={tc('Куда нажимать: позиция «До»')} h={220} notes={[tc('Большой палец (1) на До, мизинец (5) на Соль.'), tc('До всегда слева от двух чёрных клавиш.')]}>
+      <Keyboard x={20} y={50} octaves={2} key={28} marks={[0, 1, 2, 3, 4]} fingers={{ 0: 1, 1: 2, 2: 3, 3: 4, 4: 5 }} tc={tc} />
+    </Figure>
+  );
+}
+
+/** Guitar: the first notes on the three thin strings. */
+export function GuitarPress({ tc }: { tc: Tc }) {
+  const strings = ['Ми', 'Си', 'Соль', 'Ре', 'Ля', 'Ми'];
+  const dots: [number, number, string][] = [
+    [0, 0, 'Ми'], [0, 1, 'Фа'], [0, 3, 'Соль'],
+    [1, 0, 'Си'], [1, 1, 'До'], [1, 3, 'Ре'],
+    [2, 0, 'Соль'], [2, 2, 'Ля'],
+  ];
+  const fx = (f: number) => (f === 0 ? 70 : 90 + (f - 0.5) * 80);
+  return (
+    <Figure title={tc('Куда нажимать: первые ноты на гитаре')} h={250} notes={[tc('Цифра лада = номер пальца левой руки.'), tc('Прижимай струну рядом с металлическим порожком.')]}>
+      <rect x="90" y="40" width="340" height="170" fill="#8a5a3c" />
+      <rect x="84" y="40" width="8" height="170" fill="#f0e2c8" />
+      {[1, 2, 3, 4].map((f) => (
+        <g key={f}>
+          <line x1={90 + f * 80} y1="40" x2={90 + f * 80} y2="210" stroke="#c9ced6" strokeWidth="3" />
+          <text x={90 + (f - 0.5) * 80} y="232" textAnchor="middle" fontSize="13" fontWeight="700" fill={INK}>
+            {f} {tc('лад')}
+          </text>
+        </g>
+      ))}
+      {strings.map((s, i) => (
+        <g key={i}>
+          <line x1="70" y1={54 + i * 28} x2="430" y2={54 + i * 28} stroke="#efe8d8" strokeWidth={1 + i * 0.4} />
+          <text x="2" y={58 + i * 28} fontSize="11" fill="#6b7786" fontWeight="700">
+            {i + 1}. {tc(s)}
+          </text>
+        </g>
+      ))}
+      {dots.map(([s, f, name]) => (
+        <g key={`${s}-${f}`}>
+          <circle cx={fx(f)} cy={54 + s * 28} r="12" fill={f === 0 ? '#fff' : MINT} stroke={f === 0 ? MINT : '#fff'} strokeWidth="2" />
+          <text x={fx(f)} y={58 + s * 28} textAnchor="middle" fontSize="9" fontWeight="800" fill={f === 0 ? INK : '#fff'}>
+            {tc(name)}
+          </text>
+        </g>
+      ))}
+    </Figure>
+  );
+}
+
+/** Ukulele: four chord shapes for the first songs. */
+export function UkulelePress({ tc }: { tc: Tc }) {
+  // fingers: [string index 0..3 from G to A, fret]
+  const chords: { name: string; dots: [number, number][] }[] = [
+    { name: 'C', dots: [[3, 3]] },
+    { name: 'Am', dots: [[0, 2]] },
+    { name: 'F', dots: [[0, 2], [2, 1]] },
+    { name: 'G', dots: [[1, 2], [2, 3], [3, 2]] },
+  ];
+  return (
+    <Figure title={tc('Куда нажимать: первые аккорды на укулеле')} h={230} notes={[tc('Вертикальные линии это струны Соль, До, Ми, Ля, горизонтальные это лады.'), tc('Точка показывает, где прижать струну.')]}>
+      {chords.map((c, k) => (
+        <g key={c.name} transform={`translate(${30 + k * 110} 30)`}>
+          <text x="40" y="0" textAnchor="middle" fontSize="20" fontWeight="800" fill={INK}>
+            {c.name}
+          </text>
+          <rect x="4" y="14" width="72" height="5" fill={INK} />
+          {[0, 1, 2, 3].map((s) => (
+            <line key={s} x1={10 + s * 20} y1="16" x2={10 + s * 20} y2="166" stroke="#8a94a3" strokeWidth="2" />
+          ))}
+          {[1, 2, 3, 4].map((f) => (
+            <line key={f} x1="10" y1={16 + f * 37} x2="70" y2={16 + f * 37} stroke="#c9ced6" strokeWidth="2" />
+          ))}
+          {c.dots.map(([s, f]) => (
+            <circle key={`${s}${f}`} cx={10 + s * 20} cy={16 + (f - 0.5) * 37} r="9" fill={MINT} stroke="#fff" strokeWidth="2" />
+          ))}
+        </g>
+      ))}
+    </Figure>
+  );
+}
+
+/** Violin or cello: finger places on the two strings used for the first melody. */
+export function BowedPress({ tc, cello = false }: { tc: Tc; cello?: boolean }) {
+  const rows = cello
+    ? [
+        { string: 'Ре', notes: ['Ре', 'Ми', '', 'Фа♯', 'Соль'] },
+        { string: 'Ля', notes: ['Ля', 'Си', '', 'До♯', 'Ре'] },
+      ]
+    : [
+        { string: 'Ля', notes: ['Ля', 'Си', 'До♯', 'Ре'] },
+        { string: 'Ми', notes: ['Ми', 'Фа♯', 'Соль♯', 'Ля'] },
+      ];
+  return (
+    <Figure
+      title={tc(cello ? 'Куда нажимать: пальцы на струнах Ре и Ля' : 'Куда нажимать: пальцы на струнах Ля и Ми')}
+      h={210}
+      notes={[tc('0 значит открытая струна, без пальца.'), tc(cello ? 'На виолончели между 1 и 3 пальцем остаётся место для 2.' : 'Наклей полоски на гриф, чтобы видеть места пальцев.')]}
+    >
+      <rect x="40" y="40" width="390" height="120" rx="10" fill="#2f2a2a" />
+      {rows.map((r, i) => (
+        <g key={r.string}>
+          <line x1="40" y1={75 + i * 50} x2="430" y2={75 + i * 50} stroke="#efe8d8" strokeWidth="2" />
+          <text x="20" y={80 + i * 50} textAnchor="middle" fontSize="13" fontWeight="800" fill={INK}>
+            {tc(r.string)}
+          </text>
+          {r.notes.map((n, f) =>
+            n ? (
+              <g key={f}>
+                <circle cx={70 + f * 80} cy={75 + i * 50} r="16" fill={f === 0 ? '#fff' : MINT} />
+                <text x={70 + f * 80} y={71 + i * 50} textAnchor="middle" fontSize="9" fontWeight="800" fill={f === 0 ? INK : '#fff'}>
+                  {f}
+                </text>
+                <text x={70 + f * 80} y={83 + i * 50} textAnchor="middle" fontSize="9" fontWeight="700" fill={f === 0 ? INK : '#fff'}>
+                  {tc(n)}
+                </text>
+              </g>
+            ) : null,
+          )}
+        </g>
+      ))}
+    </Figure>
+  );
+}
+
+/** Flute or saxophone: which keys to close for Си, Ля and Соль. */
+export function WindPress({ tc, sax = false }: { tc: Tc; sax?: boolean }) {
+  const notes: { name: string; closed: number }[] = [
+    { name: 'Си', closed: 1 },
+    { name: 'Ля', closed: 2 },
+    { name: 'Соль', closed: 3 },
+  ];
+  return (
+    <Figure
+      title={tc(sax ? 'Куда нажимать: первые ноты на саксофоне' : 'Куда нажимать: первые ноты на флейте')}
+      h={250}
+      notes={[tc('Закрашенный кружок значит, что клапан закрыт пальцем левой руки.'), tc(sax ? 'Левая рука сверху, правая снизу.' : 'Большой палец левой руки держит клапан сзади.')]}
+    >
+      {notes.map((n, k) => (
+        <g key={n.name} transform={`translate(${60 + k * 130} 20)`}>
+          <text x="30" y="16" textAnchor="middle" fontSize="18" fontWeight="800" fill={INK}>
+            {tc(n.name)}
+          </text>
+          <rect x="18" y="28" width="24" height="190" rx="12" fill="#e6ebf0" stroke="#8a94a3" />
+          {[0, 1, 2].map((h) => (
+            <circle key={h} cx="30" cy={50 + h * 28} r="9" fill={h < n.closed ? INK : '#fff'} stroke={INK} strokeWidth="2" />
+          ))}
+          <line x1="20" y1="134" x2="40" y2="134" stroke="#8a94a3" strokeDasharray="3 3" />
+          {[0, 1, 2].map((h) => (
+            <circle key={`r${h}`} cx="30" cy={150 + h * 22} r="8" fill="#fff" stroke="#8a94a3" strokeWidth="2" />
+          ))}
+          <text x="60" y="80" fontSize="10" fill="#6b7786">
+            {k === 0 ? tc('левая') : ''}
+          </text>
+          <text x="60" y="176" fontSize="10" fill="#6b7786">
+            {k === 0 ? tc('правая') : ''}
+          </text>
+        </g>
+      ))}
+    </Figure>
+  );
+}
+
+/** Drums: the simple rock beat as a grid of eighth notes. */
+export function DrumPress({ tc }: { tc: Tc }) {
+  const rows: { name: string; hits: number[]; color: string }[] = [
+    { name: 'Хай-хэт', hits: [0, 1, 2, 3, 4, 5, 6, 7], color: '#e9c97a' },
+    { name: 'Малый', hits: [2, 6], color: PEACH },
+    { name: 'Бочка', hits: [0, 4], color: '#e8743b' },
+  ];
+  const counts = ['1', 'и', '2', 'и', '3', 'и', '4', 'и'];
+  return (
+    <Figure title={tc('Простой рок-бит: что и когда играть')} h={220} notes={[tc('Считай вслух «раз-и-два-и» и играй по клеточкам.'), tc('Хай-хэт правой рукой, малый барабан левой, бочка правой ногой.')]}>
+      {counts.map((c, i) => (
+        <text key={i} x={130 + i * 40} y="40" textAnchor="middle" fontSize="14" fontWeight="800" fill={INK}>
+          {tc(c)}
+        </text>
+      ))}
+      {rows.map((r, k) => (
+        <g key={r.name}>
+          <text x="110" y={84 + k * 50} textAnchor="end" fontSize="13" fontWeight="700" fill={INK}>
+            {tc(r.name)}
+          </text>
+          {counts.map((_, i) => (
+            <rect key={i} x={114 + i * 40} y={62 + k * 50} width="32" height="32" rx="8" fill={r.hits.includes(i) ? r.color : '#f2f4f6'} />
+          ))}
+        </g>
+      ))}
+    </Figure>
+  );
+}
+
+/** Accordion: right-hand keys and the left-hand bass and chord buttons. */
+export function AccordionPress({ tc }: { tc: Tc }) {
+  return (
+    <Figure title={tc('Куда нажимать на аккордеоне')} h={250} notes={[tc('Правая рука играет мелодию на клавишах, как на пианино.'), tc('Левая рука нажимает бас До и рядом кнопку аккорда До мажор.')]}>
+      <Keyboard x={20} y={40} octaves={1} key={30} marks={[0, 2, 4]} fingers={{ 0: 1, 2: 3, 4: 5 }} tc={tc} />
+      <g transform="translate(300 40)">
+        {Array.from({ length: 15 }, (_, i) => {
+          const col = i % 3;
+          const row = Math.floor(i / 3);
+          const on = row === 2 && col < 2;
+          return <circle key={i} cx={20 + col * 34 + row * 8} cy={14 + row * 34} r="12" fill={on ? MINT : '#fff'} stroke="#8a94a3" strokeWidth="2" />;
+        })}
+        <Callout x={44} y={82} tx={10} ty={190} text={tc('Бас До')} />
+        <Callout x={78} y={82} tx={110} ty={190} text={tc('Аккорд До')} anchor="middle" />
+      </g>
+    </Figure>
+  );
+}
+
+/** Voice: the warm-up «ladder» do-re-mi-fa-sol and back. */
+export function VoiceLadder({ tc }: { tc: Tc }) {
+  const steps = ['До', 'Ре', 'Ми', 'Фа', 'Соль'];
+  return (
+    <Figure title={tc('Распевка «Лесенка»')} h={230} notes={[tc('Пой по ступенькам вверх и обратно вниз на звук «ма».'), tc('Перед каждой фразой спокойно вдохни животом.')]}>
+      {[...steps, ...steps.slice(0, -1).reverse()].map((s, i) => {
+        const h = i < 5 ? i : 8 - i;
+        return (
+          <g key={i}>
+            <rect x={20 + i * 48} y={180 - h * 32} width="44" height={20 + h * 32} rx="8" fill={i % 2 ? '#bfe6d4' : '#fde3d6'} />
+            <text x={42 + i * 48} y={198 - h * 32 - 4} textAnchor="middle" fontSize="12" fontWeight="800" fill={INK}>
+              {tc(s)}
+            </text>
+          </g>
+        );
+      })}
+    </Figure>
+  );
+}
+
+const DURATIONS: { name: string; beats: string; filled: boolean; stem: boolean; flag: boolean }[] = [
+  { name: 'Целая', beats: '4', filled: false, stem: false, flag: false },
+  { name: 'Половинная', beats: '2', filled: false, stem: true, flag: false },
+  { name: 'Четверть', beats: '1', filled: true, stem: true, flag: false },
+  { name: 'Восьмая', beats: '½', filled: true, stem: true, flag: true },
+];
+
+/** Note lengths: whole, half, quarter and eighth with their beats. */
+export function Durations({ tc }: { tc: Tc }) {
+  return (
+    <Figure title={tc('Длительности нот')} h={170} notes={[tc('Число под нотой показывает, на сколько счётов её тянуть.')]}>
+      {DURATIONS.map((d, i) => (
+        <g key={d.name} transform={`translate(${60 + i * 105} 40)`}>
+          <ellipse cx="0" cy="60" rx="11" ry="8" transform="rotate(-20 0 60)" fill={d.filled ? INK : '#fff'} stroke={INK} strokeWidth="2.5" />
+          {d.stem && <line x1="10" y1="58" x2="10" y2="8" stroke={INK} strokeWidth="2.5" />}
+          {d.flag && <path d="M10 8c4 10 18 14 14 30" stroke={INK} strokeWidth="2.5" fill="none" />}
+          <text x="0" y="96" textAnchor="middle" fontSize="13" fontWeight="700" fill={INK}>
+            {tc(d.name)}
+          </text>
+          <text x="0" y="116" textAnchor="middle" fontSize="15" fontWeight="800" fill={MINT}>
+            {d.beats}
+          </text>
+        </g>
+      ))}
+    </Figure>
+  );
+}
+
+/** Notes До–До on the staff with their names. */
+export function StaffNotes({ tc }: { tc: Tc }) {
+  const names = ['До', 'Ре', 'Ми', 'Фа', 'Соль', 'Ля', 'Си', 'До'];
+  const gap = 12;
+  return (
+    <Figure title={tc('Ноты на нотном стане')} h={170} notes={[tc('Ноты пишут на линейках и между ними: чем выше нота, тем выше звук.')]}>
+      <Staff x={20} y={40} w={420} gap={gap} />
+      {names.map((n, i) => {
+        // bottom line (Ми) is at y = 40 + 4*gap; До is one ledger line below it
+        const y = 40 + 4 * gap + gap - (i * gap) / 2;
+        return (
+          <g key={i}>
+            {i === 0 && <line x1={110 + i * 40} y1={y} x2={134 + i * 40} y2={y} stroke="#6b7786" strokeWidth="1.2" />}
+            <ellipse cx={122 + i * 40} cy={y} rx="7" ry="5.5" transform={`rotate(-20 ${122 + i * 40} ${y})`} fill={INK} />
+            <text x={122 + i * 40} y="140" textAnchor="middle" fontSize="12" fontWeight="700" fill={INK}>
+              {tc(n)}
+            </text>
+          </g>
+        );
+      })}
+    </Figure>
+  );
+}
+
+/** Keyboard pictures for scales, chords and semitones. */
+export function KeyboardTheory({ tc, kind }: { tc: Tc; kind: 'major' | 'minor' | 'triad' | 'sharps' | 'tones' }) {
+  const spec = {
+    major: { title: 'Гамма До мажор: только белые клавиши от До до До', marks: [0, 1, 2, 3, 4, 5, 6, 7], black: [] as number[] },
+    minor: { title: 'Гамма Ля минор: белые клавиши от Ля до Ля', marks: [5, 6, 7, 8, 9, 10, 11, 12], black: [] },
+    triad: { title: 'Трезвучие До мажор: До, Ми, Соль (через одну клавишу)', marks: [0, 2, 4], black: [] },
+    sharps: { title: 'Чёрные клавиши: диез выше, бемоль ниже', marks: [0, 1], black: [0] },
+    tones: { title: 'Полутон: соседние клавиши. Тон: через одну', marks: [2, 3], black: [] },
+  }[kind];
+  return (
+    <Figure title={tc(spec.title)} h={190}>
+      <Keyboard x={20} y={30} octaves={2} key={28} marks={spec.marks} blackMarks={spec.black} tc={tc} />
+      {kind === 'sharps' && (
+        <>
+          <Callout x={48} y={40} tx={120} ty={176} text={tc('До♯ = Ре♭')} />
+        </>
+      )}
+    </Figure>
+  );
+}

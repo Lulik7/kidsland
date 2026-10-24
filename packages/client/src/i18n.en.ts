@@ -643,7 +643,7 @@ export const EN: Record<string, string> = {
   "Например: Маша, 9 лет": "For example: Masha, 9",
   "Заголовок": "Title",
   "Текст поста": "Post text",
-  "Не пиши телефон, адрес, почту и не проси фото: такие посты блокируются.": "Don't write a phone number, address or email, and don't ask for photos: such posts are blocked.",
+  "Не пиши телефон, адрес и почту: такие посты блокируются.": "Don't write a phone number, address or email: such posts are blocked.",
   "Пост отправлен на проверку администратору!": "The post has been sent to the admin for review!",
   "Отправляем…": "Sending…",
   "Отправить на проверку": "Send for review",

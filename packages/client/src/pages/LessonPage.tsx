@@ -1,5 +1,5 @@
 import { findLesson, gradeLesson, normalizeText, LESSON_PASS_RATIO, type Answer, type Answers, type Lesson, type LessonPart, type Question } from '@kidsland/shared';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
@@ -12,6 +12,7 @@ import { useCourseProgress } from '../courses/useChild';
 import { COIN, HERO } from '../game/sprites';
 import { useLang } from '../i18n';
 import { ChessBoard } from '../components/ChessBoard';
+import { musicDiagrams } from '../components/music';
 import { useLocal, useTc } from '../content';
 import { CHESS_DIAGRAMS } from '../content/chess';
 import { cardPic, lessonPic, Pic } from '../pics';
@@ -79,6 +80,7 @@ export function LessonPage() {
   // Texts in the interface language; ids, grading and pictures use the original lesson.
   const shown = view ?? found;
   const diagrams = course.subject === 'chess' ? (CHESS_DIAGRAMS[lesson.title] ?? []) : [];
+  const music = musicDiagrams(course, lesson.title, tc);
   const nextLesson = course.lessons[index + 1];
   const done = readLocally || Boolean(progress?.find((p) => p.lessonId === lesson.id)?.completed);
 
@@ -274,6 +276,7 @@ export function LessonPage() {
                 ))}
               </div>
             )}
+            {i === 0 && music.length > 0 && <div className="music-diagrams">{music.map((d, k) => <Fragment key={k}>{d}</Fragment>)}</div>}
             </article>
             );
           })}

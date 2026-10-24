@@ -1504,3 +1504,12 @@ h1, h2 { color: #34404f; }
   .cta-leaves, .cta-flowers { opacity: 0.45; width: 140px; height: 182px; }
   .safety { padding-top: 90px; }
 }
+
+/* ---------- Music diagrams ---------- */
+.music-diagrams { display: grid; gap: 22px; margin-top: 18px; }
+.music-diagram { margin: 0; padding: 16px 18px; border-radius: 28px; background: #fbfdfc; border: 2px dashed #cfe8dc; display: grid; gap: 10px; justify-items: center; }
+.music-diagram svg { font-family: 'Roboto Slab', serif; overflow: visible; }
+.md-title { font-family: var(--hand); font-size: 1.9rem; font-weight: 700; color: var(--ink); text-align: center; }
+.md-notes { margin: 0; padding-inline-start: 0; list-style: none; counter-reset: md; display: grid; gap: 6px; justify-self: stretch; }
+.md-notes li { counter-increment: md; display: flex; gap: 10px; align-items: baseline; }
+.md-notes li::before { content: counter(md); flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 800; font-size: 0.8rem; display: grid; place-items: center; }
