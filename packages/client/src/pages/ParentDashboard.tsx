@@ -9,6 +9,7 @@ import { Sprite } from '../components/Sprite';
 import { StarsChart } from '../components/StarsChart';
 import { avatarSvg, COIN } from '../game/sprites';
 import { relativeDays } from '../format';
+import { useTc } from '../content';
 import { useT } from '../i18n';
 
 const CONCEPTS: { id: Concept; name: string; hint: string }[] = [
@@ -19,6 +20,7 @@ const CONCEPTS: { id: Concept; name: string; hint: string }[] = [
 
 export function ParentDashboard() {
   const t = useT();
+  const tc = useTc();
   const [kids, setKids] = useState<Child[] | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const [report, setReport] = useState<ChildReport | null>(null);
@@ -203,7 +205,7 @@ export function ParentDashboard() {
                     <div key={c.courseId} className="concept">
                       <div className="concept-row">
                         <span>
-                          <b>{c.title}</b> <LevelBadge level={c.level} />
+                          <b>{tc(c.title)}</b> <LevelBadge level={c.level} />
                         </span>
                         <b>
                           {c.completed} / {c.lessons}

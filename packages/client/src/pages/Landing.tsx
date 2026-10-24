@@ -9,7 +9,7 @@ import { HeroCarousel } from '../components/HeroCarousel';
 import { RobotGuide } from '../components/RobotGuide';
 import { WorldScene } from '../components/WorldScene';
 import { Globe } from '../components/Globe';
-import { WcBalloon, WcBirds, WcCloud, WcHills, WcStar } from '../components/Watercolor';
+import { WcBalloon, WcBirds, WcCloud, WcHills, WcHorse, WcHouse, WcStar } from '../components/Watercolor';
 import { Sprite } from '../components/Sprite';
 import { TutorCard } from '../components/TutorCard';
 import { avatarSvg, COIN, GOAL, HERO, WALL } from '../game/sprites';
@@ -268,6 +268,14 @@ export function Landing() {
       </section>
 
       <footer className="site-footer">
+        <div className="sf-scene" aria-hidden>
+          <WcBalloon className="sf-balloon" size={86} />
+          <WcCloud className="sf-cloud1" size={120} />
+          <WcCloud className="sf-cloud2" size={90} color="#f4c9b8" />
+          <WcHorse className="sf-horse" size={190} />
+          <WcHouse className="sf-house" size={150} />
+          <WcHills />
+        </div>
         <div className="sf-cols">
           <div>
             <b className="sf-logo">Kids<span>land</span></b>

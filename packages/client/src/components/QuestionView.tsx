@@ -23,12 +23,16 @@ interface Props {
   onChange: (a: Answer) => void;
   /** true/false after checking, undefined before. */
   result?: boolean;
+  /** The untranslated question when `q` is shown in another language: order answers hold its items. */
+  orig?: Question;
 }
 
-export function QuestionView({ q, n, value, onChange, result }: Props) {
+export function QuestionView({ q, n, value, onChange, result, orig }: Props) {
   const t = useT();
   const checked = result !== undefined;
-  const initialOrder = useMemo(() => (q.kind === 'order' ? shuffled(q.items, q.id) : []), [q]);
+  const base = orig?.kind === q.kind ? orig : q;
+  const initialOrder = useMemo(() => (base.kind === 'order' ? shuffled(base.items, base.id) : []), [base]);
+  const label = (item: string) => (q.kind === 'order' && base.kind === 'order' ? (q.items[base.items.indexOf(item)] ?? item) : item);
   const cls = `question${checked ? (result ? ' right' : ' wrong') : ''}`;
 
   let body;
@@ -89,9 +93,9 @@ export function QuestionView({ q, n, value, onChange, result }: Props) {
         <>
           <ol className="order-list">
             {list.map((item, i) => (
-              <li key={item} className={checked ? (item === q.items[i] ? 'ok' : 'bad') : ''}>
+              <li key={item} className={checked && base.kind === 'order' ? (item === base.items[i] ? 'ok' : 'bad') : ''}>
                 <span className="order-n">{i + 1}</span>
-                <code>{item}</code>
+                <code>{label(item)}</code>
                 {!checked && (
                   <span className="order-btns">
                     <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label={t('Выше')}>
@@ -122,8 +126,8 @@ export function QuestionView({ q, n, value, onChange, result }: Props) {
         <span className="q-n">{n}</span>
         <p className="q-prompt">
           {q.prompt}
-          {q.kind === 'multi' && <span className="muted small"> (несколько ответов)</span>}
-          {q.kind === 'order' && <span className="muted small"> (двигай стрелками)</span>}
+          {q.kind === 'multi' && <span className="muted small"> ({t('несколько ответов')})</span>}
+          {q.kind === 'order' && <span className="muted small"> ({t('двигай стрелками')})</span>}
         </p>
         {checked && <span className="q-mark" aria-label={result ? t('Верно') : t('Неверно')}>{result ? '✓' : '✗'}</span>}
       </div>

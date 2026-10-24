@@ -853,4 +853,6 @@ export const EN: Record<string, string> = {
   "Видео по теме урока": "Videos on this lesson's topic",
   "Откроется YouTube с подборкой видео. Смотрите вместе со взрослым.": "YouTube opens with a selection of videos. Watch together with an adult.",
   "для детей": "for kids",
+  "несколько ответов": "several answers",
+  "двигай стрелками": "move with the arrows",
 };

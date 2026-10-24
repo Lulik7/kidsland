@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
 import { CourseCard } from '../components/CourseCard';
 import { TutorCard } from '../components/TutorCard';
+import { useTc } from '../content';
 import { useT } from '../i18n';
 import { Pic, sectionPic } from '../pics';
 import { plural } from '../plural';
@@ -74,6 +75,7 @@ function SectionHero({ section }: { section: Section }) {
 /** A section without tutors: topics filter a list of articles to read. */
 function ArticlesSection({ section }: { section: Section }) {
   const t = useT();
+  const tc = useTc();
   const [topic, setTopic] = useState('');
   const articles = articlesOfSection(section.id).filter((a) => !topic || a.topic === topic);
   return (
@@ -94,8 +96,8 @@ function ArticlesSection({ section }: { section: Section }) {
         {articles.map((a) => (
           <Link key={a.id} to={`/articles/${a.id}`} className="article-card" style={{ ['--c' as string]: section.color }}>
             <span className="article-topic">{t(section.topics.find((tp) => tp.id === a.topic)?.name ?? '')}</span>
-            <h3>{a.title}</h3>
-            <p>{a.summary}</p>
+            <h3>{tc(a.title)}</h3>
+            <p>{tc(a.summary)}</p>
             <span className="muted small">{t('{n} мин чтения', { n: a.minutes })}</span>
           </Link>
         ))}

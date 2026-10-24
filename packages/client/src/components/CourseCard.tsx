@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { levelName, levelRank } from '../courses/meta';
 import { plural } from '../plural';
 import { coursePic, Pic } from '../pics';
+import { useTc } from '../content';
 import { useT } from '../i18n';
 
 export function LevelBadge({ level }: { level: Course['level'] }) {
@@ -22,6 +23,7 @@ export function LevelBadge({ level }: { level: Course['level'] }) {
 
 export function CourseCard({ course, to, done }: { course: Course; to: string; done?: number }) {
   const t = useT();
+  const tc = useTc();
   const total = course.lessons.length;
   const tasks = course.lessons.reduce((n, l) => n + l.practice.length + l.quiz.length, 0);
   return (
@@ -31,8 +33,8 @@ export function CourseCard({ course, to, done }: { course: Course; to: string; d
         <LevelBadge level={course.level} />
       </div>
       <div className="cc-body">
-        <h3>{course.title}</h3>
-        <p>{course.tagline}</p>
+        <h3>{tc(course.title)}</h3>
+        <p>{tc(course.tagline)}</p>
         <div className="cc-meta">
           <span>
             {total} {plural(total, [t('урок'), t('урока'), t('уроков')])}

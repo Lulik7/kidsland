@@ -372,7 +372,7 @@ export function RobotGuide() {
         {started && noVoice && <div className="rg-novoice">{t('На этом компьютере нет голоса для этого языка, поэтому робот показывает текст. Голос можно добавить в настройках Windows: «Время и язык» → «Речь», или открыть сайт в браузере Microsoft Edge.')}</div>}
         {started && (
           <div className="rg-sub">
-            <b>{s.title}.</b> {s.text}
+            {s.text}
           </div>
         )}
       </div>

@@ -115,3 +115,72 @@ export function WcHills({ className = '' }: P) {
     </svg>
   );
 }
+
+/** A little painted horse standing on the grass. */
+export function WcHorse({ className = '', size = 200 }: P) {
+  return (
+    <svg className={`wc ${className}`} width={size} height={size * 0.9} viewBox="0 0 200 180" aria-hidden>
+      <g filter="url(#wc)">
+        {/* tail */}
+        <path d="M40 70c-22 4-30 30-22 56 4-18 12-30 26-38z" fill="#8a5a3c" opacity="0.85" />
+        {/* back legs */}
+        <path d="M52 100l-6 66h12l8-58z" fill="#b98560" />
+        <path d="M70 104l2 62h12l-2-60z" fill="#c99670" />
+        {/* front legs */}
+        <path d="M118 104l-2 62h12l4-60z" fill="#b98560" />
+        <path d="M134 100l6 66h12l-6-68z" fill="#c99670" />
+        {/* hooves */}
+        <rect x="44" y="162" width="16" height="8" rx="3" fill="#5c4033" />
+        <rect x="70" y="162" width="16" height="8" rx="3" fill="#5c4033" />
+        <rect x="114" y="162" width="16" height="8" rx="3" fill="#5c4033" />
+        <rect x="138" y="162" width="16" height="8" rx="3" fill="#5c4033" />
+        {/* body */}
+        <ellipse cx="94" cy="88" rx="58" ry="30" fill="#d9a77f" />
+        <ellipse cx="94" cy="96" rx="44" ry="16" fill="#e8c29f" opacity="0.7" />
+        {/* neck and head */}
+        <path d="M128 80c4-26 10-44 22-54l18 8c-6 18-10 34-14 52z" fill="#d9a77f" />
+        <path d="M148 24c10-8 26-6 34 4 6 8 6 18 0 22-6 4-14 2-22-4l-14-6z" fill="#d9a77f" />
+        <ellipse cx="180" cy="44" rx="10" ry="8" fill="#e8c29f" />
+        <path d="M150 18l4-14 8 12z" fill="#c99670" />
+        {/* mane */}
+        <path d="M146 22c-8 8-14 26-18 50 8-10 10-14 14-14-2-8 0-18 4-36z" fill="#8a5a3c" opacity="0.9" />
+        <circle cx="166" cy="32" r="3" fill="#3b2a20" />
+        <circle cx="183" cy="44" r="1.6" fill="#5c4033" />
+        {/* saddle blanket */}
+        <path d="M80 60h34l4 30H76z" fill="#9fc9e0" opacity="0.85" />
+        <path d="M80 60h34l1 8H79z" fill="#f4b391" opacity="0.9" />
+      </g>
+    </svg>
+  );
+}
+
+/** A tall cottage with a tiled roof, like the one from the reference picture. */
+export function WcHouse({ className = '', size = 170 }: P) {
+  const tiles: [number, number][] = [];
+  for (let r = 0; r < 5; r++) for (let c = 0; c <= r + 1; c++) tiles.push([85 - (r + 1) * 14 + c * 28, 40 + r * 16]);
+  return (
+    <svg className={`wc ${className}`} width={size} height={size * 1.35} viewBox="0 0 170 230" aria-hidden>
+      <g filter="url(#wc)">
+        <rect x="108" y="18" width="20" height="40" fill="#b88a6a" />
+        <rect x="104" y="12" width="28" height="10" fill="#8f6a52" />
+        <rect x="22" y="110" width="126" height="116" fill="#f1dcb8" />
+        <rect x="22" y="110" width="126" height="116" fill="#e9c99a" opacity="0.4" />
+        <path d="M85 20L8 116h154z" fill="#c98d63" />
+        {tiles.map(([x, y], i) => (
+          <path key={i} d={`M${x - 12} ${y}q12 14 24 0`} fill="none" stroke="#9c6544" strokeWidth="2" opacity="0.7" />
+        ))}
+        {[
+          [38, 130], [100, 130], [38, 180], [100, 180],
+        ].map(([x, y], i) => (
+          <g key={i}>
+            <rect x={x} y={y} width="30" height="34" fill="#a7cfe0" />
+            <path d={`M${x + 15} ${y}v34M${x} ${y + 17}h30`} stroke="#fff" strokeWidth="3" />
+            <rect x={x - 3} y={y + 32} width="36" height="5" fill="#b88a6a" />
+          </g>
+        ))}
+        <circle cx="85" cy="88" r="12" fill="#a7cfe0" />
+        <path d="M85 76v24M73 88h24" stroke="#fff" strokeWidth="2.5" />
+      </g>
+    </svg>
+  );
+}

@@ -8,12 +8,15 @@ import { coursePic, Pic } from '../pics';
 import { coursesBase, levelName } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { subjectName } from '../format';
+import { useLocal, useTc } from '../content';
 import { useT } from '../i18n';
 
 export function CoursePage() {
   const t = useT();
   const { childId, courseId = '' } = useParams();
   const course = getCourse(courseId);
+  const shown = useLocal(course);
+  const tc = useTc();
   const { child, progress, error } = useCourseProgress(childId);
   const base = coursesBase(childId);
   if (!course) return <Navigate to={base} replace />;
@@ -48,8 +51,8 @@ export function CoursePage() {
               {course.ageMin}–{course.ageMax}{' '}{t('лет')}
             </span>
           </div>
-          <h1>{course.title}</h1>
-          <p>{course.description}</p>
+          <h1>{shown!.title}</h1>
+          <p>{shown!.description}</p>
           {next && (
             <Link to={`${base}/${course.id}/${next.id}`} className="btn btn-light btn-xl">
               {doneCount > 0 ? t('Продолжить') : t('Начать курс')}
@@ -71,7 +74,7 @@ export function CoursePage() {
                 <>
                   <span className={`ll-num${passed.has(l.id) ? ' done' : ''}`}>{passed.has(l.id) ? '✓' : i + 1}</span>
                   <span className="ll-main">
-                    <b>{l.title}</b>
+                    <b>{shown!.lessons[i].title}</b>
                     <span className="muted small">
                       {l.practice.length > 0 ? (
                         <>
@@ -105,7 +108,7 @@ export function CoursePage() {
             })}
           </ol>
           <h2 className="card-title faq-title">{t('Вопросы и ответы')}</h2>
-          <Faq items={course.faq} />
+          <Faq items={shown!.faq} />
         </section>
         <aside className="course-side">
           <div className="card">
@@ -114,7 +117,7 @@ export function CoursePage() {
               {siblings.map((c) => (
                 <Link key={c.id} to={`${base}/${c.id}`} className={c.id === course.id ? 'rung on' : 'rung'}>
                   <LevelBadge level={c.level} />
-                  <span>{c.title}</span>
+                  <span>{tc(c.title)}</span>
                 </Link>
               ))}
             </div>
