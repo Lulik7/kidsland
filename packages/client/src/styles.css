@@ -1309,3 +1309,4 @@ a.world, :root[data-theme='dark'] a.world { color: #fff; text-decoration: none; 
 :root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) :is(p, .muted) { color: #d6def8; }
 :root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) a:not(.btn) { color: #ffd23f; }
 :root[data-theme='light'] :is(.tutors-hero, .courses-hero, .section-hero, .support-hero) .pill-dark { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.theory-card p { white-space: pre-line; }

@@ -24,10 +24,11 @@ import { LEISURE_COURSES, LEISURE_MORE } from './leisure';
 import { ANIMALS_COURSES, ANIMALS_MORE } from './animals';
 import { MUSIC_LEVEL_COURSES } from './musicLevels';
 import { PYTHON_PRO_MORE } from './pythonExtra';
+import { LANGUAGE_COURSES } from './languages';
 
 /** Extra lessons for the short intro courses, keyed by course id. */
 const MORE_LESSONS: Record<string, Lesson[]> = { 'python-pro': PYTHON_PRO_MORE, ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE, ...ANIMALS_MORE };
-const EXTRA_COURSES: Course[] = [...SCIENCE_COURSES, ...CHESS_COURSES, ...ART_COURSES, ...LEISURE_COURSES, ...ANIMALS_COURSES, ...MUSIC_LEVEL_COURSES];
+const EXTRA_COURSES: Course[] = [...SCIENCE_COURSES, ...CHESS_COURSES, ...ART_COURSES, ...LEISURE_COURSES, ...ANIMALS_COURSES, ...MUSIC_LEVEL_COURSES, ...LANGUAGE_COURSES];
 
 export * from './types';
 

@@ -161,7 +161,6 @@ const leisureCourse: Course = {
 const languagesCourse: Course = {
   id: 'languages-start',
   subject: 'languages',
-  topic: 'lang-en',
   level: 'beginner',
   title: 'Путешествие в мир языков',
   tagline: 'Как учить языки и первые слова',

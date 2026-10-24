@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ARTICLES, COURSES, SECTIONS, SUBJECTS, TOPIC_IDS, checkAnswer, findLesson, gradeLesson } from '../index';
+import { LANGUAGE_COURSES } from './languages';
 
 describe('courses', () => {
   it('has unique ids and three levels per subject', () => {
@@ -18,8 +19,7 @@ describe('courses', () => {
   });
 
   it('has three levels with at least 20 lessons in every course section', () => {
-    // Languages are being filled language by language.
-    for (const sec of SECTIONS.filter((x) => !x.articlesOnly && x.id !== 'languages')) {
+    for (const sec of SECTIONS.filter((x) => !x.articlesOnly)) {
       const courses = COURSES.filter((c) => SUBJECTS.find((s) => s.id === c.subject)?.section === sec.id);
       for (const level of ['beginner', 'intermediate', 'advanced']) {
         const n = courses.filter((c) => c.level === level).reduce((k, c) => k + c.lessons.length, 0);
@@ -34,6 +34,16 @@ describe('courses', () => {
       for (const t of s.topics) expect(ARTICLES.some((a) => a.section === s.id && a.topic === t.id), t.id).toBe(true);
     }
     expect(new Set(ARTICLES.map((a) => a.id)).size).toBe(ARTICLES.length);
+  });
+
+  it('has three levels of 20 lessons for every language with distinct quiz options', () => {
+    for (const c of LANGUAGE_COURSES) {
+      expect(c.lessons.length, c.id).toBe(20);
+      for (const l of c.lessons)
+        for (const q of l.quiz) if (q.kind === 'single') expect(new Set(q.options).size, q.id).toBe(q.options.length);
+    }
+    for (const topic of new Set(LANGUAGE_COURSES.map((c) => c.topic)))
+      expect(LANGUAGE_COURSES.filter((c) => c.topic === topic).map((c) => c.level), topic).toEqual(['beginner', 'intermediate', 'advanced']);
   });
 
   it('has valid answer indexes', () => {
