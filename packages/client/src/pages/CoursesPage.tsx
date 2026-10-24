@@ -17,6 +17,7 @@ export function CoursesPage() {
   const initial = SUBJECTS.find((s) => s.id === params.get('subject'))?.id ?? '';
   const [subject, setSubject] = useState<SubjectId | ''>(initial);
   const [level, setLevel] = useState<CourseLevel | ''>('');
+  const [topic, setTopic] = useState('');
   // Big section tiles come first; a click opens that section's tracks and courses.
   const sectionId = params.get('section') ?? SUBJECTS.find((s) => s.id === initial)?.section ?? '';
   const section = SECTIONS.find((s) => s.id === sectionId && !s.articlesOnly);
@@ -28,6 +29,7 @@ export function CoursesPage() {
     setParams(next);
     setSubject('');
     setLevel('');
+    setTopic('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -36,6 +38,14 @@ export function CoursesPage() {
   const base = coursesBase(childId);
   const sectionSubjects = SUBJECTS.filter((s) => s.section === section?.id);
   const subjects = sectionSubjects.filter((s) => !subject || s.id === subject);
+  // A section with a single direction (music, languages) is split by its topics: one tile per instrument or language.
+  const sectionCourses = COURSES.filter((c) => sectionSubjects.some((s) => s.id === c.subject));
+  const topicTiles =
+    section && (section.id === 'music' || section.id === 'languages') ? section.topics.filter((tp) => sectionCourses.some((c) => c.topic === tp.id)) : [];
+  const pickTopic = (id: string) => {
+    setTopic(id);
+    setTimeout(() => document.getElementById('course-filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
+  };
 
   return (
     <main className="page courses-page">
@@ -101,6 +111,18 @@ export function CoursesPage() {
             </section>
           )}
 
+          {topicTiles.length > 1 && !topic && (
+            <section className="courses-directions">
+              <div className="big-sections topic-tiles">
+                {topicTiles.map((tp) => (
+                  <button key={tp.id} className="big-section" style={{ ['--c' as string]: section.color }} onClick={() => pickTopic(tp.id)}>
+                    <h3>{t(tp.name)}</h3>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
           <div className="filters course-filters" id="course-filters">
             {sectionSubjects.length > 1 && (
               <div className="chips-row">
@@ -114,7 +136,19 @@ export function CoursesPage() {
                 ))}
               </div>
             )}
-            {section.id === 'coding' && (
+            {topicTiles.length > 1 && (
+              <div className="chips-row">
+                <button className={topic === '' ? 'fchip on' : 'fchip'} onClick={() => setTopic('')}>
+                  {t('Все')}
+                </button>
+                {topicTiles.map((tp) => (
+                  <button key={tp.id} className={topic === tp.id ? 'fchip on' : 'fchip'} onClick={() => setTopic(tp.id)}>
+                    {t(tp.name)}
+                  </button>
+                ))}
+              </div>
+            )}
+            {(
               <div className="chips-row">
                 <button className={level === '' ? 'fchip on' : 'fchip'} onClick={() => setLevel('')}>
                   {t('Все уровни')}
@@ -128,7 +162,23 @@ export function CoursesPage() {
             )}
           </div>
 
-          {subjects.map((s) => {
+          {topicTiles.length > 1 &&
+            [...topicTiles.filter((tp) => !topic || tp.id === topic), { id: '', name: 'Для всех' }].map((tp) => {
+              const list = sectionCourses.filter((c) => (tp.id ? c.topic === tp.id : !topicTiles.some((x) => x.id === c.topic)) && (!level || c.level === level));
+              if (!list.length) return null;
+              return (
+                <section key={tp.id || 'all'} className="track">
+                  <h2 className="track-title">{t(tp.name)}</h2>
+                  <div className="track-row">
+                    {list.map((c) => (
+                      <CourseCard key={c.id} course={c} to={`${base}/${c.id}`} done={childId ? done(c.id) : undefined} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+
+          {topicTiles.length <= 1 && subjects.map((s) => {
             const list = COURSES.filter((c) => c.subject === s.id && (!level || c.level === level));
             if (!list.length) return null;
             return (
