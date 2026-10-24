@@ -56,7 +56,7 @@ export function StarsChart({ levels }: { levels: ChildReport['levels'] }) {
       {hover !== null && (
         <div className="chart-tip" style={{ left: `${((26 + GAP + hover * (BAR + GAP) + BAR / 2) / (width + 26)) * 100}%` }}>
           <b>
-            {levels[hover].order}. {levels[hover].title}
+            {levels[hover].order}. {t(levels[hover].title)}
           </b>
           <span>
             {levels[hover].completed ? `${levels[hover].stars} / 3 ★` : t('не пройден')}{' '}{t('· попыток:')}{' '}{levels[hover].attempts}

@@ -92,7 +92,7 @@ export function LevelMap() {
           );
           const label = (
             <span className="node-label">
-              <b>{l.title}</b>
+              <b>{t(l.title)}</b>
               {l.completed ? <Stars n={l.stars} size={18} /> : <span className="node-world">{t(th.name)}</span>}
             </span>
           );

@@ -1004,3 +1004,10 @@ html.a11y-contrast .muted { color: var(--ink); }
 .cancel-info q { display: block; margin-top: 4px; color: var(--muted); font-style: italic; }
 .booking.cancelled { opacity: 1; }
 .booking.cancelled > :not(.booking-main), .booking.cancelled .booking-main > b, .booking.cancelled .booking-main > span { opacity: 0.6; }
+
+/* Slogan in the hero */
+.hero-slogan { position: relative; z-index: 3; display: grid; gap: 4px; margin: 18px 0 4px; padding: 14px 20px; border-radius: 22px; background: rgba(52, 38, 140, 0.92); box-shadow: 0 10px 30px rgba(10, 6, 40, 0.35); border: 2px solid rgba(255, 255, 255, 0.18); width: fit-content; max-width: 100%; animation: pop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.hs-main { font-family: var(--display); font-weight: 800; font-size: clamp(1.25rem, 2.4vw, 1.7rem); line-height: 1.2; color: #fff; }
+.hs-main b { background: linear-gradient(90deg, #ffd23f, #ff8a3d, #ff6680, #b18cff, #4cc9ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hs-sub { font-family: var(--display); font-weight: 800; font-size: clamp(1.05rem, 1.9vw, 1.3rem); color: var(--sun); }
+.hero h1 { margin-top: 14px; }

@@ -1,6 +1,7 @@
 import { countBlocks, type BlockType, type Program } from '@kidsland/shared';
 import * as Blockly from 'blockly';
 import { useEffect, useImperativeHandle, useRef, type Ref } from 'react';
+import { useLang } from '../i18n';
 import { defineBlocks, KIDS_THEME, loadProgram, toolboxFor, workspaceToProgram } from './blocks';
 
 export interface EditorHandle {
@@ -20,9 +21,12 @@ export function BlocklyEditor({ availableBlocks, initialProgram, onBlockCount, r
   const wsRef = useRef<Blockly.WorkspaceSvg | null>(null);
   const countRef = useRef(onBlockCount);
   countRef.current = onBlockCount;
+  const { lang, t } = useLang();
+  // Keeps the child's program when the workspace is rebuilt for another interface language.
+  const programRef = useRef<Program | null>(initialProgram);
 
   useEffect(() => {
-    defineBlocks();
+    defineBlocks(lang, t);
     const ws = Blockly.inject(hostRef.current!, {
       toolbox: toolboxFor(availableBlocks),
       trashcan: true,
@@ -36,7 +40,7 @@ export function BlocklyEditor({ availableBlocks, initialProgram, onBlockCount, r
       media: '/blockly-media/',
     });
     wsRef.current = ws;
-    loadProgram(ws, initialProgram);
+    loadProgram(ws, programRef.current);
     const onChange = (e: Blockly.Events.Abstract) => {
       if (e.isUiEvent) return;
       countRef.current(countBlocks(workspaceToProgram(ws)));
@@ -46,13 +50,15 @@ export function BlocklyEditor({ availableBlocks, initialProgram, onBlockCount, r
     const resize = new ResizeObserver(() => Blockly.svgResize(ws));
     resize.observe(hostRef.current!);
     return () => {
+      programRef.current = workspaceToProgram(ws);
       resize.disconnect();
       ws.dispose();
       wsRef.current = null;
     };
-    // The editor is re-created per level via `key`, so props are read once on mount.
+    // The editor is re-created per level via `key`, so props are read once on mount; a language
+    // switch rebuilds the workspace with translated blocks.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lang]);
 
   useImperativeHandle(ref, () => ({
     getProgram: () => (wsRef.current ? workspaceToProgram(wsRef.current) : []),

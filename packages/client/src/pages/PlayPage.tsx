@@ -10,6 +10,7 @@ import { COIN, GOAL, HERO } from '../game/sprites';
 import { plural } from '../plural';
 import { THEMES } from '../themes';
 import { Stars } from './LevelMap';
+import { useT } from '../i18n';
 
 const FAIL_TEXT: Record<FailReason, string> = {
   crashed: 'Ой! Впереди препятствие. Попробуй другой путь.',
@@ -24,6 +25,7 @@ const SPEEDS = { normal: 420, fast: 160 };
 type Phase = 'edit' | 'running' | 'done';
 
 export function PlayPage() {
+  const t = useT();
   const { childId = '', slug = '' } = useParams();
   const navigate = useNavigate();
   const editor = useRef<EditorHandle>(null);
@@ -87,7 +89,7 @@ export function PlayPage() {
           setNextSlug(next && next.unlocked ? next.slug : null);
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка сохранения');
+        setError(e instanceof Error ? e.message : t('Ошибка сохранения'));
       }
       setPhase('done');
     };
@@ -110,41 +112,41 @@ export function PlayPage() {
   if (error && !level) {
     return (
       <div className="center-note">
-        {error} <Link to={`/kids/${childId}`}>К карте</Link>
+        {error} <Link to={`/kids/${childId}`}>{t('К карте')}</Link>
       </div>
     );
   }
-  if (!level || !robot) return <div className="center-note">Загружаем уровень…</div>;
+  if (!level || !robot) return <div className="center-note">{t('Загружаем уровень…')}</div>;
 
-  const t = THEMES[level.theme];
+  const th = THEMES[level.theme];
   const max = level.config.maxBlocks ?? 0;
   const coinsTotal = level.config.coins.length;
   const overOptimal = blockCount > level.config.optimalBlocks;
 
   return (
-    <main className="play" style={{ ['--world' as string]: t.bg, ['--world2' as string]: t.bg2 }}>
+    <main className="play" style={{ ['--world' as string]: th.bg, ['--world2' as string]: th.bg2 }}>
       <div className="play-head">
-        <Link to={`/kids/${childId}`} className="btn btn-light btn-round" aria-label="К карте">
+        <Link to={`/kids/${childId}`} className="btn btn-light btn-round" aria-label={t('К карте')}>
           ←
         </Link>
         <Sprite svg={HERO[level.theme]('right')} size={52} className="play-hero" />
         <div className="play-title">
           <span className="play-world">
-            {t.name} · уровень {level.order}
+            {t(th.name)} · {t('уровень')} {level.order}
           </span>
-          <h1>{level.title}</h1>
-          <p>{level.description}</p>
+          <h1>{t(level.title)}</h1>
+          <p>{t(level.description)}</p>
         </div>
         <Stars n={level.stars} size={26} />
       </div>
       <div className="play-body">
         <section className={`editor-pane${phase === 'running' ? ' running' : ''}`}>
           <div className="pane-head">
-            <b>Твоя программа</b>
+            <b>{t('Твоя программа')}</b>
             <span className={`block-meter${overOptimal ? ' over' : ''}`}>
-              Блоков: {blockCount}
+              {t('Блоков:')}{' '}{blockCount}
               {max > 0 && ` / ${max}`}
-              <small>на 3 звезды: {level.config.optimalBlocks}</small>
+              <small>{t('на 3 звезды:')}{' '}{level.config.optimalBlocks}</small>
             </span>
           </div>
           <BlocklyEditor
@@ -166,18 +168,18 @@ export function PlayPage() {
               stepMs={SPEEDS[speed]}
             />
             <div className="stage-goal">
-              <Sprite svg={GOAL[level.theme]} size={22} /> Доберись до цели
+              <Sprite svg={GOAL[level.theme]} size={22} />{' '}{t('Доберись до цели')}
               {coinsTotal > 0 && (
                 <>
                   {' '}
-                  и собери <Sprite svg={COIN} size={20} /> {robot.collected.length}/{coinsTotal}
+                  {t('и собери')}{' '}<Sprite svg={COIN} size={20} /> {robot.collected.length}/{coinsTotal}
                 </>
               )}
             </div>
           </div>
           {level.config.hint && (
             <div className="hint-box">
-              <b>Подсказка.</b> {level.config.hint}
+              <b>{t('Подсказка.')}</b> {t(level.config.hint)}
             </div>
           )}
           <div className="controls">
@@ -189,13 +191,13 @@ export function PlayPage() {
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
                 <path d="M7 4l13 8-13 8z" fill="currentColor" />
               </svg>
-              Запустить
+              {t('Запустить')}
             </button>
             <button className="btn btn-light" onClick={() => resetRobot(level)} disabled={phase === 'running'}>
-              Сначала
+              {t('Сначала')}
             </button>
             <button className="btn btn-light" onClick={() => setSpeed(speed === 'normal' ? 'fast' : 'normal')}>
-              Скорость: {speed === 'normal' ? 'обычная' : 'быстрая'}
+              {t('Скорость:')}{' '}{speed === 'normal' ? t('обычная') : t('быстрая')}
             </button>
           </div>
         </section>
@@ -208,11 +210,11 @@ export function PlayPage() {
             {result.success ? (
               <>
                 <Sprite svg={GOAL[level.theme]} size={96} className="pop-in" />
-                <h2>Уровень пройден!</h2>
+                <h2>{t('Уровень пройден!')}</h2>
                 <Stars n={result.stars} size={48} />
                 <p>
-                  Программа из {result.blocksUsed} {plural(result.blocksUsed, ['блока', 'блоков', 'блоков'])}.
-                  {result.stars < 3 && ` Попробуй уложиться в ${level.config.optimalBlocks}, чтобы получить три звезды.`}
+                  {t('Программа из')}{' '}{result.blocksUsed} {plural(result.blocksUsed, [t('блока'), t('блоков'), t('блоков')])}.
+                  {result.stars < 3 && ` ${t('Попробуй уложиться в {n} блоков, чтобы получить три звезды.', { n: level.config.optimalBlocks })}`}
                 </p>
                 {(result.rewards.xp > 0 || result.rewards.coins > 0) && (
                   <div className="rewards">
@@ -230,15 +232,15 @@ export function PlayPage() {
                       resetRobot(level);
                     }}
                   >
-                    Ещё раз
+                    {t('Ещё раз')}
                   </button>
                   {nextSlug ? (
                     <button className="btn btn-primary" onClick={() => navigate(`/kids/${childId}/play/${nextSlug}`)}>
-                      Следующий уровень
+                      {t('Следующий уровень')}
                     </button>
                   ) : (
                     <Link className="btn btn-primary" to={`/kids/${childId}`}>
-                      К карте
+                      {t('К карте')}
                     </Link>
                   )}
                 </div>
@@ -246,8 +248,8 @@ export function PlayPage() {
             ) : (
               <>
                 <Sprite svg={HERO[level.theme]('down')} size={88} className="wobble" />
-                <h2>Почти получилось!</h2>
-                <p>{FAIL_TEXT[result.failReason ?? 'not_at_goal']}</p>
+                <h2>{t('Почти получилось!')}</h2>
+                <p>{t(FAIL_TEXT[result.failReason ?? 'not_at_goal'])}</p>
                 <button
                   className="btn btn-primary"
                   onClick={() => {
@@ -255,7 +257,7 @@ export function PlayPage() {
                     resetRobot(level);
                   }}
                 >
-                  Попробовать снова
+                  {t('Попробовать снова')}
                 </button>
               </>
             )}

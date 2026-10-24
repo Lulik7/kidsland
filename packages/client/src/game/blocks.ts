@@ -1,9 +1,9 @@
 import type { BlockType, Program, Statement } from '@kidsland/shared';
 import * as Blockly from 'blockly';
+import * as En from 'blockly/msg/en';
 import * as Ru from 'blockly/msg/ru';
+import type { Lang, T } from '../i18n';
 import { COIN, toDataUrl } from './sprites';
-
-Blockly.setLocale(Ru as unknown as { [key: string]: string });
 
 const START = 'kl_start';
 
@@ -43,23 +43,25 @@ const ICONS = {
 
 const img = (src: string) => ({ type: 'field_image', src, width: 22, height: 22, alt: '' });
 
-let defined = false;
+let definedFor: Lang | null = null;
 
-export function defineBlocks() {
-  if (defined) return;
-  defined = true;
+/** Defines the game blocks in the interface language; called again when the language changes. */
+export function defineBlocks(lang: Lang, t: T) {
+  if (definedFor === lang) return;
+  definedFor = lang;
+  Blockly.setLocale((lang === 'en' ? En : Ru) as unknown as { [key: string]: string });
   Blockly.common.defineBlocksWithJsonArray([
     {
       type: START,
-      message0: '%1 Старт',
+      message0: t('%1 Старт'),
       args0: [img(ICONS.start)],
       nextStatement: null,
       colour: COLORS.start,
-      tooltip: 'Программа начинается здесь',
+      tooltip: t('Программа начинается здесь'),
     },
     {
       type: 'move_forward',
-      message0: '%1 Шаг вперёд',
+      message0: t('%1 Шаг вперёд'),
       args0: [img(ICONS.move)],
       previousStatement: null,
       nextStatement: null,
@@ -67,7 +69,7 @@ export function defineBlocks() {
     },
     {
       type: 'turn_left',
-      message0: '%1 Налево',
+      message0: t('%1 Налево'),
       args0: [img(ICONS.left)],
       previousStatement: null,
       nextStatement: null,
@@ -75,7 +77,7 @@ export function defineBlocks() {
     },
     {
       type: 'turn_right',
-      message0: '%1 Направо',
+      message0: t('%1 Направо'),
       args0: [img(ICONS.right)],
       previousStatement: null,
       nextStatement: null,
@@ -83,7 +85,7 @@ export function defineBlocks() {
     },
     {
       type: 'collect_coin',
-      message0: '%1 Собрать монету',
+      message0: t('%1 Собрать монету'),
       args0: [img(ICONS.coin)],
       previousStatement: null,
       nextStatement: null,
@@ -91,7 +93,7 @@ export function defineBlocks() {
     },
     {
       type: 'repeat_times',
-      message0: '%1 Повторить %2 раз',
+      message0: t('%1 Повторить %2 раз'),
       args0: [img(ICONS.loop), { type: 'field_number', name: 'TIMES', value: 3, min: 1, max: 20, precision: 1 }],
       message1: '%1',
       args1: [{ type: 'input_statement', name: 'DO' }],
@@ -101,7 +103,7 @@ export function defineBlocks() {
     },
     {
       type: 'repeat_until_goal',
-      message0: '%1 Повторять, пока не у цели',
+      message0: t('%1 Повторять, пока не у цели'),
       args0: [img(ICONS.loop)],
       message1: '%1',
       args1: [{ type: 'input_statement', name: 'DO' }],
@@ -111,7 +113,7 @@ export function defineBlocks() {
     },
     {
       type: 'if_coin',
-      message0: '%1 Если здесь монета',
+      message0: t('%1 Если здесь монета'),
       args0: [img(ICONS.ask)],
       message1: '%1',
       args1: [{ type: 'input_statement', name: 'DO' }],
@@ -121,15 +123,15 @@ export function defineBlocks() {
     },
     {
       type: 'if_path_ahead',
-      message0: '%1 Если %2',
+      message0: t('%1 Если %2'),
       args0: [
         img(ICONS.ask),
         {
           type: 'field_dropdown',
           name: 'COND',
           options: [
-            ['путь свободен', 'path_ahead'],
-            ['впереди стена', 'wall_ahead'],
+            [t('путь свободен'), 'path_ahead'],
+            [t('впереди стена'), 'wall_ahead'],
           ],
         },
       ],

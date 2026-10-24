@@ -1,6 +1,7 @@
 import { runProgram, type LevelConfig, type Point, type Program, type RobotState } from '@kidsland/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
+import { useT } from '../i18n';
 
 const CONFIG: LevelConfig = {
   width: 5,
@@ -53,12 +54,13 @@ const STEP_MS = 520;
 
 /** Landing-page demo: plays a short program on a loop so visitors see the game in action. */
 export function DemoBoard() {
+  const t = useT();
   const trace = useMemo(() => runProgram(CONFIG, PROGRAM).trace, []);
   const [i, setI] = useState(-1);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setI((n) => (n + 1 > trace.length + 2 ? -1 : n + 1)), i < 0 ? 1200 : STEP_MS);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setI((n) => (n + 1 > trace.length + 2 ? -1 : n + 1)), i < 0 ? 1200 : STEP_MS);
+    return () => window.clearTimeout(timer);
   }, [i, trace.length]);
 
   const step = i >= 0 ? trace[Math.min(i, trace.length - 1)] : null;
@@ -72,10 +74,10 @@ export function DemoBoard() {
   return (
     <div className="demo">
       <div className="demo-code">
-        <div className="demo-line start">Старт</div>
+        <div className="demo-line start">{t('Старт')}</div>
         {LINES.map((l) => (
           <div key={l.id} className={`demo-line ${l.cls}${l.indent ? ' indent' : ''}${active === l.id ? ' on' : ''}`}>
-            {l.text}
+            {t(l.text)}
           </div>
         ))}
       </div>

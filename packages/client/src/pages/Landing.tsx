@@ -67,6 +67,12 @@ export function Landing() {
         <div className="hero-inner">
           <div className="hero-text">
             <span className="pill">{t('Для детей 6–14 лет · игры, курсы и наставники')}</span>
+            <div className="hero-slogan">
+              <span className="hs-main">
+                <b>Kidsland</b> {t('— это страна науки и творчества!')}
+              </span>
+              <span className="hs-sub">{t('Давай учиться вместе!')}</span>
+            </div>
             <h1>
               {t('Учимся программировать,')}{' '}<span className="hl">{t('играя')}</span>
             </h1>
