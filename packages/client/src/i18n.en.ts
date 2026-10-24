@@ -855,4 +855,8 @@ export const EN: Record<string, string> = {
   "для детей": "for kids",
   "несколько ответов": "several answers",
   "двигай стрелками": "move with the arrows",
+  "курс": "course",
+  "курса": "courses",
+  "курсов": "courses",
+  "Открыть": "Open",
 };

@@ -9,6 +9,7 @@ import { coursesBase } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { useT } from '../i18n';
 import { Pic, sectionPic, TOPIC_PIC } from '../pics';
+import { plural } from '../plural';
 
 export function CoursesPage() {
   const t = useT();
@@ -57,13 +58,20 @@ export function CoursesPage() {
         <section className="course-sections">
           <div className="big-sections">
             {SECTIONS.map((sec) => {
-              const icon = SUBJECTS.find((x) => x.section === sec.id)?.id ?? 'spirit';
+              const count = sec.articlesOnly
+                ? 0
+                : COURSES.filter((c) => SUBJECTS.some((x) => x.section === sec.id && x.id === c.subject)).length;
               const body = (
                 <>
+                  <span className="bs-tag">{sec.articlesOnly ? t('Статьи') : `${count} ${plural(count, [t('курс'), t('курса'), t('курсов')])}`}</span>
                   <span className="bs-icon">
                     <Pic code={sectionPic(sec.id)} size={88} />
                   </span>
                   <h3>{t(sec.name)}</h3>
+                  <span className="bs-open">
+                    <Pic code="1f98b" size={34} className="bs-fly" />
+                    {t('Открыть')}
+                  </span>
                 </>
               );
               return sec.articlesOnly ? (
