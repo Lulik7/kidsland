@@ -21,10 +21,11 @@ import { SCIENCE_COURSES, SCIENCE_MORE } from './science';
 import { CHESS_COURSES, CHESS_MORE } from './chess';
 import { ART_COURSES, ART_MORE } from './art';
 import { LEISURE_COURSES, LEISURE_MORE } from './leisure';
+import { ANIMALS_COURSES, ANIMALS_MORE } from './animals';
 
 /** Extra lessons for the short intro courses, keyed by course id. */
-const MORE_LESSONS: Record<string, Lesson[]> = { ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE };
-const EXTRA_COURSES: Course[] = [...SCIENCE_COURSES, ...CHESS_COURSES, ...ART_COURSES, ...LEISURE_COURSES];
+const MORE_LESSONS: Record<string, Lesson[]> = { ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE, ...ANIMALS_MORE };
+const EXTRA_COURSES: Course[] = [...SCIENCE_COURSES, ...CHESS_COURSES, ...ART_COURSES, ...LEISURE_COURSES, ...ANIMALS_COURSES];
 
 export * from './types';
 
