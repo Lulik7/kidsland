@@ -10,7 +10,8 @@ import { Sprite } from '../components/Sprite';
 import { coursesBase } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { COIN, HERO } from '../game/sprites';
-import { useT } from '../i18n';
+import { useLang } from '../i18n';
+import { keywordPic, lessonPic, Pic } from '../pics';
 
 type Tab = 'theory' | LessonPart;
 
@@ -30,7 +31,7 @@ const isAnswered = (a: Answer | undefined) => a !== undefined && a !== '' && !(A
 export function LessonPage() {
   const { childId, courseId = '', lessonId = '' } = useParams();
   const { user } = useAuth();
-  const t = useT();
+  const { lang, t } = useLang();
   const found = findLesson(lessonId);
   const { child, setChild, progress } = useCourseProgress(childId);
   const [tab, setTab] = useState<Tab>('theory');
@@ -191,7 +192,10 @@ export function LessonPage() {
         <span className="lt-step">
           {t('Урок {i} из {n} · {m} мин', { i: index + 1, n: course.lessons.length, m: lesson.minutes })}
         </span>
-        <h1>{lesson.title}</h1>
+        <div className="lt-head">
+          <h1>{lesson.title}</h1>
+          <Pic code={lessonPic(course, lesson.title)} size={120} className="lt-pic" />
+        </div>
         <div className="lt-progress" aria-hidden>
           {course.lessons.map((l, i) => (
             <i key={l.id} className={i < index ? 'done' : i === index ? 'on' : ''} />
@@ -230,14 +234,30 @@ export function LessonPage() {
 
       {tab === 'theory' ? (
         <section className="theory">
-          {lesson.sections.map((s, i) => (
+          {lesson.sections.map((s, i) => {
+            const pic = i > 0 && s.title ? keywordPic(s.title) : undefined;
+            return (
             <article key={i} className="theory-card">
+              {pic && <Pic code={pic} size={72} className="tc-pic" />}
               {s.title && <h3>{s.title}</h3>}
               <p>{s.text}</p>
               {s.code && <pre className="code">{s.code}</pre>}
               {s.tip && <div className="tip">⭐ {s.tip}</div>}
             </article>
-          ))}
+            );
+          })}
+          <a
+            className="video-card"
+            href={`https://www.youtube.com/results?${new URLSearchParams({ search_query: `${lesson.title} ${course.title} ${t('для детей')}`, hl: lang })}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Pic code="1f3ac" size={64} />
+            <span>
+              <b>{t('Видео по теме урока')}</b>
+              <small>{t('Откроется YouTube с подборкой видео. Смотрите вместе со взрослым.')}</small>
+            </span>
+          </a>
           <div className={`read-card${done ? ' done' : ''}`}>
             {done ? (
               <>

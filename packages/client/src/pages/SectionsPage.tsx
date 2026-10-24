@@ -3,16 +3,15 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
 import { CourseCard } from '../components/CourseCard';
-import { SubjectIcon } from '../components/SubjectIcon';
 import { TutorCard } from '../components/TutorCard';
 import { useT } from '../i18n';
+import { Pic, sectionPic } from '../pics';
 import { plural } from '../plural';
 
 const coursesOf = (s: Section) => {
   const subjects = SUBJECTS.filter((x) => x.section === s.id).map((x) => x.id as string);
   return COURSES.filter((c) => subjects.includes(c.subject));
 };
-const iconOf = (s: Section) => SUBJECTS.find((x) => x.section === s.id)?.id ?? 'spirit';
 
 /** All big areas of Kidsland with their topics. */
 export function SectionsPage() {
@@ -30,7 +29,7 @@ export function SectionsPage() {
           return (
             <Link key={s.id} to={`/sections/${s.id}`} className="section-card" style={{ ['--c' as string]: s.color }}>
               <span className="sec-icon">
-                <SubjectIcon subject={iconOf(s)} size={40} />
+                <Pic code={sectionPic(s.id)} size={52} />
               </span>
               <h2>{t(s.name)}</h2>
               <p>{t(s.tagline)}</p>
@@ -58,7 +57,7 @@ function SectionHero({ section }: { section: Section }) {
   return (
     <section className="section-hero" style={{ ['--c' as string]: section.color }}>
       <span className="sec-icon sec-icon-xl">
-        <SubjectIcon subject={iconOf(section)} size={64} />
+        <Pic code={sectionPic(section.id)} size={84} />
       </span>
       <div>
         <Link to="/sections" className="back-link">← {t('Все разделы')}</Link>

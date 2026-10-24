@@ -4,7 +4,7 @@ import { LevelBadge } from '../components/CourseCard';
 import { Faq } from '../components/Faq';
 import { LockIcon } from '../components/Icons';
 import { KidHud } from '../components/KidHud';
-import { SubjectIcon } from '../components/SubjectIcon';
+import { coursePic, Pic } from '../pics';
 import { coursesBase, levelName } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { subjectName } from '../format';
@@ -37,7 +37,7 @@ export function CoursePage() {
       </Link>
       <section className="course-hero" style={{ ['--c' as string]: course.color }}>
         <div className="ch-icon">
-          <SubjectIcon subject={course.subject} size={72} />
+          <Pic code={coursePic(course)} size={110} />
         </div>
         <div className="ch-text">
           <div className="chips">

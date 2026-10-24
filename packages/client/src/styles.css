@@ -1227,3 +1227,20 @@ a.world, :root[data-theme='dark'] a.world { color: #fff; text-decoration: none; 
 .world-play { display: inline-block; margin-left: 8px; background: #fff; color: #2a2350; padding: 4px 14px; border-radius: 999px; font-weight: 800; font-size: 0.9rem; transition: transform 0.2s; }
 .world:hover .world-play { transform: scale(1.08); }
 .guest-note { margin: 0 auto 12px; max-width: 1200px; padding: 10px 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); text-align: center; font-weight: 700; }
+
+/* 3D pictures */
+.pic3d { display: inline-block; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.28)); user-select: none; }
+:root[data-theme='dark'] img.pic3d { filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35)); }
+.lt-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.lt-pic { flex: none; animation: pic-bob 4s ease-in-out infinite; }
+@keyframes pic-bob { 50% { transform: translateY(-6px) rotate(-3deg); } }
+.theory-card .tc-pic { float: right; margin: -4px 0 8px 14px; }
+.theory-card::after { content: ''; display: block; clear: both; }
+.video-card { display: flex; align-items: center; gap: 16px; padding: 18px 22px; margin: 4px 0 18px; border-radius: 22px; background: linear-gradient(135deg, #ff4e6a, #ff8a3d); color: #fff !important; text-decoration: none; box-shadow: var(--shadow); transition: transform 0.2s; }
+.video-card:hover { transform: translateY(-3px); }
+.video-card span { display: grid; gap: 2px; }
+.video-card b { font-size: 1.15rem; }
+.video-card small { opacity: 0.9; font-size: 0.9rem; }
+.big-section .bs-icon .pic3d, .course-card .cc-art .pic3d { transition: transform 0.25s; }
+.big-section:hover .bs-icon .pic3d, .course-card:hover .cc-art .pic3d { transform: scale(1.12) rotate(-4deg); }
+@media (max-width: 600px) { .lt-pic { width: 76px; height: 76px; } .theory-card .tc-pic { width: 52px; height: 52px; } }

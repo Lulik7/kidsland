@@ -2,7 +2,7 @@ import type { Course } from '@kidsland/shared';
 import { Link } from 'react-router-dom';
 import { levelName, levelRank } from '../courses/meta';
 import { plural } from '../plural';
-import { SubjectIcon } from './SubjectIcon';
+import { coursePic, Pic } from '../pics';
 import { useT } from '../i18n';
 
 export function LevelBadge({ level }: { level: Course['level'] }) {
@@ -27,7 +27,7 @@ export function CourseCard({ course, to, done }: { course: Course; to: string; d
   return (
     <Link to={to} className="course-card" style={{ ['--c' as string]: course.color }}>
       <div className="cc-art">
-        <SubjectIcon subject={course.subject} size={54} />
+        <Pic code={coursePic(course)} size={72} />
         <LevelBadge level={course.level} />
       </div>
       <div className="cc-body">

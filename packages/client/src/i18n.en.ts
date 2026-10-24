@@ -850,4 +850,7 @@ export const EN: Record<string, string> = {
   "Пробный режим: прогресс не сохраняется.": "Trial mode: progress is not saved.",
   "Зарегистрируйтесь бесплатно": "Sign up for free",
   ", чтобы копить звёзды, опыт и монеты.": " to collect stars, XP and coins.",
+  "Видео по теме урока": "Videos on this lesson's topic",
+  "Откроется YouTube с подборкой видео. Смотрите вместе со взрослым.": "YouTube opens with a selection of videos. Watch together with an adult.",
+  "для детей": "for kids",
 };
