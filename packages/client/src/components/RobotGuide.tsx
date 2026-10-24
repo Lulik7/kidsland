@@ -1,7 +1,9 @@
+import { SECTIONS, SUBJECTS } from '@kidsland/shared';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { COIN, GOAL, HERO } from '../game/sprites';
 import { useLang, type T } from '../i18n';
 import { Sprite } from './Sprite';
+import { SubjectIcon } from './SubjectIcon';
 
 interface Scene {
   title: string;
@@ -18,15 +20,48 @@ const Blocks = ({ t }: { t: T }) => (
   </div>
 );
 
+/** A section slide: the section's coloured tile with its icon and a few topics popping in. */
+const SectionArt = ({ t, id }: { t: T; id: string }) => {
+  const sec = SECTIONS.find((x) => x.id === id)!;
+  const icon = SUBJECTS.find((x) => x.section === id)?.id ?? 'spirit';
+  return (
+    <div className="rg-section" style={{ ['--c' as string]: sec.color }}>
+      <span className="rg-sec-icon">
+        <SubjectIcon subject={icon} size={64} />
+      </span>
+      <div className="rg-topics">
+        {sec.topics.slice(0, 6).map((tp, i) => (
+          <span key={tp.id} style={{ animationDelay: `${0.3 + i * 0.25}s` }}>
+            {t(tp.name)}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const makeScenes = (t: T): Scene[] => [
   {
     title: t('Привет!'),
-    text: t('Привет! Я робот Кидди. Сейчас покажу, как устроен Kidsland и что здесь можно делать.'),
+    text: t('Привет! Я робот Кидди. Kidsland — это страна науки и творчества. Сейчас покажу, какие здесь есть разделы и что можно делать.'),
     art: <div className="rg-wave">👋</div>,
   },
   {
-    title: t('Игры'),
-    text: t('В разделе «Играть» ты собираешь программу из цветных блоков, а ракета, подлодка или робот выполняют её. За решение получаешь звёзды, монеты и опыт.'),
+    title: t('Разделы'),
+    text: t('В Kidsland девять разделов: программирование, наука и опыты, шахматы, музыка, рисование, досуг, иностранные языки, животные и духовное развитие.'),
+    art: (
+      <div className="rg-tiles">
+        {SECTIONS.map((sec, i) => (
+          <span key={sec.id} style={{ ['--c' as string]: sec.color, animationDelay: `${i * 0.15}s` }}>
+            <SubjectIcon subject={SUBJECTS.find((x) => x.section === sec.id)?.id ?? 'spirit'} size={30} />
+          </span>
+        ))}
+      </div>
+    ),
+  },
+  {
+    title: t('Программирование'),
+    text: t('В программировании ты собираешь программу из цветных блоков, а ракета, подлодка или робот выполняют её. А ещё есть курсы по Scratch, Roblox, Python, Unity и сайтам.'),
     art: (
       <div className="rg-row">
         <Blocks t={t} />
@@ -39,17 +74,39 @@ const makeScenes = (t: T): Scene[] => [
     ),
   },
   {
-    title: t('Курсы'),
-    text: t('В разделе «Курсы» есть уроки по Scratch, Roblox, Python, Unity, сайтам, компьютерной грамотности, созданию игр и логике. У каждого направления три уровня: начальный, средний и продвинутый.'),
-    art: (
-      <div className="rg-levels">
-        {[t('Начальный'), t('Средний'), t('Продвинутый')].map((l, i) => (
-          <div key={l} className="rg-level" style={{ animationDelay: `${i * 0.25}s`, height: 60 + i * 30 }}>
-            {l}
-          </div>
-        ))}
-      </div>
-    ),
+    title: t('Наука и опыты'),
+    text: t('В разделе «Наука и опыты» изучаем звёзды и планеты, узнаём законы физики и ставим безопасные опыты дома вместе со взрослыми.'),
+    art: <SectionArt t={t} id="science" />,
+  },
+  {
+    title: t('Шахматы'),
+    text: t('В шахматах учимся ходить всеми фигурами, ставить мат и думать на несколько ходов вперёд.'),
+    art: <SectionArt t={t} id="chess" />,
+  },
+  {
+    title: t('Музыка'),
+    text: t('В музыке девять инструментов и вокал: гитара, фортепиано, скрипка, барабаны и другие. По семь уроков на каждый.'),
+    art: <SectionArt t={t} id="music" />,
+  },
+  {
+    title: t('Рисование и досуг'),
+    text: t('Рисуем карандашом и красками, а в досуге лепим, плетём, вяжем, шьём, готовим простые блюда и показываем фокусы.'),
+    art: <SectionArt t={t} id="leisure" />,
+  },
+  {
+    title: t('Иностранные языки'),
+    text: t('Одиннадцать языков мира: от английского и китайского до греческого и иврита. Учим первые слова и фразы.'),
+    art: <SectionArt t={t} id="languages" />,
+  },
+  {
+    title: t('Животные'),
+    text: t('В разделе «Животные» узнаём, как ухаживать за питомцами, понимать их язык и дрессировать собаку добрыми методами.'),
+    art: <SectionArt t={t} id="animals" />,
+  },
+  {
+    title: t('Духовное развитие'),
+    text: t('В духовном развитии читаем статьи о чувствах, доброте, благодарности и семейных традициях.'),
+    art: <SectionArt t={t} id="spirit" />,
   },
   {
     title: t('Задания и викторины'),
@@ -79,6 +136,11 @@ const makeScenes = (t: T): Scene[] => [
     ),
   },
   {
+    title: t('Побудь админом'),
+    text: t('В разделе «Побудь админом» можно написать свой пост. Его проверит настоящий администратор, и после одобрения пост увидят все.'),
+    art: <div className="rg-wave">📝</div>,
+  },
+  {
     title: t('Для родителей'),
     text: t('Родители видят в своём кабинете, какие уровни и уроки пройдены, какие темы уже освоены, и могут записать тебя на урок.'),
     art: (
@@ -98,28 +160,15 @@ const makeScenes = (t: T): Scene[] => [
   },
   {
     title: t('Поехали!'),
-    text: t('Вот и всё! Нажми «Начать бесплатно», выбери себе аватар, и вперёд, к первому уровню!'),
+    text: t('Вот и всё! Нажми «Начать бесплатно», выбери раздел, и вперёд, к первому уроку!'),
     art: <div className="rg-wave">🚀</div>,
   },
 ];
 
-// Neural and Google voices sound much livelier than the old system ones (like Microsoft Irina).
-const GOOD_VOICE = /natural|online|neural|google|svetlana|dariya|dmitry|milena|katya|yuri/i;
-
 function voiceFor(lang: string): SpeechSynthesisVoice | null {
-  const voices = (window.speechSynthesis?.getVoices() ?? []).filter((v) => v.lang.toLowerCase().startsWith(lang));
-  return voices.find((v) => GOOD_VOICE.test(v.name)) ?? voices[0] ?? null;
+  const voices = window.speechSynthesis?.getVoices() ?? [];
+  return voices.find((v) => v.lang.toLowerCase().startsWith(lang)) ?? null;
 }
-
-/**
- * Voice settings per language. Russian system voices crackle at a very high pitch and read slowly,
- * so they get a softer pitch and a faster pace to sound as lively as the English one.
- */
-const TONE: Record<string, { pitch: [number, number]; rate: [number, number] }> = {
-  ru: { pitch: [1.45, 1.65], rate: [1.35, 1.5] },
-  en: { pitch: [1.75, 2], rate: [1.12, 1.27] },
-};
-const between = ([a, b]: [number, number]) => a + Math.random() * (b - a);
 
 let audio: AudioContext | null = null;
 
@@ -171,9 +220,8 @@ function robotSay(text: string, voice: SpeechSynthesisVoice, onEnd: () => void):
       const u = new SpeechSynthesisUtterance(list[i]);
       u.voice = voice;
       u.lang = voice.lang;
-      const tone = TONE[voice.lang.slice(0, 2).toLowerCase()] ?? TONE.en;
-      u.pitch = between(tone.pitch);
-      u.rate = between(tone.rate);
+      u.pitch = 1.75 + Math.random() * 0.25;
+      u.rate = 1.12 + Math.random() * 0.15;
       u.onend = () => step(i + 1);
       u.onerror = () => step(i + 1);
       window.speechSynthesis.speak(u);
@@ -264,7 +312,7 @@ export function RobotGuide() {
               ▶
             </span>
             <b>{t('Робот Кидди расскажет о сайте')}</b>
-            <span>{t('2 минуты · со звуком')}</span>
+            <span>{t('3 минуты · со звуком')}</span>
           </button>
         )}
         {started && (
