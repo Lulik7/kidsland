@@ -1,5 +1,6 @@
 import type { LanguageData } from './build';
 import { EN_EXTRA_1 } from './en-extra-1';
+import { EN_EXTRA_2 } from './en-extra-2';
 
 export const ENGLISH: LanguageData = {
   topic: 'lang-en',
@@ -7,7 +8,7 @@ export const ENGLISH: LanguageData = {
   inName: 'по-английски',
   color: '#3b6dff',
   speak: 'en-GB',
-  extra: EN_EXTRA_1,
+  extra: EN_EXTRA_1 + EN_EXTRA_2,
   notes: {
     0: 'На английском говорят в Великобритании, США, Канаде, Австралии и ещё во многих странах. Это самый популярный язык для общения людей из разных стран.',
     2: 'В английском слова часто читаются не так, как пишутся. Поэтому рядом с каждым словом есть подсказка, как его произносить.',
