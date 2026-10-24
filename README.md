@@ -31,9 +31,12 @@ packages/
 docker compose up -d                       # PostgreSQL на localhost:5433
 npm install
 cp packages/server/.env.example packages/server/.env
-npm run dev:server                         # API на http://localhost:4000, таблицы и уровни создаются сами
-npm run dev:client                         # сайт на http://localhost:5173
+npm run dev                                # API на :4000 и сайт на http://localhost:5173 одной командой
 ```
+
+На Windows можно просто дважды кликнуть `start.cmd`: он запустит базу, поставит зависимости, запустит сервер и сайт и откроет браузер.
+
+По отдельности: `npm run dev:server` и `npm run dev:client`.
 
 ## Тесты
 
