@@ -173,4 +173,9 @@ CREATE TABLE IF NOT EXISTS community_posts (
   reviewed_at timestamptz
 );
 CREATE INDEX IF NOT EXISTS community_posts_status_idx ON community_posts(status, created_at DESC);
+
+-- Kazakh was dropped from lesson languages in favour of Greek and Hebrew.
+UPDATE tutor_profiles
+   SET languages = CASE WHEN array_length(array_remove(languages, 'kk'), 1) IS NULL THEN ARRAY['ru'] ELSE array_remove(languages, 'kk') END
+ WHERE 'kk' = ANY(languages);
 `;

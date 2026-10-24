@@ -21,7 +21,8 @@ export const SUBJECTS = [
 export const LANGUAGES = [
   { id: 'ru', name: 'Русский' },
   { id: 'en', name: 'English' },
-  { id: 'kk', name: 'Қазақша' },
+  { id: 'el', name: 'Ελληνικά' },
+  { id: 'he', name: 'עברית' },
 ] as const;
 
 export type SubjectId = (typeof SUBJECTS)[number]['id'];

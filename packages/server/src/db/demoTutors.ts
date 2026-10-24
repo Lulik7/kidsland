@@ -55,7 +55,7 @@ const DEMO_TUTORS: DemoTutor[] = [
     bio: 'Фронтенд-разработчик. Вместе с ребёнком делаем страничку о любимом хобби и публикуем её в интернете.',
     avatar: 'monster-6',
     subjects: ['web', 'scratch'],
-    languages: ['ru', 'kk'],
+    languages: ['ru', 'en'],
     ageMin: 8,
     ageMax: 13,
     hourlyRate: 1500,
