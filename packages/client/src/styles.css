@@ -1162,3 +1162,15 @@ button.topic-chip { font: inherit; font-weight: 800; cursor: pointer; }
 .hs-sub { font-size: clamp(1.35rem, 2.6vw, 2rem); }
 .hero h1 { font-size: clamp(1.35rem, 2.3vw, 1.85rem); margin: 18px 0 10px; }
 .hero h1 .hl::after { height: 6px; bottom: -2px; }
+.big-sections { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.big-section { --c: var(--violet); position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 230px; padding: 26px; border: 0; border-radius: 28px; cursor: pointer; text-align: start; font: inherit; color: #fff !important; text-decoration: none !important; background: linear-gradient(140deg, color-mix(in srgb, var(--c) 78%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 75%, #000)); box-shadow: 0 10px 0 color-mix(in srgb, var(--c) 60%, #000), var(--shadow); transition: transform 0.18s; }
+.big-section::after { content: ''; position: absolute; width: 180px; height: 180px; border-radius: 50%; inset-inline-end: -50px; top: -60px; background: rgba(255, 255, 255, 0.14); }
+.big-section:hover, .big-section:focus-visible { transform: translateY(-6px) rotate(-0.6deg); }
+.big-section h3 { font-size: clamp(1.5rem, 2.4vw, 2rem); margin: 6px 0 0; color: #fff; }
+.big-section p { margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 1.05rem; }
+.bs-icon { display: grid; place-items: center; width: 78px; height: 78px; border-radius: 22px; background: rgba(255, 255, 255, 0.2); color: var(--c); }
+.bs-count { margin-top: auto; background: rgba(255, 255, 255, 0.22); padding: 5px 14px; border-radius: 999px; font-weight: 800; }
+.section-bar { --c: var(--violet); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 4px 0 18px; padding: 14px 18px; border-radius: 22px; background: color-mix(in srgb, var(--c) 14%, var(--card)); }
+.section-bar h2 { margin: 0; font-size: 1.7rem; }
+@media (max-width: 1000px) { .big-sections { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .big-sections { grid-template-columns: 1fr; } .big-section { min-height: 180px; } }

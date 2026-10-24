@@ -662,4 +662,5 @@ export const EN: Record<string, string> = {
   "статьи": "articles",
   "статей": "articles",
   "Статьи": "Articles",
+  "Выбери раздел": "Choose a section",
 };
