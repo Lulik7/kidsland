@@ -89,4 +89,63 @@ CREATE TABLE IF NOT EXISTS bookings (
 CREATE UNIQUE INDEX IF NOT EXISTS bookings_active_slot_idx ON bookings(slot_id) WHERE status <> 'cancelled';
 CREATE INDEX IF NOT EXISTS bookings_parent_idx ON bookings(parent_id);
 CREATE INDEX IF NOT EXISTS bookings_tutor_idx ON bookings(tutor_id);
+-- Self-study courses: best result per lesson. Course content lives in @kidsland/shared.
+CREATE TABLE IF NOT EXISTS course_progress (
+  child_id     uuid NOT NULL REFERENCES child_profiles(id) ON DELETE CASCADE,
+  course_id    text NOT NULL,
+  lesson_id    text NOT NULL,
+  best_score   integer NOT NULL DEFAULT 0,
+  max_score    integer NOT NULL,
+  attempts     integer NOT NULL DEFAULT 0,
+  completed_at timestamptz,
+  updated_at   timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (child_id, lesson_id)
+);
+
+-- One support conversation per user.
+CREATE TABLE IF NOT EXISTS support_threads (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      uuid NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  status       text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed')),
+  user_unread  boolean NOT NULL DEFAULT false,
+  staff_unread boolean NOT NULL DEFAULT true,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS support_messages (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  thread_id  uuid NOT NULL REFERENCES support_threads(id) ON DELETE CASCADE,
+  author_id  uuid REFERENCES users(id) ON DELETE SET NULL,
+  is_staff   boolean NOT NULL DEFAULT false,
+  body       text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS support_messages_thread_idx ON support_messages(thread_id, created_at);
+
+-- Lesson room: chat and a shared whiteboard per booking.
+CREATE TABLE IF NOT EXISTS lesson_messages (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id uuid NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  author_id  uuid REFERENCES users(id) ON DELETE SET NULL,
+  is_tutor   boolean NOT NULL,
+  body       text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS lesson_messages_booking_idx ON lesson_messages(booking_id, created_at);
+CREATE TABLE IF NOT EXISTS lesson_boards (
+  booking_id uuid PRIMARY KEY REFERENCES bookings(id) ON DELETE CASCADE,
+  strokes    jsonb NOT NULL DEFAULT '[]',
+  version    integer NOT NULL DEFAULT 0,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Messages blocked by the child-safety filter, for moderators.
+CREATE TABLE IF NOT EXISTS safety_flags (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid REFERENCES users(id) ON DELETE CASCADE,
+  context    text NOT NULL,
+  body       text NOT NULL,
+  reason     text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
 `;

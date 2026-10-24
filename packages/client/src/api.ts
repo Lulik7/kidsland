@@ -1,4 +1,4 @@
-import type { BookingStatus, Concept, FailReason, LevelConfig, Program, Theme } from '@kidsland/shared';
+import type { Answers, BookingStatus, Concept, CourseLevel, FailReason, LevelConfig, Program, SubjectId, Theme } from '@kidsland/shared';
 
 export interface User {
   id: string;
@@ -104,6 +104,82 @@ export interface ChildReport {
   totals: { completed: number; levels: number; stars: number; attempts: number };
   baseCourseCompleted: boolean;
   lastPlayedAt: string | null;
+  courses: CourseSummary[];
+}
+
+export interface CourseSummary {
+  courseId: string;
+  subject: SubjectId;
+  level: CourseLevel;
+  title: string;
+  lessons: number;
+  completed: number;
+  started: boolean;
+}
+
+export interface LessonProgress {
+  courseId: string;
+  lessonId: string;
+  bestScore: number;
+  maxScore: number;
+  attempts: number;
+  completed: boolean;
+}
+
+export interface LessonResult {
+  score: number;
+  max: number;
+  passed: boolean;
+  results: Record<string, boolean>;
+  rewards: { xp: number; coins: number };
+  progress: LessonProgress;
+  child: { xp: number; coins: number };
+}
+
+export interface SupportMessage {
+  id: string;
+  body: string;
+  isStaff: boolean;
+  createdAt: string;
+}
+
+export interface SupportThread {
+  id: string;
+  status: 'open' | 'closed';
+  userUnread: boolean;
+  staffUnread: boolean;
+  updatedAt: string;
+  user?: { id: string; email: string; role: User['role'] };
+  lastMessage?: string;
+}
+
+export interface SafetyFlag {
+  id: string;
+  context: string;
+  body: string;
+  reason: string;
+  createdAt: string;
+  user: { id: string; email: string; role: User['role'] } | null;
+}
+
+export interface Stroke {
+  color: string;
+  width: number;
+  tool: 'pen' | 'eraser';
+  points: [number, number][];
+}
+
+export interface RoomMessage {
+  id: string;
+  body: string;
+  isTutor: boolean;
+  createdAt: string;
+}
+
+export interface RoomState {
+  messages: RoomMessage[];
+  board: { version: number; strokes: Stroke[] } | null;
+  youAreTutor: boolean;
 }
 
 export type TutorProfileInput = Pick<
@@ -140,17 +216,17 @@ export const tokenStore = {
   },
 };
 
-async function request<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+async function request<T>(path: string, init: { method?: string; body?: unknown; file?: File } = {}): Promise<T> {
   const token = tokenStore.get();
   let res: Response;
   try {
     res = await fetch(`/api${path}`, {
       method: init.method ?? 'GET',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': init.file ? init.file.type : 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+      body: init.file ?? (init.body === undefined ? undefined : JSON.stringify(init.body)),
     });
   } catch {
     throw new ApiError(0, 'Нет связи с сайтом. Проверьте интернет или перезапустите npm run dev:client.');
@@ -198,4 +274,33 @@ export const api = {
   addSlots: (startsAt: string[], durationMin = 45) =>
     request<{ added: number }>('/tutor/slots', { method: 'POST', body: { startsAt, durationMin } }),
   deleteSlot: (id: string) => request<void>(`/tutor/slots/${id}`, { method: 'DELETE' }),
+  uploadVideo: (file: File) => request<{ tutor: Tutor }>('/tutor/video', { method: 'POST', file }),
+  deleteVideo: () => request<{ tutor: Tutor }>('/tutor/video', { method: 'DELETE' }),
+
+  courseProgress: (childId: string) =>
+    request<{ progress: LessonProgress[]; courses: CourseSummary[] }>(`/children/${childId}/courses`),
+  submitLesson: (childId: string, lessonId: string, answers: Answers) =>
+    request<LessonResult>(`/children/${childId}/lessons/${lessonId}/submit`, { method: 'POST', body: { answers } }),
+
+  support: () => request<{ thread: SupportThread | null; messages: SupportMessage[] }>('/support'),
+  sendSupport: (body: string) =>
+    request<{ thread: SupportThread; messages: SupportMessage[] }>('/support/messages', { method: 'POST', body: { body } }),
+  adminThreads: () => request<{ threads: SupportThread[] }>('/support/admin/threads'),
+  adminThread: (id: string) => request<{ thread: SupportThread; messages: SupportMessage[] }>(`/support/admin/threads/${id}`),
+  adminReply: (id: string, body: string) =>
+    request<{ thread: SupportThread; messages: SupportMessage[] }>(`/support/admin/threads/${id}/messages`, { method: 'POST', body: { body } }),
+  adminSetStatus: (id: string, status: 'open' | 'closed') =>
+    request<{ thread: SupportThread }>(`/support/admin/threads/${id}/status`, { method: 'POST', body: { status } }),
+  safetyFlags: () => request<{ flags: SafetyFlag[] }>('/support/admin/safety-flags'),
+
+  room: (bookingId: string, after: string | null, board: number) => {
+    const q = new URLSearchParams({ board: String(board) });
+    if (after) q.set('after', after);
+    return request<RoomState>(`/bookings/${bookingId}/room?${q}`);
+  },
+  sendRoomMessage: (bookingId: string, body: string) =>
+    request<{ message: RoomMessage }>(`/bookings/${bookingId}/messages`, { method: 'POST', body: { body } }),
+  addStroke: (bookingId: string, stroke: Stroke) =>
+    request<{ version: number }>(`/bookings/${bookingId}/board`, { method: 'POST', body: { stroke } }),
+  clearBoard: (bookingId: string) => request<{ version: number }>(`/bookings/${bookingId}/board/clear`, { method: 'POST' }),
 };

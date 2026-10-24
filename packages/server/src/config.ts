@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 function required(name: string, fallback?: string): string {
   const value = process.env[name] ?? fallback;
   if (!value) throw new Error(`Missing environment variable ${name}`);
@@ -15,4 +17,13 @@ export const config = {
   // Video lessons run on Jitsi Meet; point this at a self-hosted Jitsi or 8x8 JaaS domain in production.
   jitsiDomain: process.env.JITSI_DOMAIN ?? 'meet.jit.si',
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+  // Users with these emails become admins on sign-up or login (comma-separated).
+  adminEmails: (process.env.ADMIN_EMAILS ?? (isProd ? '' : 'admin@kidsland.local'))
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean),
+  // Demo admin account with a known password, never in production.
+  seedDemoAdmin: !isProd && process.env.SEED_DEMO_ADMIN !== 'false',
+  uploadsDir: process.env.UPLOADS_DIR ?? fileURLToPath(new URL('../uploads', import.meta.url)),
+  maxVideoMb: Number(process.env.MAX_VIDEO_MB ?? 100),
 };

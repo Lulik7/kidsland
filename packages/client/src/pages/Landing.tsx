@@ -1,9 +1,12 @@
-import type { Theme } from '@kidsland/shared';
+import { CHILD_SAFETY_TIPS, COURSES, SUBJECTS, type Theme } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type LevelSummary, type Tutor } from '../api';
 import { useAuth } from '../auth';
+import { LevelBadge } from '../components/CourseCard';
 import { DemoBoard } from '../components/DemoBoard';
+import { RobotGuide } from '../components/RobotGuide';
+import { SubjectIcon } from '../components/SubjectIcon';
 import { Sprite } from '../components/Sprite';
 import { TutorCard } from '../components/TutorCard';
 import { avatarSvg, COIN, GOAL, HERO, WALL } from '../game/sprites';
@@ -21,6 +24,13 @@ const SKILLS = [
   { title: 'Циклы', text: 'Повторять, а не копировать', color: '#40bf4a' },
   { title: 'Условия', text: 'Если стена впереди, повернуть', color: '#9966ff' },
   { title: 'Отладка', text: 'Найти ошибку и попробовать снова', color: '#ff6680' },
+];
+
+const FEATURES = [
+  { to: '/kids', title: 'Игры', text: '3 мира и 10 уровней: собирай программу из блоков и веди героя к цели.', icon: '🎮', color: '#4c97ff' },
+  { to: '/courses', title: 'Курсы', text: '15 курсов по 5 направлениям и 3 уровням: теория, задания и викторины.', icon: '📚', color: '#2fc46b' },
+  { to: '/tutors', title: 'Наставники', text: 'Живые уроки с видео, общей доской и чатом. Первый урок бесплатно.', icon: '👩‍🏫', color: '#ff6b3d' },
+  { to: '/parent', title: 'Кабинет родителя', text: 'Прогресс по темам, пройденные уроки и запись на занятия.', icon: '📈', color: '#9966ff' },
 ];
 
 const Check = () => (
@@ -54,7 +64,7 @@ export function Landing() {
         </div>
         <div className="hero-inner">
           <div className="hero-text">
-            <span className="pill">Для детей 6–11 лет · первые уровни бесплатно</span>
+            <span className="pill">Для детей 6–14 лет · игры, курсы и наставники</span>
             <h1>
               Учимся программировать, <span className="hl">играя</span>
             </h1>
@@ -66,11 +76,9 @@ export function Landing() {
               <Link to={playLink} className="btn btn-primary btn-xl">
                 {user ? 'Продолжить игру' : 'Играть бесплатно'}
               </Link>
-              {!user && (
-                <Link to="/login" className="btn btn-light btn-xl">
-                  Уже играем
-                </Link>
-              )}
+              <a href="#guide" className="btn btn-light btn-xl">
+                ▶ Смотреть видео
+              </a>
             </div>
             <ul className="hero-points">
               <li><Check /> Без рекламы</li>
@@ -91,6 +99,38 @@ export function Landing() {
         <svg className="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden>
           <path d="M0 40 C240 90 480 0 720 30 C960 60 1200 10 1440 40 V90 H0Z" fill="var(--bg)" />
         </svg>
+      </section>
+
+      <section className="wrap guide-section" id="guide">
+        <div className="guide-text">
+          <span className="pill pill-dark">Видео-знакомство</span>
+          <h2>Робот Кидди покажет, как всё устроено</h2>
+          <p className="muted">
+            Включите вместе с ребёнком: за пару минут Кидди расскажет про игры, курсы, уроки с наставником и правила
+            безопасности.
+          </p>
+          <ul className="guide-list">
+            <li><Check /> Где играть и как получать звёзды</li>
+            <li><Check /> Как проходить курсы и викторины</li>
+            <li><Check /> Как устроен урок с наставником</li>
+            <li><Check /> Почему нельзя писать телефон и отправлять фото</li>
+          </ul>
+        </div>
+        <RobotGuide />
+      </section>
+
+      <section className="wrap">
+        <h2 className="section-title">Всё для учёбы в одном месте</h2>
+        <div className="features">
+          {FEATURES.map((f) => (
+            <Link key={f.title} to={user || f.to === '/courses' || f.to === '/tutors' ? f.to : '/register'} className="feature" style={{ ['--c' as string]: f.color }}>
+              <span className="feature-icon" aria-hidden>{f.icon}</span>
+              <h3>{f.title}</h3>
+              <p>{f.text}</p>
+              <span className="feature-go">Открыть →</span>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="wrap">
@@ -144,6 +184,30 @@ export function Landing() {
       </section>
 
       <section className="wrap">
+        <h2 className="section-title">Курсы для самостоятельного обучения</h2>
+        <p className="section-sub">Пять направлений, в каждом три уровня. Ребёнок учится в своём темпе, а за пройденные уроки получает опыт и монеты.</p>
+        <div className="subject-tracks">
+          {SUBJECTS.map((sub) => {
+            const list = COURSES.filter((c) => c.subject === sub.id);
+            return (
+              <Link key={sub.id} to={`/courses/${list[0].id}`} className="subject-track" style={{ ['--c' as string]: list[0].color }}>
+                <span className="st-icon"><SubjectIcon subject={sub.id} size={36} /></span>
+                <b>{sub.name}</b>
+                <span className="st-levels">
+                  {list.map((c) => <LevelBadge key={c.id} level={c.level} />)}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="center-row">
+          <Link to="/courses" className="btn btn-primary btn-xl">
+            Все курсы
+          </Link>
+        </div>
+      </section>
+
+      <section className="wrap">
         <div className="parents">
           <div className="parents-text">
             <span className="pill pill-dark">Для родителей</span>
@@ -191,9 +255,31 @@ export function Landing() {
             <Link to="/tutors" className="btn btn-light btn-xl">
               Все наставники
             </Link>
+            <Link to="/lessons/demo" className="btn btn-primary btn-xl">
+              Посмотреть демо-урок
+            </Link>
           </div>
         </section>
       )}
+
+      <section className="wrap">
+        <div className="safety">
+          <div className="safety-icon" aria-hidden>🛡</div>
+          <div>
+            <h2>Безопасность детей на первом месте</h2>
+            <p>
+              Общение с наставником идёт только на сайте. Система блокирует сообщения с телефонами, почтой, адресами,
+              ссылками на мессенджеры и просьбами прислать фото, а модератор видит каждую такую попытку.
+            </p>
+            <ul>
+              {CHILD_SAFETY_TIPS.slice(0, 2).map((t) => <li key={t}>{t}</li>)}
+            </ul>
+          </div>
+          <Link to="/support" className="btn btn-light">
+            Служба поддержки
+          </Link>
+        </div>
+      </section>
 
       <section className="wrap">
         <div className="final-cta">
@@ -208,9 +294,30 @@ export function Landing() {
         </div>
       </section>
 
-      <footer className="footer">
-        <span>© {new Date().getFullYear()} Kidsland. Программирование для детей.</span>
-        <Link to="/register?role=tutor">Стать наставником</Link>
+      <footer className="site-footer">
+        <div className="sf-cols">
+          <div>
+            <b className="sf-logo">Kids<span>land</span></b>
+            <p>Программирование для детей 6–14 лет: игры, курсы и уроки с наставниками.</p>
+          </div>
+          <nav>
+            <b>Учиться</b>
+            <Link to="/kids">Игры</Link>
+            <Link to="/courses">Курсы</Link>
+            <Link to="/lessons/demo">Демо-урок</Link>
+          </nav>
+          <nav>
+            <b>Наставники</b>
+            <Link to="/tutors">Выбрать наставника</Link>
+            <Link to="/register?role=tutor">Стать наставником</Link>
+          </nav>
+          <nav>
+            <b>Помощь</b>
+            <Link to="/support">Служба поддержки</Link>
+            <a href="#guide">Видео о сайте</a>
+          </nav>
+        </div>
+        <span className="sf-copy">© {new Date().getFullYear()} Kidsland</span>
       </footer>
     </main>
   );

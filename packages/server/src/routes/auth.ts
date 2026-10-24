@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, signToken } from '../auth';
+import { config } from '../config';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
 
@@ -37,10 +38,17 @@ const publicUser = (u: UserRow) => ({
   createdAt: u.created_at,
 });
 
+/** Promotes users listed in ADMIN_EMAILS. Returns the (possibly updated) row. */
+async function applyAdmin(db: Db, user: UserRow): Promise<UserRow> {
+  if (user.role === 'admin' || !config.adminEmails.includes(user.email)) return user;
+  const { rows } = await db.query<UserRow>("UPDATE users SET role = 'admin' WHERE id = $1 RETURNING *", [user.id]);
+  return rows[0];
+}
+
 export function authRouter(db: Db) {
   const r = Router();
 
-  // Parents and tutors can sign up themselves; admins are provisioned directly in the database.
+  // Parents and tutors can sign up themselves; admins come from ADMIN_EMAILS.
   r.post('/register', async (req, res) => {
     const body = registerSchema.parse(req.body);
     const hash = await bcrypt.hash(body.password, 10);
@@ -61,7 +69,8 @@ export function authRouter(db: Db) {
         ]);
       }
       await client.query('COMMIT');
-      res.status(201).json({ token: signToken(rows[0]), user: publicUser(rows[0]) });
+      const user = await applyAdmin(db, rows[0]);
+      res.status(201).json({ token: signToken(user), user: publicUser(user) });
     } catch (e) {
       await client.query('ROLLBACK');
       throw e;
@@ -73,10 +82,10 @@ export function authRouter(db: Db) {
   r.post('/login', async (req, res) => {
     const body = loginSchema.parse(req.body);
     const { rows } = await db.query<UserRow>('SELECT * FROM users WHERE email = $1', [body.email]);
-    const user = rows[0];
-    if (!user || !(await bcrypt.compare(body.password, user.password_hash))) {
+    if (!rows[0] || !(await bcrypt.compare(body.password, rows[0].password_hash))) {
       throw new HttpError(401, 'Неверный email или пароль');
     }
+    const user = await applyAdmin(db, rows[0]);
     res.json({ token: signToken(user), user: publicUser(user) });
   });
 

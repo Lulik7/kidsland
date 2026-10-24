@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { api, type Booking } from '../api';
+import { useRef, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { api, type Booking, type RoomMessage, type Stroke } from '../api';
 import { useAuth } from '../auth';
 import { canJoin } from '../components/BookingCard';
+import { usePolling } from '../components/ChatBox';
+import { Classroom } from '../components/Classroom';
 import { TutorAvatar } from '../components/TutorAvatar';
 import { fmtDateTime } from '../format';
 
@@ -17,15 +19,45 @@ function untilText(ms: number) {
 export function LessonRoom() {
   const { id = '' } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [messages, setMessages] = useState<RoomMessage[]>([]);
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [pending, setPending] = useState<{ stroke: Stroke; version?: number }[]>([]);
+  const boardVersion = useRef(-1);
 
-  useEffect(() => {
+  usePolling(() => {
     api.booking(id).then((r) => setBooking(r.booking)).catch((e) => setError(e.message));
-    const t = window.setInterval(() => setNow(Date.now()), 15_000);
-    return () => window.clearInterval(t);
-  }, [id]);
+  }, 60_000, [id]);
+
+  usePolling(
+    () => {
+      setNow(Date.now());
+      if (!booking || booking.status === 'cancelled') return;
+      const last = messages.at(-1)?.createdAt ?? null;
+      api
+        .room(id, last, boardVersion.current)
+        .then((r) => {
+          if (r.messages.length) {
+            setMessages((m) => {
+              const known = new Set(m.map((x) => x.id));
+              return [...m, ...r.messages.filter((x) => !known.has(x.id))];
+            });
+          }
+          if (r.board) {
+            const v = r.board.version;
+            boardVersion.current = v;
+            setStrokes(r.board.strokes);
+            setPending((p) => p.filter((x) => x.version === undefined || x.version > v));
+          }
+        })
+        .catch(() => {});
+    },
+    2_000,
+    [id, booking?.status, messages.at(-1)?.id],
+  );
 
   if (!booking) return <div className="center-note">{error ?? 'Загружаем урок…'}</div>;
 
@@ -35,6 +67,42 @@ export function LessonRoom() {
   const start = new Date(booking.startsAt).getTime();
   const name = isTutor ? booking.tutor.displayName : booking.child.nickname;
   const room = `${booking.meetingLink}#config.prejoinPageEnabled=false&userInfo.displayName=${encodeURIComponent(`"${name}"`)}`;
+
+  const addStroke = async (s: Stroke) => {
+    const entry: { stroke: Stroke; version?: number } = { stroke: s };
+    setPending((p) => [...p, entry]);
+    try {
+      entry.version = (await api.addStroke(id, s)).version;
+    } catch {
+      setPending((p) => p.filter((x) => x !== entry));
+    }
+  };
+
+  const video = open ? (
+    <div className="video-room">
+      <iframe src={room} title="Онлайн-урок" allow="camera; microphone; fullscreen; display-capture; autoplay" />
+      <a className="video-pop" href={booking.meetingLink} target="_blank" rel="noreferrer">
+        Открыть видео в новой вкладке
+      </a>
+    </div>
+  ) : (
+    <div className="video-wait">
+      {now < start ? (
+        <>
+          <div className="countdown">{untilText(start - now)}</div>
+          <b>до начала урока</b>
+          <p>Видео включится за 10 минут до начала. Доска и чат уже работают.</p>
+        </>
+      ) : (
+        <>
+          <b>Урок завершён</b>
+          <Link to={`/tutors/${booking.tutor.id}`} className="btn btn-primary">
+            Записаться снова
+          </Link>
+        </>
+      )}
+    </div>
+  );
 
   return (
     <main className="page lesson">
@@ -59,36 +127,32 @@ export function LessonRoom() {
             Выбрать другое время
           </Link>
         </div>
-      ) : open ? (
-        <>
-          <div className="video-room">
-            <iframe src={room} title="Онлайн-урок" allow="camera; microphone; fullscreen; display-capture; autoplay" />
-          </div>
-          <p className="muted small center">
-            Если видео не загрузилось или прервалось,{' '}
-            <a href={booking.meetingLink} target="_blank" rel="noreferrer">
-              откройте урок в новой вкладке
-            </a>
-            .
-          </p>
-        </>
-      ) : now < start ? (
-        <div className="card center-card">
-          <div className="countdown">{untilText(start - now)}</div>
-          <h2>до начала урока</h2>
-          <p className="muted">Комната откроется за 10 минут до начала. Проверьте камеру и микрофон, приготовьте наушники.</p>
-          <a href={booking.meetingLink} target="_blank" rel="noreferrer" className="btn btn-light">
-            Ссылка на видеокомнату
-          </a>
-        </div>
       ) : (
-        <div className="card center-card">
-          <h2>Урок завершён</h2>
-          <p className="muted">Спасибо! Следующий урок можно выбрать у этого же наставника.</p>
-          <Link to={`/tutors/${booking.tutor.id}`} className="btn btn-primary">
-            Записаться снова
-          </Link>
-        </div>
+        <Classroom
+          video={video}
+          strokes={[...strokes, ...pending.map((p) => p.stroke)]}
+          onStroke={addStroke}
+          onClear={async () => {
+            setPending([]);
+            await api.clearBoard(id);
+          }}
+          isTutor={isTutor}
+          chat={messages.map((m) => ({
+            id: m.id,
+            body: m.body,
+            mine: m.isTutor === isTutor,
+            author: m.isTutor ? booking.tutor.displayName : booking.child.nickname,
+            createdAt: m.createdAt,
+          }))}
+          onSend={async (body) => {
+            const { message } = await api.sendRoomMessage(id, body);
+            setMessages((m) => (m.some((x) => x.id === message.id) ? m : [...m, message]));
+          }}
+          onReport={async () => {
+            await api.sendSupport(`Жалоба на урок ${fmtDateTime(booking.startsAt)} с наставником ${booking.tutor.displayName} (урок ${booking.id}).`);
+            navigate('/support');
+          }}
+        />
       )}
     </main>
   );

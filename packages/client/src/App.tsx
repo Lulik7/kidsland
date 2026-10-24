@@ -1,10 +1,17 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import type { User } from './api';
 import { homeFor, useAuth } from './auth';
 import { Sprite } from './components/Sprite';
 import { HERO } from './game/sprites';
+import { AdminPage } from './pages/AdminPage';
 import { AuthPage } from './pages/AuthPage';
+import { CoursePage } from './pages/CoursePage';
+import { CoursesPage } from './pages/CoursesPage';
+import { DemoLesson } from './pages/DemoLesson';
+import { LessonPage } from './pages/LessonPage';
+import { SupportPage } from './pages/SupportPage';
 import { KidsPage } from './pages/KidsPage';
 import { Landing } from './pages/Landing';
 import { LessonRoom } from './pages/LessonRoom';
@@ -26,12 +33,54 @@ function RequireAuth({ children, role }: { children: ReactNode; role?: User['rol
   return children;
 }
 
+interface MenuItem {
+  to: string;
+  label: string;
+  icon: string;
+}
+
+function menuFor(user: User | null): MenuItem[] {
+  const common = [
+    { to: '/courses', label: 'Курсы', icon: '📚' },
+    { to: '/tutors', label: 'Наставники', icon: '👩‍🏫' },
+  ];
+  const support = { to: '/support', label: 'Поддержка', icon: '💬' };
+  if (!user) return [{ to: '/register', label: 'Игры', icon: '🎮' }, ...common, { to: '/lessons/demo', label: 'Демо-урок', icon: '🎬' }, support];
+  if (user.role === 'tutor') return [{ to: '/tutor', label: 'Кабинет', icon: '🏠' }, ...common, support];
+  if (user.role === 'admin') return [{ to: '/admin', label: 'Админ', icon: '🛠' }, ...common, support];
+  return [{ to: '/kids', label: 'Игры', icon: '🎮' }, ...common, { to: '/parent', label: 'Кабинет', icon: '🏠' }, support];
+}
+
 function Header() {
   const { user, logout } = useAuth();
-  const nav = (to: string, label: string) => (
-    <NavLink to={to} className={({ isActive }) => `navlink${isActive ? ' on' : ''}`}>
-      {label}
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
+  useEffect(() => setOpen(false), [location.pathname]);
+  useEffect(() => {
+    document.body.classList.toggle('no-scroll', open);
+  }, [open]);
+  const items = menuFor(user);
+  const link = (m: MenuItem) => (
+    <NavLink key={m.to} to={m.to} className={({ isActive }) => `navlink${isActive ? ' on' : ''}`}>
+      <span className="nav-icon" aria-hidden>
+        {m.icon}
+      </span>
+      {m.label}
     </NavLink>
+  );
+  const account = user ? (
+    <button className="btn btn-ghost" onClick={logout}>
+      Выйти
+    </button>
+  ) : (
+    <>
+      <Link to="/login" className="btn btn-ghost">
+        Войти
+      </Link>
+      <Link to="/register" className="btn btn-primary">
+        Начать бесплатно
+      </Link>
+    </>
   );
   return (
     <header className="topbar">
@@ -41,31 +90,32 @@ function Header() {
           Kids<b>land</b>
         </span>
       </Link>
-      <nav>
-        {user?.role === 'tutor' ? (
-          nav('/tutor', 'Кабинет')
-        ) : (
-          <>
-            {user && nav('/kids', 'Играть')}
-            {user && nav('/parent', 'Кабинет')}
-            {nav('/tutors', 'Наставники')}
-          </>
-        )}
-        {user ? (
-          <button className="btn btn-ghost" onClick={logout}>
-            Выйти
-          </button>
-        ) : (
-          <>
-            <Link to="/login" className="btn btn-ghost">
-              Войти
-            </Link>
-            <Link to="/register" className="btn btn-primary hide-sm">
-              Начать бесплатно
-            </Link>
-          </>
-        )}
+      <nav className="main-nav" aria-label="Главное меню">
+        {items.map(link)}
       </nav>
+      <div className="account">{account}</div>
+      <button className={open ? 'burger on' : 'burger'} onClick={() => setOpen(!open)} aria-label="Меню" aria-expanded={open}>
+        <i />
+        <i />
+        <i />
+      </button>
+      {/* Portal: the header's backdrop-filter would otherwise clip a fixed-position drawer. */}
+      {open &&
+        createPortal(
+        <div className="drawer-bg" onClick={() => setOpen(false)}>
+          <nav className="drawer" aria-label="Меню" onClick={(e) => e.stopPropagation()}>
+            <NavLink to="/" end className={({ isActive }) => `navlink${isActive ? ' on' : ''}`}>
+              <span className="nav-icon" aria-hidden>
+                🏡
+              </span>
+              Главная
+            </NavLink>
+            {items.map(link)}
+            <div className="drawer-account">{account}</div>
+          </nav>
+        </div>,
+          document.body,
+        )}
     </header>
   );
 }
@@ -80,6 +130,15 @@ export function App() {
         <Route path="/register" element={<AuthPage mode="register" />} />
         <Route path="/tutors" element={<TutorsPage />} />
         <Route path="/tutors/:id" element={<TutorPage />} />
+        <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/courses/:courseId" element={<CoursePage />} />
+        <Route path="/courses/:courseId/:lessonId" element={<LessonPage />} />
+        <Route path="/kids/:childId/courses" element={<RequireAuth role="parent"><CoursesPage /></RequireAuth>} />
+        <Route path="/kids/:childId/courses/:courseId" element={<RequireAuth role="parent"><CoursePage /></RequireAuth>} />
+        <Route path="/kids/:childId/courses/:courseId/:lessonId" element={<RequireAuth role="parent"><LessonPage /></RequireAuth>} />
+        <Route path="/support" element={<SupportPage />} />
+        <Route path="/admin" element={<RequireAuth role="admin"><AdminPage /></RequireAuth>} />
+        <Route path="/lessons/demo" element={<DemoLesson />} />
         <Route path="/kids" element={<RequireAuth role="parent"><KidsPage /></RequireAuth>} />
         <Route path="/kids/:childId" element={<RequireAuth role="parent"><LevelMap /></RequireAuth>} />
         <Route

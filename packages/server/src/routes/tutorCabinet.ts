@@ -1,17 +1,23 @@
-import { LANGUAGE_IDS, SUBJECT_IDS } from '@kidsland/shared';
-import { Router } from 'express';
+import { randomUUID } from 'node:crypto';
+import { unlink, writeFile } from 'node:fs/promises';
+import { LANGUAGE_IDS, SUBJECT_IDS, findUnsafeContent } from '@kidsland/shared';
+import express, { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
+import { config } from '../config';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
 import { isUuid, publicTutor, tutorForUser } from '../tutors';
+import { flagUnsafe } from './lessonRoom';
 
 const profileSchema = z
   .object({
     displayName: z.string().trim().min(2).max(60),
     headline: z.string().trim().max(120),
     bio: z.string().trim().max(2000),
-    videoUrl: z.union([z.string().trim().url().max(300), z.literal('')]).optional(),
+    videoUrl: z
+      .union([z.string().trim().url().max(300), z.string().regex(/^\/api\/uploads\/videos\/[\w-]+\.\w+$/), z.literal('')])
+      .optional(),
     avatar: z.string().max(40).optional(),
     subjects: z.array(z.enum(SUBJECT_IDS as [string, ...string[]])).min(1, 'Выберите хотя бы один предмет'),
     languages: z.array(z.enum(LANGUAGE_IDS as [string, ...string[]])).min(1, 'Выберите хотя бы один язык'),
@@ -21,6 +27,14 @@ const profileSchema = z
     isPublished: z.boolean(),
   })
   .refine((p) => p.ageMin <= p.ageMax, { message: 'Минимальный возраст больше максимального', path: ['ageMin'] });
+
+const VIDEO_TYPES: Record<string, string> = { 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov' };
+const UPLOAD_PREFIX = '/api/uploads/videos/';
+
+async function removeUploadedVideo(url: string | null) {
+  if (!url?.startsWith(UPLOAD_PREFIX)) return;
+  await unlink(`${config.uploadsDir}/videos/${url.slice(UPLOAD_PREFIX.length)}`).catch(() => {});
+}
 
 const MAX_DAYS_AHEAD = 60;
 const slotsSchema = z.object({
@@ -46,12 +60,47 @@ export function tutorCabinetRouter(db: Db) {
   r.put('/profile', async (req, res) => {
     const p = profileSchema.parse(req.body);
     const t = await myTutor(req.user!.id);
+    // Contacts in a public profile would let families and children be taken off the platform.
+    const unsafe = findUnsafeContent(`${p.headline}\n${p.bio}`);
+    if (unsafe) {
+      await flagUnsafe(db, req.user!.id, 'tutor-profile', `${p.headline}\n${p.bio}`, unsafe);
+      throw new HttpError(400, `${unsafe}. Уберите контакты из описания: общение идёт только через платформу.`);
+    }
+    if (t.video_url !== (p.videoUrl || null)) await removeUploadedVideo(t.video_url);
     const { rows } = await db.query(
       `UPDATE tutor_profiles SET display_name = $2, headline = $3, bio = $4, video_url = $5, avatar = $6,
          subjects = $7, languages = $8, age_min = $9, age_max = $10, hourly_rate = $11, is_published = $12
        WHERE id = $1 RETURNING *`,
       [t.id, p.displayName, p.headline, p.bio, p.videoUrl || null, p.avatar ?? t.avatar, p.subjects, p.languages, p.ageMin, p.ageMax, p.hourlyRate, p.isPublished],
     );
+    res.json({ tutor: publicTutor(rows[0]) });
+  });
+
+  /** Video introduction: the raw file is the request body (mp4, webm or mov). */
+  r.post(
+    '/video',
+    express.raw({ type: Object.keys(VIDEO_TYPES), limit: `${config.maxVideoMb}mb` }),
+    async (req, res) => {
+      const ext = VIDEO_TYPES[req.header('content-type')?.split(';')[0] ?? ''];
+      if (!ext || !Buffer.isBuffer(req.body) || req.body.length === 0) {
+        throw new HttpError(400, 'Загрузите видео в формате MP4, WebM или MOV');
+      }
+      const t = await myTutor(req.user!.id);
+      const name = `${randomUUID()}.${ext}`;
+      await writeFile(`${config.uploadsDir}/videos/${name}`, req.body);
+      await removeUploadedVideo(t.video_url);
+      const { rows } = await db.query('UPDATE tutor_profiles SET video_url = $2 WHERE id = $1 RETURNING *', [
+        t.id,
+        UPLOAD_PREFIX + name,
+      ]);
+      res.status(201).json({ tutor: publicTutor(rows[0]) });
+    },
+  );
+
+  r.delete('/video', async (req, res) => {
+    const t = await myTutor(req.user!.id);
+    await removeUploadedVideo(t.video_url);
+    const { rows } = await db.query('UPDATE tutor_profiles SET video_url = NULL WHERE id = $1 RETURNING *', [t.id]);
     res.json({ tutor: publicTutor(rows[0]) });
   });
 

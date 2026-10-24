@@ -1,8 +1,9 @@
-import type { Concept } from '@kidsland/shared';
+import { getCourse, type Concept } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Child, type ChildReport } from '../api';
 import { BookingCard } from '../components/BookingCard';
+import { LevelBadge } from '../components/CourseCard';
 import { StarIcon } from '../components/Icons';
 import { Sprite } from '../components/Sprite';
 import { StarsChart } from '../components/StarsChart';
@@ -153,6 +154,42 @@ export function ParentDashboard() {
               <p className="muted small chart-note">Три звезды значат, что ребёнок нашёл самое короткое решение. Наведите на столбик, чтобы увидеть уровень.</p>
             </section>
           </div>
+
+          <section className="card dash-courses">
+            <div className="concept-row">
+              <h2 className="card-title">Курсы</h2>
+              <Link to={`/kids/${report.child.id}/courses`} className="btn btn-light">
+                Открыть курсы
+              </Link>
+            </div>
+            {report.courses.length === 0 ? (
+              <p className="muted">
+                {report.child.nickname} ещё не начинал(а) курсы. В них теория, задания и викторины по Scratch, Python, сайтам,
+                играм и логике на трёх уровнях сложности.
+              </p>
+            ) : (
+              <div className="concepts">
+                {report.courses.map((c) => {
+                  const pct = Math.round((c.completed / c.lessons) * 100);
+                  return (
+                    <div key={c.courseId} className="concept">
+                      <div className="concept-row">
+                        <span>
+                          <b>{c.title}</b> <LevelBadge level={c.level} />
+                        </span>
+                        <b>
+                          {c.completed} / {c.lessons}
+                        </b>
+                      </div>
+                      <div className="meter" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={c.title}>
+                        <i style={{ width: `${pct}%`, background: getCourse(c.courseId)?.color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
 
           {!report.baseCourseCompleted && (
             <div className="soft-cta">

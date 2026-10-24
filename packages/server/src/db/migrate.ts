@@ -1,10 +1,13 @@
 import { LEVELS } from '@kidsland/shared';
+import bcrypt from 'bcryptjs';
 import type { Db } from './pool';
 import { seedDemoTutors } from './demoTutors';
 import { SCHEMA_SQL } from './schema';
 
 /** Creates tables and upserts the built-in levels (matched by slug). Safe to run on every start. */
-export async function migrate(db: Db, opts: { demoTutors?: boolean } = {}): Promise<void> {
+export const DEMO_ADMIN = { email: 'admin@kidsland.local', password: 'admin12345' };
+
+export async function migrate(db: Db, opts: { demoTutors?: boolean; demoAdmin?: boolean } = {}): Promise<void> {
   await db.query(SCHEMA_SQL);
   for (const [i, level] of LEVELS.entries()) {
     await db.query(
@@ -18,4 +21,10 @@ export async function migrate(db: Db, opts: { demoTutors?: boolean } = {}): Prom
     );
   }
   if (opts.demoTutors ?? true) await seedDemoTutors(db);
+  if (opts.demoAdmin) {
+    await db.query(
+      `INSERT INTO users (email, password_hash, role) VALUES ($1, $2, 'admin') ON CONFLICT (email) DO NOTHING`,
+      [DEMO_ADMIN.email, await bcrypt.hash(DEMO_ADMIN.password, 10)],
+    );
+  }
 }

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { api, type Child, type LevelSummary } from '../api';
 import { CrownIcon, LockIcon, StarIcon } from '../components/Icons';
+import { KidHud } from '../components/KidHud';
 import { Sprite } from '../components/Sprite';
-import { avatarSvg, COIN, HERO } from '../game/sprites';
+import { avatarSvg, HERO } from '../game/sprites';
 import { THEMES } from '../themes';
 
 export function Stars({ n, size }: { n: number; size?: number }) {
@@ -22,7 +23,6 @@ const xAt = (i: number) => 50 + Math.sin(i * 1.15) * 30;
 
 export function LevelMap() {
   const { childId = '' } = useParams();
-  const navigate = useNavigate();
   const [levels, setLevels] = useState<LevelSummary[] | null>(null);
   const [child, setChild] = useState<Child | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,21 +50,15 @@ export function LevelMap() {
 
   return (
     <main className="page map-page">
-      <div className="hud">
-        <button className="hud-player" onClick={() => navigate('/kids')} title="Сменить игрока">
-          <Sprite svg={avatarSvg(child?.avatarUrl)} size={48} />
-          <b>{child?.nickname ?? '…'}</b>
-        </button>
-        <div className="chips">
+      <KidHud
+        childId={childId}
+        child={child}
+        extra={
           <span className="chip chip-star">
             <StarIcon on size={18} /> {totalStars} / {levels.length * 3}
           </span>
-          <span className="chip chip-xp">{child?.xp ?? 0} XP</span>
-          <span className="chip chip-coin">
-            <Sprite svg={COIN} size={18} /> {child?.coins ?? 0}
-          </span>
-        </div>
-      </div>
+        }
+      />
 
       <div className="map" style={{ height }}>
         <svg className="map-path" viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" aria-hidden>

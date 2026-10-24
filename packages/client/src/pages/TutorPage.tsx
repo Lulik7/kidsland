@@ -141,7 +141,11 @@ export function TutorPage() {
               <dd>{rub(tutor.hourlyRate)} за 45 минут</dd>
             </div>
           </dl>
-          {video ? (
+          {tutor.videoUrl?.startsWith('/api/uploads/') ? (
+            <div className="video">
+              <video src={tutor.videoUrl} controls preload="metadata" playsInline title={`Видео-знакомство: ${tutor.displayName}`} />
+            </div>
+          ) : video ? (
             <div className="video">
               <iframe src={video} title={`Видео-знакомство: ${tutor.displayName}`} allow="encrypted-media; picture-in-picture" allowFullScreen />
             </div>

@@ -1,5 +1,5 @@
-import { LANGUAGES, SUBJECTS } from '@kidsland/shared';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { LANGUAGES, SUBJECTS, TUTOR_SAFETY_RULES } from '@kidsland/shared';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Slot, type Tutor, type TutorProfileInput } from '../api';
 import { BookingCard } from '../components/BookingCard';
@@ -72,8 +72,92 @@ export function TutorCabinet() {
       </div>
       {tab === 'lessons' && <Lessons />}
       {tab === 'schedule' && <Schedule />}
-      {tab === 'profile' && <ProfileForm tutor={tutor} onSaved={setTutor} />}
+      {tab === 'profile' && (
+        <div className="profile-layout">
+          <ProfileForm tutor={tutor} onSaved={setTutor} />
+          <aside className="profile-side">
+            <VideoIntro tutor={tutor} onSaved={setTutor} />
+            <div className="card safety-card">
+              <h2 className="card-title">🛡 Правила работы с детьми</h2>
+              <ul>
+                {TUTOR_SAFETY_RULES.map((r) => <li key={r}>{r}</li>)}
+              </ul>
+            </div>
+          </aside>
+        </div>
+      )}
     </main>
+  );
+}
+
+const MAX_VIDEO_MB = 100;
+
+/** Uploading a video file for the profile; a YouTube link still works through the form. */
+function VideoIntro({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const uploaded = tutor.videoUrl?.startsWith('/api/uploads/') ? tutor.videoUrl : null;
+
+  const upload = async (file: File | undefined) => {
+    if (!file) return;
+    setMsg(null);
+    if (!['video/mp4', 'video/webm', 'video/quicktime'].includes(file.type)) {
+      return setMsg({ ok: false, text: 'Подойдёт видео в формате MP4, WebM или MOV.' });
+    }
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      return setMsg({ ok: false, text: `Файл больше ${MAX_VIDEO_MB} МБ. Сожмите видео или загрузите его на YouTube и вставьте ссылку.` });
+    }
+    setBusy(true);
+    try {
+      const r = await api.uploadVideo(file);
+      onSaved(r.tutor);
+      setMsg({ ok: true, text: 'Видео загружено и появилось в профиле.' });
+    } catch (e) {
+      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Не удалось загрузить' });
+    } finally {
+      setBusy(false);
+      if (input.current) input.current.value = '';
+    }
+  };
+
+  return (
+    <div className="card video-intro">
+      <h2 className="card-title">🎬 Видео-знакомство</h2>
+      <p className="muted small">
+        Расскажите о себе за 1–2 минуты: как проходят уроки и чем вы увлекаетесь. Профили с видео выбирают чаще.
+      </p>
+      {uploaded ? (
+        <div className="video">
+          <video src={uploaded} controls preload="metadata" playsInline />
+        </div>
+      ) : tutor.videoUrl ? (
+        <p className="small">Сейчас в профиле видео по ссылке: <a href={tutor.videoUrl} target="_blank" rel="noreferrer">{tutor.videoUrl}</a></p>
+      ) : (
+        <div className="video-empty">Видео пока нет</div>
+      )}
+      <input ref={input} type="file" accept="video/mp4,video/webm,video/quicktime" hidden onChange={(e) => upload(e.target.files?.[0])} />
+      <div className="form-actions">
+        <button className="btn btn-primary" disabled={busy} onClick={() => input.current?.click()}>
+          {busy ? 'Загружаем…' : uploaded ? 'Заменить видео' : 'Загрузить видео'}
+        </button>
+        {tutor.videoUrl && (
+          <button
+            className="btn btn-ghost"
+            disabled={busy}
+            onClick={async () => {
+              const r = await api.deleteVideo();
+              onSaved(r.tutor);
+              setMsg(null);
+            }}
+          >
+            Удалить
+          </button>
+        )}
+      </div>
+      <span className="muted small">MP4, WebM или MOV до {MAX_VIDEO_MB} МБ. Или вставьте ссылку на YouTube в форме профиля.</span>
+      {msg && <div className={msg.ok ? 'success' : 'error'}>{msg.text}</div>}
+    </div>
   );
 }
 
@@ -198,6 +282,7 @@ function Schedule() {
 
 function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => void }) {
   const [p, setP] = useState<TutorProfileInput>(toInput(tutor));
+  useEffect(() => setP((x) => ({ ...x, videoUrl: tutor.videoUrl ?? '' })), [tutor.videoUrl]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const set = <K extends keyof TutorProfileInput>(k: K, v: TutorProfileInput[K]) => setP((x) => ({ ...x, [k]: v }));
@@ -237,8 +322,8 @@ function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => 
         <textarea rows={5} value={p.bio} onChange={(e) => set('bio', e.target.value)} maxLength={2000} placeholder="Опыт, подход к урокам, чем занимаетесь с детьми" />
       </label>
       <label>
-        Видео-знакомство (ссылка на YouTube или Vimeo)
-        <input value={p.videoUrl} onChange={(e) => set('videoUrl', e.target.value)} placeholder="https://youtu.be/…" />
+        Видео-знакомство: ссылка на YouTube или Vimeo (или загрузите файл справа)
+        <input value={p.videoUrl.startsWith('/api/uploads/') ? '' : p.videoUrl} disabled={p.videoUrl.startsWith('/api/uploads/')} onChange={(e) => set('videoUrl', e.target.value)} placeholder={p.videoUrl.startsWith('/api/uploads/') ? 'Загружен файл с видео' : 'https://youtu.be/…'} />
       </label>
       <span className="field-label">Предметы</span>
       <div className="chips-row">

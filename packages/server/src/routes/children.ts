@@ -1,4 +1,14 @@
-import { findForbiddenBlock, runProgram, validateProgram, type Program } from '@kidsland/shared';
+import {
+  COURSES,
+  LESSON_REWARD,
+  findForbiddenBlock,
+  findLesson,
+  gradeLesson,
+  runProgram,
+  validateProgram,
+  type Answers,
+  type Program,
+} from '@kidsland/shared';
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
@@ -15,6 +25,49 @@ const attemptSchema = z.object({
   levelSlug: z.string().min(1).max(64),
   program: z.unknown(),
 });
+
+const answerSchema = z.union([
+  z.number().int(),
+  z.array(z.number().int()).max(20),
+  z.string().max(200),
+  z.array(z.string().max(300)).max(20),
+]);
+const lessonSubmitSchema = z.object({ answers: z.record(z.string().max(32), answerSchema) });
+
+interface CourseProgressRow {
+  course_id: string;
+  lesson_id: string;
+  best_score: number;
+  max_score: number;
+  attempts: number;
+  completed_at: Date | null;
+}
+
+const publicLessonProgress = (p: CourseProgressRow) => ({
+  courseId: p.course_id,
+  lessonId: p.lesson_id,
+  bestScore: p.best_score,
+  maxScore: p.max_score,
+  attempts: p.attempts,
+  completed: p.completed_at !== null,
+  completedAt: p.completed_at,
+});
+
+/** Per-course summary for the parent report and the course catalogue. */
+function courseSummary(progress: CourseProgressRow[]) {
+  return COURSES.map((c) => {
+    const mine = progress.filter((p) => p.course_id === c.id);
+    return {
+      courseId: c.id,
+      subject: c.subject,
+      level: c.level,
+      title: c.title,
+      lessons: c.lessons.length,
+      completed: mine.filter((p) => p.completed_at !== null).length,
+      started: mine.length > 0,
+    };
+  });
+}
 
 const MAX_CHILDREN = 5;
 const COINS_PER_STAR = 5;
@@ -80,6 +133,68 @@ export function childrenRouter(db: Db) {
     res.json({ level: publicLevel(level, true), savedProgram: rows[0]?.code_snippet ?? null });
   });
 
+  r.get('/:childId/courses', async (req, res) => {
+    const child = await getChildForUser(db, req.params.childId, req.user!.id);
+    const { rows } = await db.query<CourseProgressRow>('SELECT * FROM course_progress WHERE child_id = $1', [child.id]);
+    res.json({ progress: rows.map(publicLessonProgress), courses: courseSummary(rows) });
+  });
+
+  /**
+   * Submit answers to a lesson's tasks and quiz. Grading happens here with the shared answer key,
+   * so rewards cannot be faked. XP and coins are granted once, on the first pass.
+   */
+  r.post('/:childId/lessons/:lessonId/submit', async (req, res) => {
+    const body = lessonSubmitSchema.parse(req.body);
+    const found = findLesson(req.params.lessonId);
+    if (!found) throw new HttpError(404, 'Урок не найден');
+    const { course, lesson, index } = found;
+    const child = await getChildForUser(db, req.params.childId, req.user!.id);
+
+    if (index > 0) {
+      const prev = course.lessons[index - 1];
+      const { rows } = await db.query(
+        'SELECT 1 FROM course_progress WHERE child_id = $1 AND lesson_id = $2 AND completed_at IS NOT NULL',
+        [child.id, prev.id],
+      );
+      if (!rows[0]) throw new HttpError(403, 'Сначала пройди предыдущий урок');
+    }
+
+    const grade = gradeLesson(lesson, body.answers as Answers);
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows: before } = await client.query(
+        'SELECT completed_at FROM course_progress WHERE child_id = $1 AND lesson_id = $2 FOR UPDATE',
+        [child.id, lesson.id],
+      );
+      const firstPass = grade.passed && !before[0]?.completed_at;
+      const { rows } = await client.query<CourseProgressRow>(
+        `INSERT INTO course_progress (child_id, course_id, lesson_id, best_score, max_score, attempts, completed_at)
+         VALUES ($1, $2, $3, $4, $5, 1, CASE WHEN $6 THEN now() END)
+         ON CONFLICT (child_id, lesson_id) DO UPDATE SET
+           best_score = GREATEST(course_progress.best_score, EXCLUDED.best_score),
+           max_score = EXCLUDED.max_score,
+           attempts = course_progress.attempts + 1,
+           completed_at = COALESCE(course_progress.completed_at, EXCLUDED.completed_at),
+           updated_at = now()
+         RETURNING *`,
+        [child.id, course.id, lesson.id, grade.score, grade.max, grade.passed],
+      );
+      const rewards = firstPass ? LESSON_REWARD : { xp: 0, coins: 0 };
+      const { rows: childRows } = await client.query(
+        'UPDATE child_profiles SET xp = xp + $2, coins = coins + $3 WHERE id = $1 RETURNING xp, coins',
+        [child.id, rewards.xp, rewards.coins],
+      );
+      await client.query('COMMIT');
+      res.json({ ...grade, rewards, progress: publicLessonProgress(rows[0]), child: childRows[0] });
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+  });
+
   /** Parent dashboard report: per-level results, mastery per concept and whether the base course is done. */
   r.get('/:childId/report', async (req, res) => {
     const child = await getChildForUser(db, req.params.childId, req.user!.id);
@@ -112,6 +227,9 @@ export function childrenRouter(db: Db) {
         if (l.completed) concepts[c].done++;
       }
     }
+    const { rows: courseRows } = await db.query<CourseProgressRow>('SELECT * FROM course_progress WHERE child_id = $1', [
+      child.id,
+    ]);
     const base = levels.filter((l) => !l.isPremium);
     const lastPlayed = levels.map((l) => l.lastPlayedAt).filter(Boolean).sort().at(-1) ?? null;
     res.json({
@@ -125,6 +243,7 @@ export function childrenRouter(db: Db) {
         attempts: levels.reduce((n, l) => n + l.attempts, 0),
       },
       baseCourseCompleted: base.length > 0 && base.every((l) => l.completed),
+      courses: courseSummary(courseRows).filter((c) => c.started),
       lastPlayedAt: lastPlayed,
     });
   });

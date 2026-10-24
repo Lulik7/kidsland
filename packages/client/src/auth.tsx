@@ -10,7 +10,7 @@ interface AuthState {
 }
 
 /** Where a user lands after signing in. */
-export const homeFor = (user: User) => (user.role === 'tutor' ? '/tutor' : '/kids');
+export const homeFor = (user: User) => (user.role === 'tutor' ? '/tutor' : user.role === 'admin' ? '/admin' : '/kids');
 
 const AuthContext = createContext<AuthState | null>(null);
 
