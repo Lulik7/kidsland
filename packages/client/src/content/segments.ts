@@ -4,7 +4,7 @@
  */
 
 /** Keys whose values are never translated: ids, code and other data. */
-const SKIP = new Set(['id', 'color', 'code', 'subject', 'topic', 'level', 'section']);
+const SKIP = new Set(['id', 'color', 'code', 'subject', 'topic', 'level', 'section', 'read', 'reading', 'speak']);
 const CYRILLIC = /[а-яё]/i;
 /** A word line of a language course: «hola [ола] — привет». The Cyrillic reading only helps Russian readers. */
 const WORD_LINE = /^(.+?) \[[^\]]*\] — (.+)$/;

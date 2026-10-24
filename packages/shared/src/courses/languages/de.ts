@@ -1,10 +1,15 @@
 import type { LanguageData } from './build';
+import { DE_EXTRA_1 } from './de-extra-1';
+import { DE_EXTRA_2 } from './de-extra-2';
+import { DE_EXTRA_3 } from './de-extra-3';
 
 export const GERMAN: LanguageData = {
   topic: 'lang-de',
   name: 'Немецкий',
   inName: 'по-немецки',
   color: '#e0a100',
+  speak: 'de-DE',
+  extra: DE_EXTRA_1 + DE_EXTRA_2 + DE_EXTRA_3,
   notes: {
     0: 'На немецком говорят в Германии, Австрии, Швейцарии, Лихтенштейне и Люксембурге. Это самый распространённый родной язык в Европе.',
     2: 'Немецкие слова в основном читаются так, как пишутся. Буквосочетание ei читается как «ай», ie как «и», а sch как «ш».',

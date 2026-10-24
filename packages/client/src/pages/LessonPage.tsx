@@ -270,7 +270,7 @@ export function LessonPage() {
               {s.dialog ? (
                 <Dialog lines={s.dialog} lang={s.speak ?? 'en-GB'} />
               ) : s.translation ? (
-                <ReadingText text={s.text} translation={s.translation} lang={s.speak} />
+                <ReadingText text={s.text} translation={s.translation} reading={s.reading} lang={s.speak} />
               ) : (
                 s.text && <p>{s.text}</p>
               )}

@@ -29,6 +29,8 @@ export interface DialogLine {
   line: string;
   /** Its Russian translation. */
   tr: string;
+  /** How to read the line, in Russian letters, for languages with their own script. */
+  read?: string;
 }
 
 export interface LessonSection {
@@ -40,6 +42,8 @@ export interface LessonSection {
   dialog?: DialogLine[];
   /** A translation the child can open after reading `text` on their own. */
   translation?: string;
+  /** How to read `text`, in Russian letters, for languages with their own script. */
+  reading?: string;
   /** Language for reading `text` or the dialogue aloud (like 'en-GB'); the page shows a listen button. */
   speak?: string;
 }

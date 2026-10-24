@@ -56,6 +56,7 @@ export function Dialog({ lines, lang }: { lines: DialogLine[]; lang: string }) {
           <button type="button" className="bubble-line" onClick={() => say(l.line, lang, l.who === first ? 0 : 1)} lang={lang}>
             {l.line}
           </button>
+          {showTr && l.read && <span className="bubble-read">{l.read}</span>}
           {showTr && <span className="bubble-tr">{l.tr}</span>}
         </div>
       ))}
@@ -64,9 +65,10 @@ export function Dialog({ lines, lang }: { lines: DialogLine[]; lang: string }) {
 }
 
 /** A reading text with the translation hidden until the child asks for it. */
-export function ReadingText({ text, translation, lang }: { text: string; translation?: string; lang?: string }) {
+export function ReadingText({ text, translation, reading, lang }: { text: string; translation?: string; reading?: string; lang?: string }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [read, setRead] = useState(false);
   return (
     <div className="reading">
       <p className="reading-text" lang={lang}>
@@ -74,12 +76,18 @@ export function ReadingText({ text, translation, lang }: { text: string; transla
       </p>
       <div className="dialog-tools">
         {lang && <ListenButton onPlay={() => say(text, lang, 0, 0.85)} />}
+        {reading && (
+          <button type="button" className="tr-toggle" onClick={() => setRead(!read)}>
+            {read ? t('Скрыть чтение') : t('Как читать')}
+          </button>
+        )}
         {translation && (
           <button type="button" className="tr-toggle" onClick={() => setOpen(!open)}>
             {open ? t('Скрыть перевод') : t('Показать перевод')}
           </button>
         )}
       </div>
+      {read && reading && <p className="reading-read">{reading}</p>}
       {open && translation && <p className="reading-tr">{translation}</p>}
     </div>
   );

@@ -22,7 +22,7 @@ import type { DialogLine, LessonSection, Question } from '../types';
 export interface LessonExtra {
   grammar?: { title: string; text: string };
   dialogs: { a: string; b: string; lines: DialogLine[] }[];
-  text: { line: string; tr: string }[];
+  text: { line: string; tr: string; read?: string }[];
   practice: Question[];
 }
 
@@ -34,10 +34,14 @@ function placed(right: string, wrong: string[], seed: number): { options: string
   return { options, answer: at };
 }
 
+/** «line = translation», or «line [reading] = translation» for languages with their own script. */
 const pair = (raw: string, where: string) => {
   const i = raw.indexOf(' = ');
   if (i < 0) throw new Error(`No « = » translation in «${raw}» (${where})`);
-  return { line: raw.slice(0, i).trim(), tr: raw.slice(i + 3).trim() };
+  const left = raw.slice(0, i).trim();
+  const tr = raw.slice(i + 3).trim();
+  const m = /^(.*?)\s*\[([^\]]+)\]$/.exec(left);
+  return m ? { line: m[1], tr, read: m[2] } : { line: left, tr };
 };
 
 export function parseExtra(text: string, lessonIds: string[], speak: string): Map<number, LessonExtra> {
@@ -136,6 +140,7 @@ export function extraSections(extra: LessonExtra, speak: string): { before: Less
       title: 'Текст для чтения',
       text: extra.text.map((t) => t.line).join(' '),
       translation: extra.text.map((t) => t.tr).join(' '),
+      ...(extra.text.some((t) => t.read) ? { reading: extra.text.map((t) => t.read ?? '').join(' ') } : {}),
       speak,
     });
   return { before, after };

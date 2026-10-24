@@ -866,4 +866,6 @@ export const EN: Record<string, string> = {
   "Слушать диалог": "Listen to the dialogue",
   "Скрыть перевод": "Hide translation",
   "Показать перевод": "Show translation",
+  "Как читать": "How to read",
+  "Скрыть чтение": "Hide reading",
 };

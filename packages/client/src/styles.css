@@ -1529,4 +1529,6 @@ h1, h2 { color: #34404f; }
 .bubble-tr { font-size: 0.95rem; color: var(--muted); }
 .reading-text { font-size: 1.15rem; line-height: 1.7; background: #fffdf6; border-radius: 18px; padding: 14px 18px; border: 2px dashed #f4e1b8; }
 .reading-tr { color: var(--muted); }
+.reading-read { color: #7a6a9a; font-style: italic; }
+.bubble-read { display: block; font-size: 0.82rem; font-style: italic; color: #7a6a9a; }
 .question .listen-btn { margin: 4px 0 10px; }
