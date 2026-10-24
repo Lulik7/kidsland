@@ -1,5 +1,5 @@
 import { WcBranch } from '../components/Watercolor';
-import { findSection, LANGUAGES, TOPICS, TUTOR_SECTIONS } from '@kidsland/shared';
+import { findSection, TOPICS, TUTOR_SECTIONS } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
@@ -17,6 +17,7 @@ export function TutorsPage() {
   const asked = params.get('section') ?? '';
   const section = (TUTOR_SECTIONS.some((x) => x.id === asked) && asked) || TUTOR_SECTIONS.find((x) => x.topics.some((tp) => tp.id === subject))?.id || '';
   const topics = findSection(section)?.topics ?? [];
+  // The language filter was removed from the page; links with ?language= still filter.
   const language = params.get('language') ?? '';
   const age = params.get('age') ?? '';
   const sort = params.get('sort') ?? 'rating';
@@ -90,17 +91,6 @@ export function TutorsPage() {
               {AGES.map((a) => (
                 <option key={a} value={a}>
                   {a}{' '}{t('лет')}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('Язык')}
-            <select value={language} onChange={(e) => set('language', e.target.value)}>
-              <option value="">{t('Любой')}</option>
-              {LANGUAGES.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {t(l.name)}
                 </option>
               ))}
             </select>

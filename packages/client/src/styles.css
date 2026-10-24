@@ -1422,3 +1422,9 @@ h1, h2 { color: #34404f; }
   .sf-house { right: 2%; width: 100px; height: 135px; }
   .sf-cloud1, .sf-cloud2 { display: none; }
 }
+
+/* ---------- Chess diagrams ---------- */
+.chess-diagrams { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 16px; }
+.chess-diagram { margin: 0; display: grid; gap: 8px; justify-items: center; max-width: 320px; }
+.chess-diagram svg { max-width: 100%; height: auto; filter: drop-shadow(0 8px 16px rgba(120, 90, 60, 0.18)); }
+.chess-diagram figcaption { font-size: 0.95rem; color: var(--muted); text-align: center; line-height: 1.4; }

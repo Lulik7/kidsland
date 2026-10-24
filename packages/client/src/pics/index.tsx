@@ -17,6 +17,18 @@ export const sectionPic = (id: string) => (id === 'coding' ? '1f4bb' : (SUBJECT_
 
 /** Instruments and languages have their own pictures; other courses are told apart by their title. */
 export const coursePic = (c: Course) =>
-  (c.topic && TOPIC_PIC[c.topic]) || (CODING.has(c.subject) ? undefined : keywordPic(c.title)) || SUBJECT_PIC[c.subject] || '2b50';
+  (c.topic && TOPIC_PIC[c.topic]) || (CODING.has(c.subject) || c.subject === 'chess' ? undefined : keywordPic(c.title)) || SUBJECT_PIC[c.subject] || '2b50';
 
-export const lessonPic = (c: Course, lessonTitle: string) => keywordPic(lessonTitle) ?? coursePic(c);
+/** Chess lessons show the piece they are about. */
+const CHESS_PIC: [RegExp, string][] = [
+  [/корол|мат|шах(?!мат)/i, 'chess-k'], [/ферз/i, 'chess-q'], [/ладь|рокиров/i, 'chess-r'], [/слон/i, 'chess-b'],
+  [/кон[ья]|вилк/i, 'chess-n'], [/пешк|пешеч|проходн/i, 'chess-p'], [/доск|партия|дебют|защит|гамбит/i, 'chess-board'],
+];
+
+const chessPic = (text: string) => CHESS_PIC.find(([re]) => re.test(text))?.[1];
+
+/** The picture next to a theory card: chess cards show pieces, others a picture found by keywords. */
+export const cardPic = (c: Course, title: string) => (c.subject === 'chess' ? chessPic(title) : keywordPic(title));
+
+export const lessonPic = (c: Course, lessonTitle: string) =>
+  (c.subject === 'chess' ? (chessPic(lessonTitle) ?? 'chess-duo') : keywordPic(lessonTitle)) ?? coursePic(c);

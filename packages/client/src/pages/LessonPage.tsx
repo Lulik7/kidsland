@@ -11,8 +11,10 @@ import { coursesBase } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { COIN, HERO } from '../game/sprites';
 import { useLang } from '../i18n';
-import { useLocal } from '../content';
-import { keywordPic, lessonPic, Pic } from '../pics';
+import { ChessBoard } from '../components/ChessBoard';
+import { useLocal, useTc } from '../content';
+import { CHESS_DIAGRAMS } from '../content/chess';
+import { cardPic, lessonPic, Pic } from '../pics';
 
 type Tab = 'theory' | LessonPart;
 
@@ -59,6 +61,7 @@ export function LessonPage() {
   const resultRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
   const view = useLocal(found);
+  const tc = useTc();
 
   useEffect(() => {
     if (found) setAnswers(freshAnswers([...found.lesson.practice, ...found.lesson.quiz]));
@@ -75,6 +78,7 @@ export function LessonPage() {
   const { course, lesson, index } = found;
   // Texts in the interface language; ids, grading and pictures use the original lesson.
   const shown = view ?? found;
+  const diagrams = course.subject === 'chess' ? (CHESS_DIAGRAMS[lesson.title] ?? []) : [];
   const nextLesson = course.lessons[index + 1];
   const done = readLocally || Boolean(progress?.find((p) => p.lessonId === lesson.id)?.completed);
 
@@ -255,7 +259,7 @@ export function LessonPage() {
         <section className="theory">
           {shown.lesson.sections.map((s, i) => {
             const title = lesson.sections[i]?.title;
-            const pic = i > 0 && title ? keywordPic(title) : undefined;
+            const pic = i > 0 && title ? cardPic(course, title) : undefined;
             return (
             <article key={i} className="theory-card">
               {pic && <Pic code={pic} size={72} className="tc-pic" />}
@@ -263,6 +267,13 @@ export function LessonPage() {
               <p>{s.text}</p>
               {s.code && <pre className="code">{s.code}</pre>}
               {s.tip && <div className="tip">⭐ {s.tip}</div>}
+            {i === 0 && diagrams.length > 0 && (
+              <div className="chess-diagrams">
+                {diagrams.map((d, k) => (
+                  <ChessBoard key={k} {...d} caption={d.caption && tc(d.caption)} />
+                ))}
+              </div>
+            )}
             </article>
             );
           })}
