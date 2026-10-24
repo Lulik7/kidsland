@@ -3,7 +3,7 @@ import express from 'express';
 import { mkdirSync } from 'node:fs';
 import { config } from './config';
 import type { Db } from './db/pool';
-import { errorHandler } from './errors';
+import { errorHandler, HttpError } from './errors';
 import { levelsForChild, publicLevel } from './levels';
 import { authRouter } from './routes/auth';
 import { bookingsRouter } from './routes/bookings';
@@ -40,6 +40,14 @@ export function createApp(db: Db) {
   app.get('/api/levels', async (_req, res) => {
     const levels = await levelsForChild(db, null, false);
     res.json({ levels: levels.map((l) => publicLevel(l, false)) });
+  });
+
+  // Guest trial from the landing page: free levels only, nothing is saved.
+  app.get('/api/levels/:slug', async (req, res) => {
+    const levels = await levelsForChild(db, null, false);
+    const level = levels.find((l) => l.slug === req.params.slug && !l.is_premium);
+    if (!level) throw new HttpError(404, 'Уровень не найден');
+    res.json({ level: { ...publicLevel(level, true), unlocked: true }, savedProgram: null });
   });
 
   app.use(errorHandler);

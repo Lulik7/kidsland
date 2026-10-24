@@ -139,8 +139,11 @@ export function Landing() {
           {(Object.keys(THEMES) as Theme[]).map((key) => {
             const th = THEMES[key];
             const count = levels.filter((l) => l.theme === key).length;
+            // A parent plays with a child profile so stars are saved; a guest gets the first free level as a trial.
+            const first = levels.find((l) => l.theme === key && !l.isPremium);
+            const to = user?.role === 'parent' ? '/kids' : first ? `/play/${first.slug}` : '/register';
             return (
-              <div key={key} className="world" tabIndex={0} style={{ background: `linear-gradient(150deg, ${th.bg2}, ${th.bg})` }}>
+              <Link key={key} to={to} className="world" style={{ background: `linear-gradient(150deg, ${th.bg2}, ${th.bg})` }}>
                 <WorldScene theme={key} />
                 <div className="world-art">
                   <Sprite svg={WALL[key]} size={56} className="world-wall" />
@@ -150,7 +153,8 @@ export function Landing() {
                 <h3>{t(th.name)}</h3>
                 <p>{t(th.tagline)}</p>
                 {count > 0 && <span className="world-count">{count} {plural(count, [t('уровень'), t('уровня'), t('уровней')])}</span>}
-              </div>
+                <span className="world-play">{t('Играть →')}</span>
+              </Link>
             );
           })}
         </div>

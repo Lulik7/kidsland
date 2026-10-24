@@ -259,6 +259,7 @@ export const api = {
     request<{ token: string; user: User }>('/auth/login', { method: 'POST', body: { email, password } }),
   me: () => request<{ user: User }>('/auth/me'),
   publicLevels: () => request<{ levels: LevelSummary[] }>('/levels'),
+  publicLevel: (slug: string) => request<{ level: LevelDetail; savedProgram: Program | null }>(`/levels/${slug}`),
   children: () => request<{ children: Child[] }>('/children'),
   createChild: (nickname: string, avatarUrl: string) =>
     request<{ child: Child }>('/children', { method: 'POST', body: { nickname, avatarUrl } }),

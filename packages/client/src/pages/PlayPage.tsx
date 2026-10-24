@@ -27,6 +27,10 @@ type Phase = 'edit' | 'running' | 'done';
 export function PlayPage() {
   const t = useT();
   const { childId = '', slug = '' } = useParams();
+  // Without a child profile this is the guest trial from the landing page: free levels, nothing saved.
+  const guest = !childId;
+  const home = guest ? '/' : `/kids/${childId}`;
+  const playPath = (s: string) => (guest ? `/play/${s}` : `/kids/${childId}/play/${s}`);
   const navigate = useNavigate();
   const editor = useRef<EditorHandle>(null);
   const [level, setLevel] = useState<LevelDetail | null>(null);
@@ -55,8 +59,7 @@ export function PlayPage() {
     setLevel(null);
     setResult(null);
     setError(null);
-    api
-      .level(childId, slug)
+    (guest ? api.publicLevel(slug) : api.level(childId, slug))
       .then((r) => {
         setLevel(r.level);
         setSaved(r.savedProgram);
@@ -64,7 +67,7 @@ export function PlayPage() {
       })
       .catch((e) => setError(e.message));
     return () => window.clearTimeout(timer.current);
-  }, [childId, slug, resetRobot]);
+  }, [guest, childId, slug, resetRobot]);
 
   const run = () => {
     if (!level || !editor.current) return;
@@ -73,7 +76,18 @@ export function PlayPage() {
     setPhase('running');
     const local = runProgram(level.config, program);
     // The server re-checks the program and grants rewards; start it now so it is ready when the animation ends.
-    const submitted = api.submit(childId, level.slug, program);
+    const submitted: Promise<AttemptResult> = guest
+      ? Promise.resolve({
+          success: local.success,
+          failReason: local.failReason ?? null,
+          stars: local.stars,
+          bestStars: Math.max(local.stars, level.stars),
+          score: local.score,
+          blocksUsed: local.blocksUsed,
+          rewards: { xp: 0, coins: 0 },
+          child: { xp: 0, coins: 0 },
+        })
+      : api.submit(childId, level.slug, program);
     const stepMs = SPEEDS[speed];
     let i = 0;
     const finish = async () => {
@@ -83,10 +97,10 @@ export function PlayPage() {
         setResult(r);
         setLevel({ ...level, stars: r.bestStars });
         if (r.success) {
-          const { levels } = await api.levels(childId);
+          const { levels } = guest ? await api.publicLevels() : await api.levels(childId);
           const idx = levels.findIndex((l) => l.slug === level.slug);
           const next = levels[idx + 1];
-          setNextSlug(next && next.unlocked ? next.slug : null);
+          setNextSlug(next && (guest ? !next.isPremium : next.unlocked) ? next.slug : null);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : t('Ошибка сохранения'));
@@ -112,7 +126,7 @@ export function PlayPage() {
   if (error && !level) {
     return (
       <div className="center-note">
-        {error} <Link to={`/kids/${childId}`}>{t('К карте')}</Link>
+        {error} <Link to={home}>{guest ? t('На главную') : t('К карте')}</Link>
       </div>
     );
   }
@@ -126,7 +140,7 @@ export function PlayPage() {
   return (
     <main className="play" style={{ ['--world' as string]: th.bg, ['--world2' as string]: th.bg2 }}>
       <div className="play-head">
-        <Link to={`/kids/${childId}`} className="btn btn-light btn-round" aria-label={t('К карте')}>
+        <Link to={home} className="btn btn-light btn-round" aria-label={guest ? t('На главную') : t('К карте')}>
           ←
         </Link>
         <Sprite svg={HERO[level.theme]('right')} size={52} className="play-hero" />
@@ -139,6 +153,11 @@ export function PlayPage() {
         </div>
         <Stars n={level.stars} size={26} />
       </div>
+      {guest && (
+        <div className="guest-note">
+          {t('Пробный режим: прогресс не сохраняется.')} <Link to="/register">{t('Зарегистрируйтесь бесплатно')}</Link>{t(', чтобы копить звёзды, опыт и монеты.')}
+        </div>
+      )}
       <div className="play-body">
         <section className={`editor-pane${phase === 'running' ? ' running' : ''}`}>
           <div className="pane-head">
@@ -235,12 +254,12 @@ export function PlayPage() {
                     {t('Ещё раз')}
                   </button>
                   {nextSlug ? (
-                    <button className="btn btn-primary" onClick={() => navigate(`/kids/${childId}/play/${nextSlug}`)}>
+                    <button className="btn btn-primary" onClick={() => navigate(playPath(nextSlug))}>
                       {t('Следующий уровень')}
                     </button>
                   ) : (
-                    <Link className="btn btn-primary" to={`/kids/${childId}`}>
-                      {t('К карте')}
+                    <Link className="btn btn-primary" to={guest ? '/register' : home}>
+                      {guest ? t('Зарегистрироваться') : t('К карте')}
                     </Link>
                   )}
                 </div>

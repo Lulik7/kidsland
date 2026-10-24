@@ -25,23 +25,23 @@
 
 /* Dark theme: pale tints are mixed into the dark card colour via --tint */
 :root[data-theme='dark'] {
-  --bg: #15122b;
+  --bg: #221d3f;
   --ink: #f1eeff;
   --muted: #aaa4cc;
-  --card: #221d45;
-  --line: #3a3368;
-  --deep: #0d0a22;
+  --card: #2e2858;
+  --line: #463e7a;
+  --deep: #17132f;
   --tint: 16%;
   --t-green: #6fe3a2;
   --t-red: #ff9b85;
   --t-amber: #ffd36b;
   --t-violet: #c3b5ff;
-  --topbar: rgba(21, 18, 43, 0.92);
+  --topbar: rgba(34, 29, 63, 0.92);
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
 :root[data-theme='dark'] a:not(.btn) { color: #a996ff; }
-:root[data-theme='dark'] .check-bar { background: rgba(34, 29, 69, 0.96); }
+:root[data-theme='dark'] .check-bar { background: rgba(46, 40, 88, 0.96); }
 :root[data-theme='dark'] img, :root[data-theme='dark'] video { filter: brightness(0.92); }
 
 * { box-sizing: border-box; }
@@ -1218,3 +1218,12 @@ button.topic-chip { font: inherit; font-weight: 800; cursor: pointer; }
 .hc-slide.on { animation: hc-slide-in 0.6s ease both; }
 @keyframes hc-slide-in { from { transform: translateX(30px); } to { transform: none; } }
 .rg-novoice { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 3; background: rgba(255, 210, 63, 0.95); color: #241d4f; border-radius: 12px; padding: 8px 12px; font-weight: 700; font-size: 0.85rem; }
+.sections-page .track-row + .track-title, .sections-page .topic-chips + p + .track-title { margin-top: 48px; }
+.sections-page .track-title { margin-top: 36px; }
+
+/* World cards on the landing page open the game */
+a.world, :root[data-theme='dark'] a.world { color: #fff; text-decoration: none; display: block; cursor: pointer; }
+.world:focus-visible .world-scene { opacity: 1; }
+.world-play { display: inline-block; margin-left: 8px; background: #fff; color: #2a2350; padding: 4px 14px; border-radius: 999px; font-weight: 800; font-size: 0.9rem; transition: transform 0.2s; }
+.world:hover .world-play { transform: scale(1.08); }
+.guest-note { margin: 0 auto 12px; max-width: 1200px; padding: 10px 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); text-align: center; font-weight: 700; }

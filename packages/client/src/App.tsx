@@ -143,6 +143,14 @@ export function App() {
         <Route path="/support" element={<SupportPage />} />
         <Route path="/admin" element={<RequireAuth role="admin"><AdminPage /></RequireAuth>} />
         <Route path="/lessons/demo" element={<DemoLesson />} />
+        <Route
+          path="/play/:slug"
+          element={
+            <Suspense fallback={<div className="center-note">{t('Загружаем игру…')}</div>}>
+              <PlayPage />
+            </Suspense>
+          }
+        />
         <Route path="/kids" element={<RequireAuth role="parent"><KidsPage /></RequireAuth>} />
         <Route path="/kids/:childId" element={<RequireAuth role="parent"><LevelMap /></RequireAuth>} />
         <Route

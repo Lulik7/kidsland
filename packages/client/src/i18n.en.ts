@@ -845,4 +845,9 @@ export const EN: Record<string, string> = {
   "На этом компьютере нет голоса для этого языка, поэтому робот показывает текст. Голос можно добавить в настройках Windows: «Время и язык» → «Речь», или открыть сайт в браузере Microsoft Edge.": "This computer has no voice for this language, so the robot shows the text. You can add a voice in Windows Settings: “Time & language” → “Speech”, or open the site in Microsoft Edge.",
   "Все": "All",
   "Для всех": "For everyone",
+  "Играть →": "Play →",
+  "На главную": "Home",
+  "Пробный режим: прогресс не сохраняется.": "Trial mode: progress is not saved.",
+  "Зарегистрируйтесь бесплатно": "Sign up for free",
+  ", чтобы копить звёзды, опыт и монеты.": " to collect stars, XP and coins.",
 };

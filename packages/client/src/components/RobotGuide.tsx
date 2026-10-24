@@ -165,11 +165,34 @@ const makeScenes = (t: T): Scene[] => [
   },
 ];
 
-function voiceFor(lang: string): SpeechSynthesisVoice | null {
+function voicesFor(lang: string): SpeechSynthesisVoice[] {
   const voices = window.speechSynthesis?.getVoices() ?? [];
   const NAMES: Record<string, RegExp> = { ru: /russian|русск/i, en: /english/i, el: /greek|ελλην/i, he: /hebrew|עברית/i };
-  return voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith(lang)) ?? voices.find((v) => NAMES[lang]?.test(v.name)) ?? null;
+  const byLang = voices.filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith(lang));
+  return byLang.length ? byLang : voices.filter((v) => NAMES[lang]?.test(v.name));
 }
+
+// Voice names that tell a man's voice from a woman's (Windows, Edge, Chrome, macOS).
+const MALE = /david|mark|george|guy|james|ryan|christopher|eric|roger|daniel|fred|pavel|dmitr|yuri|maxim|stefanos|nestoras|asaf|avri|\bmale\b/i;
+const FEMALE = /zira|hazel|susan|aria|jenny|libby|sonia|samantha|karen|victoria|irina|svetlana|dariya|ekaterina|milena|katya|athina|melina|hila|carmit|female|google/i;
+const gender = (v: SpeechSynthesisVoice) => (MALE.test(v.name) ? 'm' : FEMALE.test(v.name) ? 'f' : null);
+
+/**
+ * Picks the narrator voice. The English voice is the reference: in other languages the guide looks for a voice
+ * of the same kind, so the robot sounds alike in every language. When only a woman's voice exists and the
+ * English one is a man's, the pitch goes down to bring the timbre closer.
+ */
+function voiceFor(lang: string): { voice: SpeechSynthesisVoice; pitch: number } | null {
+  const list = voicesFor(lang);
+  if (!list.length) return null;
+  const ref = voicesFor('en')[0];
+  const want = ref ? gender(ref) : null;
+  const voice = (want && list.find((v) => gender(v) === want)) || list[0];
+  return { voice, pitch: want === 'm' && gender(voice) === 'f' ? 1.05 : 1.75 };
+}
+
+// Recorded narration for languages that computers often have no voice for (Chrome on Windows has no Greek).
+const RECORDED = new Set(['el']);
 
 let audio: AudioContext | null = null;
 
@@ -209,7 +232,7 @@ const phrases = (text: string) => text.match(/[^.!?…:]+[.!?…:]*/g)?.map((p) 
  * Speaks text in a funny robot voice: very high and quick, with the pitch hopping from phrase to phrase
  * and a beep-boop in front of each phrase. Returns a function that stops it.
  */
-function robotSay(text: string, voice: SpeechSynthesisVoice, onEnd: () => void): () => void {
+function robotSay(text: string, { voice, pitch }: { voice: SpeechSynthesisVoice; pitch: number }, onEnd: () => void): () => void {
   let stopped = false;
   let wait: number | undefined;
   const list = phrases(text);
@@ -221,7 +244,7 @@ function robotSay(text: string, voice: SpeechSynthesisVoice, onEnd: () => void):
       const u = new SpeechSynthesisUtterance(list[i]);
       u.voice = voice;
       u.lang = voice.lang;
-      u.pitch = 1.75 + Math.random() * 0.25;
+      u.pitch = pitch + Math.random() * 0.25;
       u.rate = 1.12 + Math.random() * 0.15;
       u.onend = () => step(i + 1);
       u.onerror = () => step(i + 1);
@@ -234,6 +257,26 @@ function robotSay(text: string, voice: SpeechSynthesisVoice, onEnd: () => void):
     stopped = true;
     window.clearTimeout(wait);
     window.speechSynthesis.cancel();
+  };
+}
+
+/** Plays a recorded narration file after a beep-boop. Returns a function that stops it. */
+function playRecorded(src: string, onEnd: () => void): () => void {
+  const a = new Audio(src);
+  let ended = false;
+  const end = () => {
+    if (!ended) {
+      ended = true;
+      onEnd();
+    }
+  };
+  a.onended = end;
+  a.onerror = end;
+  const wait = window.setTimeout(() => void a.play().catch(end), beepBoop());
+  return () => {
+    ended = true;
+    window.clearTimeout(wait);
+    a.pause();
   };
 }
 
@@ -263,7 +306,7 @@ export function RobotGuide() {
     return () => window.speechSynthesis.removeEventListener('voiceschanged', update);
   }, [canSpeak]);
   // The computer has voices, but none for the interface language: tell the viewer why it is silent.
-  const noVoice = canSpeak && sound && voiceCount > 0 && !voiceFor(lang);
+  const noVoice = canSpeak && sound && voiceCount > 0 && !voiceFor(lang) && !RECORDED.has(lang);
 
   useEffect(() => {
     if (!playing) return;
@@ -281,12 +324,14 @@ export function RobotGuide() {
       }
     };
     const voice = canSpeak && sound ? voiceFor(lang) : null;
-    const stop = voice ? robotSay(s.text, voice, () => window.setTimeout(next, 500)) : undefined;
+    const recorded = sound && !voice && RECORDED.has(lang);
+    const onEnd = () => window.setTimeout(next, 500);
+    const stop = voice ? robotSay(s.text, voice, onEnd) : recorded ? playRecorded(`/voice/${lang}/${scene}.mp3`, onEnd) : undefined;
     timer.current = window.setInterval(() => {
       const k = (Date.now() - startedAt) / duration;
       setProgress((scene + Math.min(1, k)) / SCENES.length);
       // Without a voice the timer moves the scenes; with one it is only a safety net.
-      if (k >= (voice ? 2.5 : 1)) next();
+      if (k >= (voice || recorded ? 2.5 : 1)) next();
     }, 100);
     return () => {
       done = true;
