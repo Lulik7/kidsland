@@ -1,4 +1,4 @@
-import { CHILD_SAFETY_TIPS, SUBJECTS, type Theme } from '@kidsland/shared';
+import { CHILD_SAFETY_TIPS, SECTIONS, SUBJECTS, type Theme } from '@kidsland/shared';
 import { CONTACTS } from '../contacts';
 import { SubjectCard } from '../components/SubjectCard';
 import { useEffect, useState } from 'react';
@@ -7,6 +7,8 @@ import { api, type LevelSummary, type Tutor } from '../api';
 import { useAuth } from '../auth';
 import { DemoBoard } from '../components/DemoBoard';
 import { RobotGuide } from '../components/RobotGuide';
+import { WorldScene } from '../components/WorldScene';
+import { Globe } from '../components/Globe';
 import { Sprite } from '../components/Sprite';
 import { TutorCard } from '../components/TutorCard';
 import { avatarSvg, COIN, GOAL, HERO, WALL } from '../game/sprites';
@@ -14,22 +16,9 @@ import { plural } from '../plural';
 import { THEMES } from '../themes';
 import { useT } from '../i18n';
 
-const STEPS = [
-  { n: 1, title: 'Собери программу', text: 'Перетаскивай цветные блоки-команды. Никакого набора текста.', color: '#4c97ff' },
-  { n: 2, title: 'Нажми «Запустить»', text: 'Герой выполняет команды шаг за шагом, а текущий блок подсвечивается.', color: '#ffab19' },
-  { n: 3, title: 'Получи звёзды', text: 'Короткая программа приносит больше звёзд, монет и опыта.', color: '#40bf4a' },
-];
-
-const SKILLS = [
-  { title: 'Последовательности', text: 'Порядок действий решает всё', color: '#4c97ff' },
-  { title: 'Циклы', text: 'Повторять, а не копировать', color: '#40bf4a' },
-  { title: 'Условия', text: 'Если стена впереди, повернуть', color: '#9966ff' },
-  { title: 'Отладка', text: 'Найти ошибку и попробовать снова', color: '#ff6680' },
-];
-
 const FEATURES = [
   { to: '/kids', title: 'Игры', text: '3 мира и 10 уровней: собирай программу из блоков и веди героя к цели.', icon: '🎮', color: '#4c97ff' },
-  { to: '/courses', title: 'Курсы', text: '24 курса по 8 направлениям и 3 уровням: теория, задания и викторины.', icon: '📚', color: '#2fc46b' },
+  { to: '/courses', title: 'Курсы', text: 'Программирование, музыка, языки и ещё 4 раздела: теория, задания и викторины.', icon: '📚', color: '#2fc46b' },
   { to: '/tutors', title: 'Наставники', text: 'Живые уроки с видео, общей доской и чатом. Первый урок бесплатно.', icon: '👩‍🏫', color: '#ff6b3d' },
   { to: '/parent', title: 'Кабинет родителя', text: 'Прогресс по темам, пройденные уроки и запись на занятия.', icon: '📈', color: '#9966ff' },
 ];
@@ -108,6 +97,22 @@ export function Landing() {
         </svg>
       </section>
 
+      <section className="wrap globe-section">
+        <Globe />
+        <div className="globe-text">
+          <span className="pill pill-dark">{t('Разделы Kidsland')}</span>
+          <h2>{t('Целый мир занятий для ребёнка')}</h2>
+          <p className="muted">{t('Программирование, музыка, рисование, языки, животные и многое другое: курсы для самостоятельной учёбы и живые уроки с наставниками.')}</p>
+          <div className="section-chips">
+            {SECTIONS.map((s) => (
+              <Link key={s.id} to={`/sections/${s.id}`} className="section-chip" style={{ ['--c' as string]: s.color }}>
+                {t(s.name)}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="wrap guide-section" id="guide">
         <div className="guide-text">
           <span className="pill pill-dark">{t('Видео-знакомство')}</span>
@@ -139,18 +144,6 @@ export function Landing() {
         </div>
       </section>
 
-      <section className="wrap">
-        <h2 className="section-title">{t('Как это работает')}</h2>
-        <div className="steps">
-          {STEPS.map((s) => (
-            <div key={s.n} className="step">
-              <div className="step-n" style={{ background: s.color }}>{s.n}</div>
-              <h3>{t(s.title)}</h3>
-              <p>{t(s.text)}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <section className="wrap">
         <h2 className="section-title">{t('Три мира приключений')}</h2>
@@ -159,7 +152,8 @@ export function Landing() {
             const th = THEMES[key];
             const count = levels.filter((l) => l.theme === key).length;
             return (
-              <div key={key} className="world" style={{ background: `linear-gradient(150deg, ${th.bg2}, ${th.bg})` }}>
+              <div key={key} className="world" tabIndex={0} style={{ background: `linear-gradient(150deg, ${th.bg2}, ${th.bg})` }}>
+                <WorldScene theme={key} />
                 <div className="world-art">
                   <Sprite svg={WALL[key]} size={56} className="world-wall" />
                   <Sprite svg={HERO[key]('right')} size={110} className={`world-hero world-hero-${key}`} />
@@ -174,20 +168,6 @@ export function Landing() {
         </div>
       </section>
 
-      <section className="wrap">
-        <h2 className="section-title">{t('Чему научится ребёнок')}</h2>
-        <div className="skills">
-          {SKILLS.map((s) => (
-            <div key={s.title} className="skill" style={{ borderColor: s.color }}>
-              <span className="skill-dot" style={{ background: s.color }} />
-              <div>
-                <b>{t(s.title)}</b>
-                <p>{t(s.text)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <section className="wrap">
         <h2 className="section-title">{t('Курсы для самостоятельного обучения')}</h2>

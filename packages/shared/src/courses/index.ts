@@ -14,6 +14,9 @@ import { computerCourse, computerMidCourse, computerProCourse } from './computer
 import { robloxCourse, robloxMidCourse, robloxProCourse } from './roblox';
 import { unityCourse, unityMidCourse, unityProCourse } from './unity';
 import { EXTRA_THEORY } from './extraTheory';
+import { MORE_CODING_LESSONS } from './codingMore';
+import { MUSIC_COURSES } from './music';
+import { INTRO_COURSES } from './intro';
 
 export * from './types';
 
@@ -25,7 +28,10 @@ export const COURSE_LEVELS: { id: CourseLevel; name: string }[] = [
 
 const withExtraTheory = (c: Course): Course => ({
   ...c,
-  lessons: c.lessons.map((l) => ({ ...l, sections: [...l.sections, ...(EXTRA_THEORY[l.id] ?? [])] })),
+  lessons: [...c.lessons, ...(MORE_CODING_LESSONS[c.id] ? [MORE_CODING_LESSONS[c.id]] : [])].map((l) => ({
+    ...l,
+    sections: [...l.sections, ...(EXTRA_THEORY[l.id] ?? [])],
+  })),
 });
 
 export const COURSES: Course[] = [
@@ -37,7 +43,7 @@ export const COURSES: Course[] = [
   gamesCourse, gamesMidCourse, gamesProCourse,
   unityCourse, unityMidCourse, unityProCourse,
   logicCourse, logicMidCourse, logicProCourse,
-].map(withExtraTheory);
+].map(withExtraTheory).concat(MUSIC_COURSES, INTRO_COURSES);
 
 /** Share of points needed to pass a lesson. */
 export const LESSON_PASS_RATIO = 0.6;

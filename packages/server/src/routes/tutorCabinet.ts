@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { unlink, writeFile } from 'node:fs/promises';
-import { LANGUAGE_IDS, SUBJECT_IDS, findUnsafeContent } from '@kidsland/shared';
+import { LANGUAGE_IDS, TOPIC_IDS, findUnsafeContent } from '@kidsland/shared';
 import express, { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
@@ -19,7 +19,7 @@ const profileSchema = z
       .union([z.string().trim().url().max(300), z.string().regex(/^\/api\/uploads\/videos\/[\w-]+\.\w+$/), z.literal('')])
       .optional(),
     avatar: z.string().max(40).optional(),
-    subjects: z.array(z.enum(SUBJECT_IDS as [string, ...string[]])).min(1, 'Выберите хотя бы один предмет'),
+    subjects: z.array(z.enum(TOPIC_IDS as [string, ...string[]])).min(1, 'Выберите хотя бы один предмет'),
     languages: z.array(z.enum(LANGUAGE_IDS as [string, ...string[]])).min(1, 'Выберите хотя бы один язык'),
     ageMin: z.number().int().min(4).max(18),
     ageMax: z.number().int().min(4).max(18),

@@ -67,5 +67,58 @@ export function SubjectIcon({ subject, size = 48 }: { subject: SubjectId; size?:
           <path d="M12 12L24 36L36 12M12 12h24" stroke="#fff" strokeWidth="3" fill="none" opacity=".7" />
         </svg>
       );
+    case 'music':
+      return (
+        <svg {...common}>
+          <path d="M18 34V12l22-5v22" stroke="#fff" strokeWidth="3.5" fill="none" strokeLinejoin="round" />
+          <ellipse cx="13" cy="35" rx="6" ry="5" fill="#fff" />
+          <ellipse cx="35" cy="30" rx="6" ry="5" fill="#fff" />
+          <path d="M18 17l22-5" stroke="#fff" strokeWidth="3.5" />
+        </svg>
+      );
+    case 'art':
+      return (
+        <svg {...common}>
+          <path d="M24 6C13 6 5 14 5 24s8 18 17 18c3 0 4-2 4-4 0-3-3-4-1-7 2-2 6-1 10-1 5 0 8-3 8-8C43 13 35 6 24 6z" fill="#fff" />
+          <circle cx="14" cy="22" r="3" fill="currentColor" />
+          <circle cx="20" cy="14" r="3" fill="currentColor" opacity=".7" />
+          <circle cx="30" cy="14" r="3" fill="currentColor" opacity=".5" />
+          <circle cx="36" cy="22" r="3" fill="currentColor" opacity=".8" />
+        </svg>
+      );
+    case 'leisure':
+      return (
+        <svg {...common}>
+          <circle cx="20" cy="26" r="13" fill="#fff" />
+          <path d="M10 20c6 4 14 4 20 0M9 29c6 4 16 4 22 0M14 15c2 8 2 16 0 23" stroke="currentColor" strokeWidth="2.2" fill="none" opacity=".55" />
+          <path d="M30 18l12-12" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" />
+          <path d="M33 26l9-16" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" opacity=".7" />
+        </svg>
+      );
+    case 'languages':
+      return (
+        <svg {...common}>
+          <path d="M6 8h22a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H16l-7 6v-6H6a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z" fill="#fff" />
+          <path d="M22 22h20a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4h-2v6l-7-6H22a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4z" fill="#fff" opacity=".7" />
+          <text x="10" y="21" fontSize="11" fontWeight="800" fill="currentColor">Aa</text>
+        </svg>
+      );
+    case 'animals':
+      return (
+        <svg {...common}>
+          <ellipse cx="24" cy="32" rx="10" ry="8" fill="#fff" />
+          <ellipse cx="11" cy="21" rx="4.5" ry="5.5" fill="#fff" />
+          <ellipse cx="37" cy="21" rx="4.5" ry="5.5" fill="#fff" />
+          <ellipse cx="18" cy="12" rx="4.5" ry="5.5" fill="#fff" />
+          <ellipse cx="30" cy="12" rx="4.5" ry="5.5" fill="#fff" />
+        </svg>
+      );
+    case 'spirit':
+      return (
+        <svg {...common}>
+          <path d="M24 41S6 30 6 18a9 9 0 0 1 18-3 9 9 0 0 1 18 3c0 12-18 23-18 23z" fill="#fff" />
+          <path d="M17 21c2 3 5 4 7 4s5-1 7-4" stroke="currentColor" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+        </svg>
+      );
   }
 }

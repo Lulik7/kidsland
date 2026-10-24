@@ -43,6 +43,8 @@ export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export interface Course {
   id: string;
   subject: SubjectId;
+  /** For sections with many topics (like music), the topic this course belongs to. */
+  topic?: string;
   level: CourseLevel;
   title: string;
   tagline: string;

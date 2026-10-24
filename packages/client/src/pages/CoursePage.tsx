@@ -1,4 +1,4 @@
-import { coursesBySubject, getCourse } from '@kidsland/shared';
+import { coursesBySubject, getCourse, SUBJECTS } from '@kidsland/shared';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { LevelBadge } from '../components/CourseCard';
 import { Faq } from '../components/Faq';
@@ -26,6 +26,8 @@ export function CoursePage() {
   const doneCount = course.lessons.filter((l) => passed.has(l.id)).length;
   const next = course.lessons.find((l, i) => unlocked(i) && !passed.has(l.id));
   const siblings = coursesBySubject(course.subject);
+  const coding = SUBJECTS.find((s) => s.id === course.subject)?.section === 'coding';
+  const tutorsLink = coding ? `/tutors?subject=${course.subject}` : course.subject === 'music' && course.topic ? `/tutors?subject=${course.topic}` : `/tutors?section=${course.subject}`;
 
   return (
     <main className="page course-page">
@@ -98,7 +100,7 @@ export function CoursePage() {
         </section>
         <aside className="course-side">
           <div className="card">
-            <h3 className="card-title">{t('Уровни направления')}</h3>
+            <h3 className="card-title">{coding ? t('Уровни направления') : t('Курсы направления')}</h3>
             <div className="level-ladder">
               {siblings.map((c) => (
                 <Link key={c.id} to={`${base}/${c.id}`} className={c.id === course.id ? 'rung on' : 'rung'}>
@@ -114,7 +116,7 @@ export function CoursePage() {
           <div className="card soft">
             <h3 className="card-title">{t('Нужна помощь?')}</h3>
             <p className="muted">{t('Наставник объяснит сложную тему на живом уроке. Первый урок бесплатный.')}</p>
-            <Link to={`/tutors?subject=${course.subject}`} className="btn btn-primary">
+            <Link to={tutorsLink} className="btn btn-primary">
               {t('Выбрать наставника')}
             </Link>
           </div>

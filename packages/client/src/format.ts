@@ -1,6 +1,6 @@
-import { LANGUAGES, SUBJECTS } from '@kidsland/shared';
+import { LANGUAGES, SUBJECTS, topicName } from '@kidsland/shared';
 
-export const subjectName = (id: string) => SUBJECTS.find((s) => s.id === id)?.name ?? id;
+export const subjectName = (id: string) => SUBJECTS.find((s) => s.id === id)?.name ?? topicName(id);
 export const languageName = (id: string) => LANGUAGES.find((l) => l.id === id)?.name ?? id;
 
 export const rub = (n: number) => `${n.toLocaleString('ru-RU')} ₽`;

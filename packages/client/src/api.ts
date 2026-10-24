@@ -257,7 +257,7 @@ export const api = {
     request<AttemptResult>(`/children/${childId}/attempts`, { method: 'POST', body: { levelSlug, program } }),
   report: (childId: string) => request<ChildReport>(`/children/${childId}/report`),
 
-  tutors: (filters: { subject?: string; language?: string; age?: number; sort?: string }) => {
+  tutors: (filters: { subject?: string; section?: string; language?: string; age?: number; sort?: string }) => {
     const q = new URLSearchParams();
     for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== '') q.set(k, String(v));
     return request<{ tutors: Tutor[] }>(`/tutors?${q}`);

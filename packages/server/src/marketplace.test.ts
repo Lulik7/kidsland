@@ -48,6 +48,11 @@ describe.skipIf(!url)('marketplace', () => {
       expect(t.ageMax).toBeGreaterThanOrEqual(13);
     }
     expect((await request(app!).get('/api/tutors?subject=cooking')).status).toBe(400);
+    const music = await request(app!).get('/api/tutors?section=music');
+    expect(music.body.tutors.length).toBeGreaterThan(0);
+    for (const t of music.body.tutors) expect(t.subjects.some((s: string) => ['guitar', 'piano', 'violin', 'drums', 'flute', 'saxophone', 'ukulele', 'accordion', 'cello', 'vocal'].includes(s))).toBe(true);
+    const guitar = await request(app!).get('/api/tutors?subject=guitar');
+    expect(guitar.body.tutors.map((t: { displayName: string }) => t.displayName)).toContain('София Белова');
   });
 
   it('hides unpublished tutors until they publish', async () => {

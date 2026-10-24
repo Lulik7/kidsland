@@ -1,4 +1,4 @@
-import { LANGUAGE_IDS, SUBJECT_IDS } from '@kidsland/shared';
+import { LANGUAGE_IDS, SECTION_IDS, TOPIC_IDS, topicsOfSection } from '@kidsland/shared';
 import { Router } from 'express';
 import { z } from 'zod';
 import type { Db } from '../db/pool';
@@ -6,7 +6,8 @@ import { HttpError } from '../errors';
 import { FREE_SLOT_SQL, isUuid, publicTutor, type TutorRow } from '../tutors';
 
 const filterSchema = z.object({
-  subject: z.enum(SUBJECT_IDS as [string, ...string[]]).optional(),
+  subject: z.enum(TOPIC_IDS as [string, ...string[]]).optional(),
+  section: z.enum(SECTION_IDS as [string, ...string[]]).optional(),
   language: z.enum(LANGUAGE_IDS as [string, ...string[]]).optional(),
   age: z.coerce.number().int().min(3).max(18).optional(),
   sort: z.enum(['rating', 'price', 'soonest']).default('rating'),
@@ -35,8 +36,9 @@ export function tutorsRouter(db: Db) {
           AND ($1::text IS NULL OR $1 = ANY(t.subjects))
           AND ($2::text IS NULL OR $2 = ANY(t.languages))
           AND ($3::int IS NULL OR $3 BETWEEN t.age_min AND t.age_max)
+          AND ($4::text[] IS NULL OR t.subjects && $4)
         ORDER BY ${ORDER[f.sort]}`,
-      [f.subject ?? null, f.language ?? null, f.age ?? null],
+      [f.subject ?? null, f.language ?? null, f.age ?? null, f.section ? topicsOfSection(f.section) : null],
     );
     res.json({ tutors: rows.map(publicTutor) });
   });

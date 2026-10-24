@@ -1,0 +1,118 @@
+import { COURSES, findSection, SECTIONS, SUBJECTS, type Section } from '@kidsland/shared';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { api, type Tutor } from '../api';
+import { CourseCard } from '../components/CourseCard';
+import { SubjectIcon } from '../components/SubjectIcon';
+import { TutorCard } from '../components/TutorCard';
+import { useT } from '../i18n';
+import { plural } from '../plural';
+
+const coursesOf = (s: Section) => {
+  const subjects = SUBJECTS.filter((x) => x.section === s.id).map((x) => x.id as string);
+  return COURSES.filter((c) => subjects.includes(c.subject));
+};
+const iconOf = (s: Section) => SUBJECTS.find((x) => x.section === s.id)!.id;
+
+/** All big areas of Kidsland with their topics. */
+export function SectionsPage() {
+  const t = useT();
+  return (
+    <main className="page sections-page">
+      <section className="courses-hero">
+        <span className="pill pill-dark">{t('Разделы Kidsland')}</span>
+        <h1>{t('Выбери, чему учиться')}</h1>
+        <p>{t('В каждом разделе есть курсы для самостоятельной учёбы и наставники для живых уроков. Первый урок с наставником бесплатный.')}</p>
+      </section>
+      <div className="section-grid">
+        {SECTIONS.map((s) => {
+          const lessons = coursesOf(s).reduce((n, c) => n + c.lessons.length, 0);
+          return (
+            <Link key={s.id} to={`/sections/${s.id}`} className="section-card" style={{ ['--c' as string]: s.color }}>
+              <span className="sec-icon">
+                <SubjectIcon subject={iconOf(s)} size={40} />
+              </span>
+              <h2>{t(s.name)}</h2>
+              <p>{t(s.tagline)}</p>
+              <div className="sec-topics">
+                {s.topics.slice(0, 6).map((tp) => (
+                  <span key={tp.id}>{t(tp.name)}</span>
+                ))}
+                {s.topics.length > 6 && <span>+{s.topics.length - 6}</span>}
+              </div>
+              <b className="sec-count">
+                {lessons} {plural(lessons, [t('урок'), t('урока'), t('уроков')])}
+              </b>
+            </Link>
+          );
+        })}
+      </div>
+    </main>
+  );
+}
+
+/** One section: topics, its courses and tutors who teach it. */
+export function SectionPage() {
+  const t = useT();
+  const { sectionId } = useParams();
+  const section = findSection(sectionId ?? '');
+  const [tutors, setTutors] = useState<Tutor[] | null>(null);
+  useEffect(() => {
+    if (!section) return;
+    setTutors(null);
+    api.tutors({ section: section.id, sort: 'rating' }).then((r) => setTutors(r.tutors)).catch(() => setTutors([]));
+  }, [section]);
+
+  if (!section) return <div className="center-note">{t('Такого раздела нет.')} <Link to="/sections">{t('Все разделы')}</Link></div>;
+  const courses = coursesOf(section);
+
+  return (
+    <main className="page sections-page">
+      <section className="section-hero" style={{ ['--c' as string]: section.color }}>
+        <span className="sec-icon sec-icon-xl">
+          <SubjectIcon subject={iconOf(section)} size={64} />
+        </span>
+        <div>
+          <Link to="/sections" className="back-link">← {t('Все разделы')}</Link>
+          <h1>{t(section.name)}</h1>
+          <p>{t(section.description)}</p>
+        </div>
+      </section>
+
+      <h2 className="track-title">{t('Темы')}</h2>
+      <div className="topic-chips">
+        {section.topics.map((tp) => (
+          <Link key={tp.id} to={`/tutors?subject=${tp.id}`} className="topic-chip" style={{ ['--c' as string]: section.color }}>
+            {t(tp.name)}
+          </Link>
+        ))}
+      </div>
+      <p className="muted small">{t('Нажми на тему, чтобы найти наставника по ней.')}</p>
+
+      <h2 className="track-title">{t('Курсы')}</h2>
+      <div className="track-row">
+        {courses.map((c) => (
+          <CourseCard key={c.id} course={c} to={`/courses/${c.id}`} />
+        ))}
+      </div>
+
+      <h2 className="track-title">{t('Наставники')}</h2>
+      {!tutors ? (
+        <div className="center-note">{t('Ищем наставников…')}</div>
+      ) : tutors.length === 0 ? (
+        <div className="center-note">{t('Скоро здесь появятся наставники.')}</div>
+      ) : (
+        <div className="tutor-grid">
+          {tutors.slice(0, 6).map((tu) => (
+            <TutorCard key={tu.id} tutor={tu} />
+          ))}
+        </div>
+      )}
+      <div className="sec-more">
+        <Link to={`/tutors?section=${section.id}`} className="btn btn-primary">
+          {t('Все наставники раздела')}
+        </Link>
+      </div>
+    </main>
+  );
+}

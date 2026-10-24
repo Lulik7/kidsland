@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COURSES, SUBJECT_IDS, checkAnswer, findLesson, gradeLesson } from '../index';
+import { COURSES, SUBJECTS, TOPIC_IDS, checkAnswer, findLesson, gradeLesson } from '../index';
 
 describe('courses', () => {
   it('has unique ids and three levels per subject', () => {
@@ -10,9 +10,18 @@ describe('courses', () => {
         ids.add(id);
       }
     }
-    for (const s of SUBJECT_IDS) {
-      expect(COURSES.filter((c) => c.subject === s).map((c) => c.level).sort()).toEqual(['advanced', 'beginner', 'intermediate']);
+    for (const s of SUBJECTS.filter((x) => x.section === 'coding')) {
+      expect(COURSES.filter((c) => c.subject === s.id).map((c) => c.level).sort()).toEqual(['advanced', 'beginner', 'intermediate']);
     }
+    for (const s of SUBJECTS) expect(COURSES.some((c) => c.subject === s.id), s.id).toBe(true);
+    for (const c of COURSES) if (c.topic) expect(TOPIC_IDS).toContain(c.topic);
+  });
+
+  it('has 70 lessons in coding and in music', () => {
+    const count = (section: string) =>
+      COURSES.filter((c) => SUBJECTS.find((s) => s.id === c.subject)?.section === section).reduce((n, c) => n + c.lessons.length, 0);
+    expect(count('coding')).toBe(70);
+    expect(count('music')).toBe(70);
   });
 
   it('has valid answer indexes', () => {
@@ -20,7 +29,11 @@ describe('courses', () => {
       for (const l of c.lessons)
         for (const q of [...l.practice, ...l.quiz]) {
           if (q.kind === 'single') expect(q.answer, q.id).toBeLessThan(q.options.length);
-          if (q.kind === 'multi') q.answer.forEach((a) => expect(a, q.id).toBeLessThan(q.options.length));
+          if (q.kind === 'multi') {
+            q.answer.forEach((a) => expect(a, q.id).toBeLessThan(q.options.length));
+            expect(new Set(q.options).size, q.id).toBe(q.options.length);
+          }
+          if (q.kind === 'single') expect(new Set(q.options).size, q.id).toBe(q.options.length);
           if (q.kind === 'order') expect(new Set(q.items).size, q.id).toBe(q.items.length);
         }
   });

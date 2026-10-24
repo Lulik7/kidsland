@@ -1,4 +1,4 @@
-import { LANGUAGES, SUBJECTS } from '@kidsland/shared';
+import { findSection, LANGUAGES, SECTIONS, TOPICS } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
@@ -13,6 +13,8 @@ export function TutorsPage() {
   const [tutors, setTutors] = useState<Tutor[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const subject = params.get('subject') ?? '';
+  const section = params.get('section') || SECTIONS.find((x) => x.topics.some((tp) => tp.id === subject))?.id || '';
+  const topics = findSection(section)?.topics ?? [];
   const language = params.get('language') ?? '';
   const age = params.get('age') ?? '';
   const sort = params.get('sort') ?? 'rating';
@@ -21,13 +23,14 @@ export function TutorsPage() {
   useEffect(() => {
     setTutors(null);
     api
-      .tutors({ subject, language, age: age ? Number(age) : undefined, sort })
+      .tutors({ subject, section: subject ? undefined : section, language, age: age ? Number(age) : undefined, sort })
       .then((r) => setTutors(r.tutors))
       .catch((e) => setError(e.message));
-  }, [subject, language, age, sort]);
+  }, [subject, section, language, age, sort]);
 
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params);
+    if (key === 'section') next.delete('subject');
     if (value) next.set(key, value);
     else next.delete(key);
     setParams(next, { replace: true });
@@ -38,22 +41,44 @@ export function TutorsPage() {
       <section className="tutors-hero">
         <div>
           <span className="pill pill-dark">{t('Наставники Kidsland')}</span>
-          <h1>{t('Живые уроки программирования один на один')}</h1>
-          <p>{t('Первый урок бесплатно. Наставник продолжит с того места, где ребёнок остановился в игре.')}</p>
+          <h1>{t('Живые уроки один на один')}</h1>
+          <p>{t('Программирование, музыка, рисование, языки и другие разделы. Первый урок бесплатно.')}</p>
         </div>
       </section>
 
       <div className="filters">
-        <div className="chips-row" role="group" aria-label={t('Предмет')}>
-          <button className={!subject ? 'fchip on' : 'fchip'} onClick={() => set('subject', '')}>
-            {t('Все предметы')}
+        <div className="chips-row" role="group" aria-label={t('Раздел')}>
+          <button className={!section ? 'fchip on' : 'fchip'} onClick={() => set('section', '')}>
+            {t('Все разделы')}
           </button>
-          {SUBJECTS.map((s) => (
-            <button key={s.id} className={subject === s.id ? 'fchip on' : 'fchip'} onClick={() => set('subject', s.id)}>
-              {t(s.name)}
+          {SECTIONS.map((x) => (
+            <button key={x.id} className={section === x.id ? 'fchip on' : 'fchip'} onClick={() => set('section', x.id)}>
+              {t(x.name)}
             </button>
           ))}
         </div>
+        {topics.length > 0 && (
+          <div className="chips-row topic-row" role="group" aria-label={t('Тема')}>
+            <button className={!subject ? 'fchip on' : 'fchip'} onClick={() => set('subject', '')}>
+              {t('Все темы')}
+            </button>
+            {topics.map((tp) => (
+              <button
+                key={tp.id}
+                className={subject === tp.id ? 'fchip on' : 'fchip'}
+                onClick={() => {
+                  const next = new URLSearchParams(params);
+                  next.set('section', section);
+                  next.set('subject', tp.id);
+                  setParams(next, { replace: true });
+                }}
+              >
+                {t(tp.name)}
+              </button>
+            ))}
+          </div>
+        )}
+        {subject && !topics.length && <p className="muted">{t(TOPICS.find((x) => x.id === subject)?.name ?? subject)}</p>}
         <div className="selects">
           <label>
             {t('Возраст')}

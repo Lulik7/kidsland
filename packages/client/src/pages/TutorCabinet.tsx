@@ -1,4 +1,4 @@
-import { LANGUAGES, SUBJECTS, TUTOR_SAFETY_RULES } from '@kidsland/shared';
+import { LANGUAGES, SECTIONS, TUTOR_SAFETY_RULES } from '@kidsland/shared';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Slot, type Tutor, type TutorProfileInput } from '../api';
@@ -328,13 +328,18 @@ function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => 
         <input value={p.videoUrl.startsWith('/api/uploads/') ? '' : p.videoUrl} disabled={p.videoUrl.startsWith('/api/uploads/')} onChange={(e) => set('videoUrl', e.target.value)} placeholder={p.videoUrl.startsWith('/api/uploads/') ? 'Загружен файл с видео' : 'https://youtu.be/…'} />
       </label>
       <span className="field-label">Предметы</span>
-      <div className="chips-row">
-        {SUBJECTS.map((s) => (
-          <button type="button" key={s.id} className={p.subjects.includes(s.id) ? 'fchip on' : 'fchip'} onClick={() => toggle('subjects', s.id)}>
-            {s.name}
-          </button>
-        ))}
-      </div>
+      {SECTIONS.map((sec) => (
+        <div key={sec.id} className="subject-group">
+          <b>{sec.name}</b>
+          <div className="chips-row">
+            {sec.topics.map((s) => (
+              <button type="button" key={s.id} className={p.subjects.includes(s.id) ? 'fchip on' : 'fchip'} onClick={() => toggle('subjects', s.id)}>
+                {s.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
       <span className="field-label">Языки</span>
       <div className="chips-row">
         {LANGUAGES.map((l) => (
