@@ -1,6 +1,7 @@
 import type { LanguageData } from './build';
 import { EL_EXTRA_1 } from './el-extra-1';
 import { EL_EXTRA_2 } from './el-extra-2';
+import { EL_EXTRA_3 } from './el-extra-3';
 
 export const GREEK: LanguageData = {
   topic: 'lang-el',
@@ -8,7 +9,7 @@ export const GREEK: LanguageData = {
   inName: 'по-гречески',
   color: '#0d5eaf',
   speak: 'el-GR',
-  extra: EL_EXTRA_1 + EL_EXTRA_2,
+  extra: EL_EXTRA_1 + EL_EXTRA_2 + EL_EXTRA_3,
   notes: {
     0: 'На греческом говорят в Греции и на Кипре. Это один из древнейших языков Европы: на нём писали Гомер и Аристотель.',
     1: 'У греков свой алфавит из 24 букв: Α α (альфа), Β β (вита), Γ γ (гамма), Δ δ (дельта)... Многие русские буквы произошли от греческих.',
