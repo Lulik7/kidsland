@@ -1,4 +1,4 @@
-import { findSection, LANGUAGES, SECTIONS, TOPICS } from '@kidsland/shared';
+import { findSection, LANGUAGES, TOPICS, TUTOR_SECTIONS } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
@@ -13,7 +13,8 @@ export function TutorsPage() {
   const [tutors, setTutors] = useState<Tutor[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const subject = params.get('subject') ?? '';
-  const section = params.get('section') || SECTIONS.find((x) => x.topics.some((tp) => tp.id === subject))?.id || '';
+  const asked = params.get('section') ?? '';
+  const section = (TUTOR_SECTIONS.some((x) => x.id === asked) && asked) || TUTOR_SECTIONS.find((x) => x.topics.some((tp) => tp.id === subject))?.id || '';
   const topics = findSection(section)?.topics ?? [];
   const language = params.get('language') ?? '';
   const age = params.get('age') ?? '';
@@ -51,7 +52,7 @@ export function TutorsPage() {
           <button className={!section ? 'fchip on' : 'fchip'} onClick={() => set('section', '')}>
             {t('Все разделы')}
           </button>
-          {SECTIONS.map((x) => (
+          {TUTOR_SECTIONS.map((x) => (
             <button key={x.id} className={section === x.id ? 'fchip on' : 'fchip'} onClick={() => set('section', x.id)}>
               {t(x.name)}
             </button>

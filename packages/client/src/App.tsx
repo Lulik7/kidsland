@@ -14,6 +14,7 @@ import { DemoLesson } from './pages/DemoLesson';
 import { LessonPage } from './pages/LessonPage';
 import { SectionPage, SectionsPage } from './pages/SectionsPage';
 import { BeAdminPage } from './pages/BeAdminPage';
+import { ArticlePage } from './pages/ArticlePage';
 import { SupportPage } from './pages/SupportPage';
 import { KidsPage } from './pages/KidsPage';
 import { Landing } from './pages/Landing';
@@ -131,6 +132,7 @@ export function App() {
         <Route path="/tutors/:id" element={<TutorPage />} />
         <Route path="/sections" element={<SectionsPage />} />
         <Route path="/be-admin" element={<BeAdminPage />} />
+        <Route path="/articles/:articleId" element={<ArticlePage />} />
         <Route path="/sections/:sectionId" element={<SectionPage />} />
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/courses/:courseId" element={<CoursePage />} />

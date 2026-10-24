@@ -23,6 +23,9 @@ function Strip({ x }: { x: number }) {
 export function Globe() {
   const t = useT();
   const text = t('Добро пожаловать в KidsLand!');
+  const english = 'Welcome to KidsLand!';
+  // The ring always greets in English too; in English mode it simply repeats.
+  const ring = text === english ? `${english} ★ ${english} ★ ${english} ★ ` : `${text} ★ ${english} ★ `;
   return (
     <div className="globe" role="img" aria-label={text}>
       <svg className="globe-ring" viewBox="0 0 400 400" aria-hidden>
@@ -31,7 +34,7 @@ export function Globe() {
         </defs>
         <text>
           <textPath href="#globe-ring-path" textLength="1060" lengthAdjust="spacing">
-            {Array.from({ length: text.length < 24 ? 3 : 2 }, () => `${text} ★ `).join('')}
+            {ring}
           </textPath>
         </text>
       </svg>

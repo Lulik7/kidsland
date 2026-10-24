@@ -1,7 +1,7 @@
 import type { SubjectId } from '@kidsland/shared';
 
 /** Simple pictograms for course subjects, drawn in white on the course colour. */
-export function SubjectIcon({ subject, size = 48 }: { subject: SubjectId; size?: number }) {
+export function SubjectIcon({ subject, size = 48 }: { subject: SubjectId | 'spirit'; size?: number }) {
   const common = { width: size, height: size, viewBox: '0 0 48 48', 'aria-hidden': true } as const;
   switch (subject) {
     case 'computer':

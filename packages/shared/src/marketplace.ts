@@ -1,4 +1,4 @@
-/** Course tracks. Coding tracks have three levels; the other sections start with intro courses. */
+/** Course tracks. Coding tracks have three levels; the other sections start with intro courses (personal growth has articles only). */
 export const SUBJECTS = [
   { id: 'computer', name: 'Компьютерная грамотность', section: 'coding' },
   { id: 'scratch', name: 'Scratch', section: 'coding' },
@@ -15,7 +15,6 @@ export const SUBJECTS = [
   { id: 'leisure', name: 'Досуг и рукоделие', section: 'leisure' },
   { id: 'languages', name: 'Иностранные языки', section: 'languages' },
   { id: 'animals', name: 'Животные', section: 'animals' },
-  { id: 'spirit', name: 'Духовное развитие', section: 'spirit' },
 ] as const;
 
 export const LANGUAGES = [
@@ -47,7 +46,6 @@ export const SUBJECT_INFO: Record<SubjectId, { ageFrom: number; grades: string; 
   leisure: { ageFrom: 6, grades: '1–9 класс', points: ['Собираем гербарий, лепим и шьём', 'Готовим простые блюда', 'Показываем фокусы'] },
   languages: { ageFrom: 5, grades: '1–11 класс', points: ['11 языков от английского до иврита', 'Первые слова и фразы', 'Учимся говорить без страха'] },
   animals: { ageFrom: 6, grades: '1–9 класс', points: ['Как ухаживать за питомцем', 'Дрессировка собак добрым способом', 'Понимаем язык животных'] },
-  spirit: { ageFrom: 6, grades: '1–9 класс', points: ['Понимаем свои чувства', 'Учимся доброте и дружбе', 'Находим спокойствие и благодарность'] },
 };
 
 export type BookingStatus = 'scheduled' | 'completed' | 'cancelled';

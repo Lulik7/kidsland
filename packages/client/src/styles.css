@@ -1141,3 +1141,24 @@ html.a11y-contrast .muted { color: var(--ink); }
 
 .navlink { white-space: nowrap; }
 @media (max-width: 1640px) { .topbar .main-nav { gap: 0; } .topbar .navlink { padding: 8px 9px; font-size: 0.95rem; } }
+.topic-chip.on { background: var(--c); color: #fff !important; }
+button.topic-chip { font: inherit; font-weight: 800; cursor: pointer; }
+.article-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+.article-card { --c: var(--violet); display: flex; flex-direction: column; gap: 8px; background: var(--card); border-radius: 22px; padding: 20px; box-shadow: var(--shadow); border-inline-start: 6px solid var(--c); color: var(--ink) !important; text-decoration: none !important; transition: transform 0.15s; }
+.article-card:hover { transform: translateY(-4px); }
+.article-card h3 { margin: 0; font-size: 1.25rem; }
+.article-card p { margin: 0; color: var(--muted); }
+.article-topic { align-self: flex-start; font-size: 0.82rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--c, var(--violet)) 15%, var(--card)); color: var(--ink); }
+.article-page { max-width: 820px; }
+.article { padding: 30px 34px; margin-bottom: 26px; }
+.article h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); margin: 10px 0 8px; }
+.article-lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 10px; }
+.article h2 { font-size: 1.35rem; margin: 22px 0 6px; }
+.article p { font-size: 1.08rem; line-height: 1.65; margin: 0 0 8px; }
+@media (max-width: 600px) { .article { padding: 20px; } }
+/* The Kidsland slogan is the main headline; "learn to code by playing" is secondary. */
+.hero-slogan { padding: 18px 24px; gap: 8px; }
+.hs-main { font-size: clamp(2rem, 4.4vw, 3.4rem); line-height: 1.12; }
+.hs-sub { font-size: clamp(1.35rem, 2.6vw, 2rem); }
+.hero h1 { font-size: clamp(1.35rem, 2.3vw, 1.85rem); margin: 18px 0 10px; }
+.hero h1 .hl::after { height: 6px; bottom: -2px; }

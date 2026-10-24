@@ -12,6 +12,8 @@ export interface Section {
   description: string;
   color: string;
   topics: Topic[];
+  /** No tutors or courses here, only articles to read. */
+  articlesOnly?: boolean;
 }
 
 /**
@@ -148,6 +150,7 @@ export const SECTIONS: Section[] = [
     tagline: 'Чувства, доброта и спокойствие',
     description: 'Учимся понимать себя и других: эмоции, дружба, благодарность, спокойствие и семейные ценности.',
     color: '#8e5bd6',
+    articlesOnly: true,
     topics: [
       { id: 'emotions', name: 'Эмоции и чувства' },
       { id: 'kindness', name: 'Доброта и дружба' },
@@ -159,11 +162,14 @@ export const SECTIONS: Section[] = [
   },
 ];
 
+/** Sections with courses and tutors (personal growth only has articles). */
+export const TUTOR_SECTIONS = SECTIONS.filter((s) => !s.articlesOnly);
+
 /** Everything a tutor can teach, across all sections. */
-export const TOPICS: (Topic & { section: string })[] = SECTIONS.flatMap((s) => s.topics.map((t) => ({ ...t, section: s.id })));
+export const TOPICS: (Topic & { section: string })[] = TUTOR_SECTIONS.flatMap((s) => s.topics.map((t) => ({ ...t, section: s.id })));
 export const TOPIC_IDS = TOPICS.map((t) => t.id);
-export const SECTION_IDS = SECTIONS.map((s) => s.id);
+export const SECTION_IDS = TUTOR_SECTIONS.map((s) => s.id);
 
 export const findSection = (id: string) => SECTIONS.find((s) => s.id === id);
-export const topicName = (id: string) => TOPICS.find((t) => t.id === id)?.name ?? id;
+export const topicName = (id: string) => SECTIONS.flatMap((s) => s.topics).find((t) => t.id === id)?.name ?? id;
 export const topicsOfSection = (id: string) => findSection(id)?.topics.map((t) => t.id) ?? [];

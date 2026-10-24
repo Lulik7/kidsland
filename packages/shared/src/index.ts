@@ -5,3 +5,4 @@ export * from './marketplace';
 export * from './courses';
 export * from './safety';
 export * from './sections';
+export * from './articles';

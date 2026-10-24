@@ -1,4 +1,4 @@
-import { LANGUAGES, SECTIONS, TUTOR_SAFETY_RULES } from '@kidsland/shared';
+import { LANGUAGES, TUTOR_SAFETY_RULES, TUTOR_SECTIONS } from '@kidsland/shared';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Slot, type Tutor, type TutorProfileInput } from '../api';
@@ -328,7 +328,7 @@ function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => 
         <input value={p.videoUrl.startsWith('/api/uploads/') ? '' : p.videoUrl} disabled={p.videoUrl.startsWith('/api/uploads/')} onChange={(e) => set('videoUrl', e.target.value)} placeholder={p.videoUrl.startsWith('/api/uploads/') ? 'Загружен файл с видео' : 'https://youtu.be/…'} />
       </label>
       <span className="field-label">Предметы</span>
-      {SECTIONS.map((sec) => (
+      {TUTOR_SECTIONS.map((sec) => (
         <div key={sec.id} className="subject-group">
           <b>{sec.name}</b>
           <div className="chips-row">

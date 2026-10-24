@@ -655,4 +655,11 @@ export const EN: Record<string, string> = {
   "На проверке": "Under review",
   "Опубликован": "Published",
   "Не одобрен": "Not approved",
+  "Статья не найдена.": "Article not found.",
+  "Ещё статьи": "More articles",
+  "{n} мин чтения": "{n} min read",
+  "статья": "article",
+  "статьи": "articles",
+  "статей": "articles",
+  "Статьи": "Articles",
 };

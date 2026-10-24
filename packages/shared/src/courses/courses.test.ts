@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COURSES, SUBJECTS, TOPIC_IDS, checkAnswer, findLesson, gradeLesson } from '../index';
+import { ARTICLES, COURSES, SECTIONS, SUBJECTS, TOPIC_IDS, checkAnswer, findLesson, gradeLesson } from '../index';
 
 describe('courses', () => {
   it('has unique ids and three levels per subject', () => {
@@ -22,6 +22,14 @@ describe('courses', () => {
       COURSES.filter((c) => SUBJECTS.find((s) => s.id === c.subject)?.section === section).reduce((n, c) => n + c.lessons.length, 0);
     expect(count('coding')).toBe(70);
     expect(count('music')).toBe(70);
+  });
+
+  it('has articles for every topic of article-only sections', () => {
+    for (const s of SECTIONS.filter((x) => x.articlesOnly)) {
+      expect(TOPIC_IDS.some((id) => s.topics.some((t) => t.id === id)), s.id).toBe(false);
+      for (const t of s.topics) expect(ARTICLES.some((a) => a.section === s.id && a.topic === t.id), t.id).toBe(true);
+    }
+    expect(new Set(ARTICLES.map((a) => a.id)).size).toBe(ARTICLES.length);
   });
 
   it('has valid answer indexes', () => {

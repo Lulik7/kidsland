@@ -178,4 +178,11 @@ CREATE INDEX IF NOT EXISTS community_posts_status_idx ON community_posts(status,
 UPDATE tutor_profiles
    SET languages = CASE WHEN array_length(array_remove(languages, 'kk'), 1) IS NULL THEN ARRAY['ru'] ELSE array_remove(languages, 'kk') END
  WHERE 'kk' = ANY(languages);
+
+-- Personal growth has articles only: its topics are no longer taught by tutors.
+UPDATE tutor_profiles
+   SET subjects = (SELECT coalesce(array_agg(x), '{}') FROM unnest(subjects) x
+                    WHERE x NOT IN ('emotions', 'kindness', 'mindfulness', 'gratitude', 'values', 'stories'))
+ WHERE subjects && ARRAY['emotions', 'kindness', 'mindfulness', 'gratitude', 'values', 'stories'];
+UPDATE tutor_profiles SET is_published = false WHERE cardinality(subjects) = 0 AND is_published;
 `;
