@@ -1,10 +1,15 @@
 import type { LanguageData } from './build';
+import { ES_EXTRA_1 } from './es-extra-1';
+import { ES_EXTRA_2 } from './es-extra-2';
+import { ES_EXTRA_3 } from './es-extra-3';
 
 export const SPANISH: LanguageData = {
   topic: 'lang-es',
   name: 'Испанский',
   inName: 'по-испански',
   color: '#e4572e',
+  speak: 'es-ES',
+  extra: ES_EXTRA_1 + ES_EXTRA_2 + ES_EXTRA_3,
   notes: {
     0: 'На испанском говорят в Испании и почти во всей Латинской Америке: в Мексике, Аргентине, Колумбии и других странах. Это второй язык мира по числу носителей.',
     2: 'Испанские слова читаются так, как пишутся. Буква h не читается, ñ читается как «нь», а ll почти как «й».',

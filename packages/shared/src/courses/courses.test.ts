@@ -98,6 +98,7 @@ describe('language lessons', () => {
       expect(l.sections.filter((s) => s.dialog).length, l.id).toBe(4);
       expect(l.sections.some((s) => s.title === 'Текст для чтения'), l.id).toBe(true);
       expect(l.practice.length, l.id).toBeGreaterThanOrEqual(5);
+      expect(JSON.stringify(l).includes('\u00ad'), l.id).toBe(false);
     }
   });
 });
