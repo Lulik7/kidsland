@@ -94,7 +94,7 @@ describe('language lessons', () => {
     const english = COURSES.filter((c) => c.topic === 'lang-en');
     const lessons = english.flatMap((c) => c.lessons);
     const full = lessons.filter((l) => l.sections.some((s) => s.dialog));
-    expect(full.length).toBeGreaterThanOrEqual(40);
+    expect(full.length).toBe(60);
     for (const l of full) {
       expect(l.sections.filter((s) => s.dialog).length, l.id).toBe(4);
       expect(l.sections.some((s) => s.title === 'Текст для чтения'), l.id).toBe(true);
