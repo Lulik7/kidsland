@@ -9,7 +9,8 @@ import { HEBREW } from './he';
 import { ITALIAN } from './it';
 import { JAPANESE } from './ja';
 import { GEORGIAN } from './ka';
+import { RUSSIAN_COURSES } from './ru';
 import { CHINESE } from './zh';
 
 /** Three levels of 20 lessons for every foreign language of the «Иностранные языки» section. */
-export const LANGUAGE_COURSES: Course[] = [ENGLISH, FRENCH, GERMAN, ITALIAN, SPANISH, GREEK, HEBREW, GEORGIAN, JAPANESE, CHINESE].flatMap(languageCourses);
+export const LANGUAGE_COURSES: Course[] = [ENGLISH, FRENCH, GERMAN, ITALIAN, SPANISH, GREEK, HEBREW, GEORGIAN, JAPANESE, CHINESE].flatMap(languageCourses).concat(RUSSIAN_COURSES);
