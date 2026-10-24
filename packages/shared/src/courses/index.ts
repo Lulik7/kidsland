@@ -10,6 +10,10 @@ import { gamesCourse } from './games';
 import { gamesMidCourse, gamesProCourse } from './gamesMore';
 import { logicCourse } from './logic';
 import { logicMidCourse, logicProCourse } from './logicMore';
+import { computerCourse, computerMidCourse, computerProCourse } from './computer';
+import { robloxCourse, robloxMidCourse, robloxProCourse } from './roblox';
+import { unityCourse, unityMidCourse, unityProCourse } from './unity';
+import { EXTRA_THEORY } from './extraTheory';
 
 export * from './types';
 
@@ -19,13 +23,21 @@ export const COURSE_LEVELS: { id: CourseLevel; name: string }[] = [
   { id: 'advanced', name: 'Продвинутый' },
 ];
 
+const withExtraTheory = (c: Course): Course => ({
+  ...c,
+  lessons: c.lessons.map((l) => ({ ...l, sections: [...l.sections, ...(EXTRA_THEORY[l.id] ?? [])] })),
+});
+
 export const COURSES: Course[] = [
+  computerCourse, computerMidCourse, computerProCourse,
   scratchCourse, scratchMidCourse, scratchProCourse,
+  robloxCourse, robloxMidCourse, robloxProCourse,
   pythonCourse, pythonMidCourse, pythonProCourse,
   webCourse, webMidCourse, webProCourse,
   gamesCourse, gamesMidCourse, gamesProCourse,
+  unityCourse, unityMidCourse, unityProCourse,
   logicCourse, logicMidCourse, logicProCourse,
-];
+].map(withExtraTheory);
 
 /** Share of points needed to pass a lesson. */
 export const LESSON_PASS_RATIO = 0.6;
@@ -76,14 +88,21 @@ export interface LessonGrade {
   results: Record<string, boolean>;
 }
 
-export function gradeLesson(lesson: Lesson, answers: Answers): LessonGrade {
+export type LessonPart = 'practice' | 'quiz';
+
+export function gradeQuestions(questions: Question[], answers: Answers): LessonGrade {
   const results: Record<string, boolean> = {};
   let score = 0;
-  for (const q of [...lesson.practice, ...lesson.quiz]) {
+  for (const q of questions) {
     const ok = checkAnswer(q, answers[q.id]);
     results[q.id] = ok;
     if (ok) score++;
   }
-  const max = lesson.practice.length + lesson.quiz.length;
+  const max = questions.length;
   return { score, max, passed: score >= Math.ceil(max * LESSON_PASS_RATIO), results };
+}
+
+/** Grades one part of a lesson (tasks or quiz), or the whole lesson when no part is given. */
+export function gradeLesson(lesson: Lesson, answers: Answers, part?: LessonPart): LessonGrade {
+  return gradeQuestions(part ? lesson[part] : [...lesson.practice, ...lesson.quiz], answers);
 }

@@ -75,13 +75,28 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
     const next = await request(app!).post(`/api/children/${childId}/lessons/scratch-2/submit`).set(auth(parent)).send({ answers: {} });
     expect(next.status).toBe(200);
 
+    // Reading the theory is enough to open the next lesson; tasks and the quiz are optional.
+    const read = await request(app!).post(`/api/children/${childId}/lessons/scratch-2/complete`).set(auth(parent));
+    expect(read.body.progress.completed).toBe(true);
+    const quizOnly = await request(app!)
+      .post(`/api/children/${childId}/lessons/scratch-3/submit`)
+      .set(auth(parent))
+      .send({ part: 'quiz', answers: perfectAnswers('scratch-3') });
+    expect(quizOnly.body).toMatchObject({ max: 3, score: 3, passed: true, rewards: { xp: 15, coins: 10 } });
+    const practiceToo = await request(app!)
+      .post(`/api/children/${childId}/lessons/scratch-3/submit`)
+      .set(auth(parent))
+      .send({ part: 'practice', answers: perfectAnswers('scratch-3') });
+    expect(practiceToo.body.rewards).toEqual({ xp: 0, coins: 0 });
+    expect(practiceToo.body.progress).toMatchObject({ bestScore: 5, maxScore: 5 });
+
     const courses = await request(app!).get(`/api/children/${childId}/courses`).set(auth(parent));
-    expect(courses.body.progress).toHaveLength(2);
-    expect(courses.body.courses.find((c: { courseId: string }) => c.courseId === 'scratch')).toMatchObject({ completed: 1, lessons: 4 });
+    expect(courses.body.progress).toHaveLength(3);
+    expect(courses.body.courses.find((c: { courseId: string }) => c.courseId === 'scratch')).toMatchObject({ completed: 3, lessons: 4 });
 
     const report = await request(app!).get(`/api/children/${childId}/report`).set(auth(parent));
-    expect(report.body.courses).toEqual([expect.objectContaining({ courseId: 'scratch', completed: 1 })]);
-    expect(report.body.child.xp).toBe(15);
+    expect(report.body.courses).toEqual([expect.objectContaining({ courseId: 'scratch', completed: 3 })]);
+    expect(report.body.child.xp).toBe(30);
   });
 
   it('runs a support conversation between a user and the admin', async () => {

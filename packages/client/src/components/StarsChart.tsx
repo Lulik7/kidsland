@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ChildReport } from '../api';
+import { useT } from '../i18n';
 
 const H = 120;
 const BAR = 22;
@@ -7,13 +8,14 @@ const GAP = 14;
 
 /** Stars earned per level, one bar per level in play order. Single series, so a single hue. */
 export function StarsChart({ levels }: { levels: ChildReport['levels'] }) {
+  const t = useT();
   const [hover, setHover] = useState<number | null>(null);
   const width = levels.length * (BAR + GAP) + GAP;
   const y = (stars: number) => H - (stars / 3) * (H - 8);
 
   return (
     <div className="stars-chart">
-      <svg viewBox={`0 0 ${width + 26} ${H + 26}`} role="img" aria-label="Звёзды по уровням">
+      <svg viewBox={`0 0 ${width + 26} ${H + 26}`} role="img" aria-label={t('Звёзды по уровням')}>
         {[1, 2, 3].map((s) => (
           <g key={s}>
             <line x1={26} x2={width + 26} y1={y(s)} y2={y(s)} className="grid" />
@@ -57,7 +59,7 @@ export function StarsChart({ levels }: { levels: ChildReport['levels'] }) {
             {levels[hover].order}. {levels[hover].title}
           </b>
           <span>
-            {levels[hover].completed ? `${levels[hover].stars} из 3 звёзд` : 'не пройден'} · попыток: {levels[hover].attempts}
+            {levels[hover].completed ? `${levels[hover].stars} / 3 ★` : t('не пройден')}{' '}{t('· попыток:')}{' '}{levels[hover].attempts}
           </span>
         </div>
       )}

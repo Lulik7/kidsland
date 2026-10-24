@@ -1,4 +1,4 @@
-import { findLesson, gradeLesson, LESSON_PASS_RATIO, type Answer, type Answers, type Lesson } from '@kidsland/shared';
+import { findLesson, gradeLesson, LESSON_PASS_RATIO, type Answer, type Answers, type Lesson, type LessonPart, type Question } from '@kidsland/shared';
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { api } from '../api';
@@ -10,11 +10,12 @@ import { Sprite } from '../components/Sprite';
 import { coursesBase } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { COIN, HERO } from '../game/sprites';
+import { useT } from '../i18n';
 
-const freshAnswers = (lesson: Lesson): Answers =>
-  Object.fromEntries(
-    [...lesson.practice, ...lesson.quiz].filter((q) => q.kind === 'order').map((q) => [q.id, shuffled(q.kind === 'order' ? q.items : [], q.id)]),
-  );
+type Tab = 'theory' | LessonPart;
+
+const freshAnswers = (questions: Question[]): Answers =>
+  Object.fromEntries(questions.filter((q) => q.kind === 'order').map((q) => [q.id, shuffled(q.kind === 'order' ? q.items : [], q.id)]));
 
 interface Outcome {
   score: number;
@@ -24,20 +25,28 @@ interface Outcome {
   rewards?: { xp: number; coins: number };
 }
 
+const isAnswered = (a: Answer | undefined) => a !== undefined && a !== '' && !(Array.isArray(a) && a.length === 0);
+
 export function LessonPage() {
   const { childId, courseId = '', lessonId = '' } = useParams();
   const { user } = useAuth();
+  const t = useT();
   const found = findLesson(lessonId);
-  const { child, setChild } = useCourseProgress(childId);
+  const { child, setChild, progress } = useCourseProgress(childId);
+  const [tab, setTab] = useState<Tab>('theory');
   const [answers, setAnswers] = useState<Answers>({});
-  const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [outcomes, setOutcomes] = useState<Partial<Record<LessonPart, Outcome>>>({});
+  const [readLocally, setReadLocally] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (found) setAnswers(freshAnswers(found.lesson));
-    setOutcome(null);
+    if (found) setAnswers(freshAnswers([...found.lesson.practice, ...found.lesson.quiz]));
+    setOutcomes({});
+    setReadLocally(false);
+    setTab('theory');
     setError(null);
     window.scrollTo(0, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -47,44 +56,130 @@ export function LessonPage() {
   if (!found || found.course.id !== courseId) return <Navigate to={base} replace />;
   const { course, lesson, index } = found;
   const nextLesson = course.lessons[index + 1];
-  const questions = [...lesson.practice, ...lesson.quiz];
-  const answered = questions.filter((q) => {
-    const a = answers[q.id];
-    return a !== undefined && a !== '' && !(Array.isArray(a) && a.length === 0);
-  }).length;
+  const done = readLocally || Boolean(progress?.find((p) => p.lessonId === lesson.id)?.completed);
 
-  const set = (id: string) => (a: Answer) => setAnswers((x) => ({ ...x, [id]: a }));
+  const open = (next: Tab) => {
+    setTab(next);
+    setError(null);
+    setTimeout(() => tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
+  };
 
-  const check = async () => {
+  const markRead = async () => {
     setBusy(true);
     setError(null);
     try {
-      if (childId) {
-        const r = await api.submitLesson(childId, lesson.id, answers);
-        setOutcome(r);
-        setChild((c) => (c ? { ...c, xp: r.child.xp, coins: r.child.coins } : c));
-      } else {
-        setOutcome(gradeLesson(lesson, answers));
-      }
-      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+      if (childId) await api.completeLesson(childId, lesson.id);
+      setReadLocally(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Ошибка');
+      setError(e instanceof Error ? e.message : t('Ошибка'));
     } finally {
       setBusy(false);
     }
   };
 
-  const retry = () => {
-    setAnswers(freshAnswers(lesson));
-    setOutcome(null);
-    window.scrollTo({ top: document.getElementById('practice')?.offsetTop ?? 0, behavior: 'smooth' });
+  const check = async (part: LessonPart) => {
+    setBusy(true);
+    setError(null);
+    try {
+      if (childId) {
+        const r = await api.submitLesson(childId, lesson.id, answers, part);
+        setOutcomes((o) => ({ ...o, [part]: r }));
+        setChild((c) => (c ? { ...c, xp: r.child.xp, coins: r.child.coins } : c));
+      } else {
+        setOutcomes((o) => ({ ...o, [part]: gradeLesson(lesson, answers, part) }));
+      }
+      if (gradeLesson(lesson, answers, part).passed) setReadLocally(true);
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('Ошибка'));
+    } finally {
+      setBusy(false);
+    }
   };
 
-  let n = 0;
-  const block = (list: typeof questions) =>
-    list.map((q) => (
-      <QuestionView key={q.id} q={q} n={++n} value={answers[q.id]} onChange={set(q.id)} result={outcome?.results[q.id]} />
-    ));
+  const retry = (part: LessonPart) => {
+    setAnswers((a) => ({ ...a, ...freshAnswers(lesson[part]) }));
+    setAnswers((a) => Object.fromEntries(Object.entries(a).filter(([id]) => !lesson[part].some((q) => q.id === id && q.kind !== 'order'))));
+    setOutcomes((o) => ({ ...o, [part]: undefined }));
+    open(part);
+  };
+
+  const set = (id: string) => (a: Answer) => setAnswers((x) => ({ ...x, [id]: a }));
+
+  const nextLink = nextLesson ? (
+    <Link to={`${base}/${course.id}/${nextLesson.id}`} className="btn btn-primary">
+      {t('Следующий урок')} →
+    </Link>
+  ) : (
+    <Link to={`${base}/${course.id}`} className="btn btn-primary">
+      {t('К курсу')}
+    </Link>
+  );
+
+  const partView = (part: LessonPart) => {
+    const questions = lesson[part];
+    const outcome = outcomes[part];
+    const answered = questions.filter((q) => isAnswered(answers[q.id])).length;
+    return (
+      <section className="lesson-part">
+        <p className="muted part-intro">
+          {part === 'practice'
+            ? t('Задания помогают закрепить теорию. Они необязательные, но за первый зачёт дают награду.')
+            : t('Викторина проверяет, что ты запомнил(а). Она необязательная, но за первый зачёт дают награду.')}
+        </p>
+        {questions.map((q, i) => (
+          <QuestionView key={q.id} q={q} n={i + 1} value={answers[q.id]} onChange={set(q.id)} result={outcome?.results[q.id]} />
+        ))}
+        {!outcome ? (
+          <div className="check-bar">
+            <span className="muted">
+              {t('Отвечено {a} из {n}. Для зачёта нужно {need} верных.', {
+                a: answered,
+                n: questions.length,
+                need: Math.ceil(questions.length * LESSON_PASS_RATIO),
+              })}
+            </span>
+            <button className="btn btn-go btn-xl" onClick={() => check(part)} disabled={busy || answered === 0}>
+              {busy ? t('Проверяем…') : t('Проверить ответы')}
+            </button>
+          </div>
+        ) : (
+          <div ref={resultRef} className={`result-card ${outcome.passed ? 'pass' : 'fail'}`}>
+            {outcome.passed && <Confetti />}
+            <Sprite svg={HERO.robot(outcome.passed ? 'down' : 'left')} size={92} className={outcome.passed ? 'pop-in' : 'wobble'} />
+            <div className="rc-text">
+              <h2>
+                {outcome.passed ? (part === 'practice' ? t('Задания выполнены!') : t('Викторина пройдена!')) : t('Почти получилось!')}
+              </h2>
+              <p>
+                {t('Верно {s} из {m}.', { s: outcome.score, m: outcome.max })}{' '}
+                {outcome.passed ? t('Отличная работа.') : t('Посмотри подсказки под заданиями и попробуй ещё раз.')}
+              </p>
+              {outcome.rewards && (outcome.rewards.xp > 0 || outcome.rewards.coins > 0) && (
+                <div className="rewards">
+                  <span className="chip chip-xp">+{outcome.rewards.xp} XP</span>
+                  <span className="chip chip-coin">
+                    <Sprite svg={COIN} size={20} /> +{outcome.rewards.coins}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-light" onClick={() => retry(part)}>
+                {t('Пройти заново')}
+              </button>
+              {part === 'practice' && (
+                <button className="btn btn-light" onClick={() => open('quiz')}>
+                  {t('К викторине')}
+                </button>
+              )}
+              {outcome.passed && nextLink}
+            </div>
+          </div>
+        )}
+      </section>
+    );
+  };
 
   return (
     <main className="page lesson-page" style={{ ['--c' as string]: course.color }}>
@@ -94,7 +189,7 @@ export function LessonPage() {
       </Link>
       <header className="lesson-top">
         <span className="lt-step">
-          Урок {index + 1} из {course.lessons.length} · {lesson.minutes} мин
+          {t('Урок {i} из {n} · {m} мин', { i: index + 1, n: course.lessons.length, m: lesson.minutes })}
         </span>
         <h1>{lesson.title}</h1>
         <div className="lt-progress" aria-hidden>
@@ -106,82 +201,73 @@ export function LessonPage() {
 
       {!childId && (
         <div className="soft-cta">
-          <span>Это пробный режим: ответы проверяются, но прогресс и награды не сохраняются.</span>
+          <span>{t('Это пробный режим: ответы проверяются, но прогресс и награды не сохраняются.')}</span>
           {user?.role === 'parent' ? (
-            <Link to="/kids" className="btn btn-light">Выбрать ребёнка</Link>
+            <Link to="/kids" className="btn btn-light">{t('Выбрать ребёнка')}</Link>
           ) : !user ? (
-            <Link to="/register" className="btn btn-light">Зарегистрироваться</Link>
+            <Link to="/register" className="btn btn-light">{t('Зарегистрироваться')}</Link>
           ) : null}
         </div>
       )}
 
-      <section className="theory">
-        <h2 className="lp-h">📖 Теория</h2>
-        {lesson.sections.map((s, i) => (
-          <article key={i} className="theory-card">
-            {s.title && <h3>{s.title}</h3>}
-            <p>{s.text}</p>
-            {s.code && <pre className="code">{s.code}</pre>}
-            {s.tip && <div className="tip">⭐ {s.tip}</div>}
-          </article>
-        ))}
-      </section>
-
-      <section id="practice">
-        <h2 className="lp-h">🛠 Задания</h2>
-        {block(lesson.practice)}
-      </section>
-
-      <section>
-        <h2 className="lp-h">❓ Викторина</h2>
-        {block(lesson.quiz)}
-      </section>
+      <div className="tabs lesson-tabs" role="tablist" ref={tabsRef}>
+        <button role="tab" aria-selected={tab === 'theory'} className={tab === 'theory' ? 'tab on' : 'tab'} onClick={() => open('theory')}>
+          {t('Теория')} {done && <span className="tab-ok">✓</span>}
+        </button>
+        <button role="tab" aria-selected={tab === 'practice'} className={tab === 'practice' ? 'tab on' : 'tab'} onClick={() => open('practice')}>
+          {t('Задания')} <span className="tab-n">{lesson.practice.length}</span>
+          {outcomes.practice?.passed && <span className="tab-ok">✓</span>}
+        </button>
+        <button role="tab" aria-selected={tab === 'quiz'} className={tab === 'quiz' ? 'tab on' : 'tab'} onClick={() => open('quiz')}>
+          {t('Викторина')} <span className="tab-n">{lesson.quiz.length}</span>
+          {outcomes.quiz?.passed && <span className="tab-ok">✓</span>}
+        </button>
+      </div>
 
       {error && <div className="error">{error}</div>}
 
-      {!outcome ? (
-        <div className="check-bar">
-          <span className="muted">
-            Отвечено {answered} из {questions.length}. Для зачёта нужно {Math.ceil(questions.length * LESSON_PASS_RATIO)} верных.
-          </span>
-          <button className="btn btn-go btn-xl" onClick={check} disabled={busy || answered === 0}>
-            {busy ? 'Проверяем…' : 'Проверить ответы'}
-          </button>
-        </div>
-      ) : (
-        <div ref={resultRef} className={`result-card ${outcome.passed ? 'pass' : 'fail'}`}>
-          {outcome.passed && <Confetti />}
-          <Sprite svg={HERO.robot(outcome.passed ? 'down' : 'left')} size={92} className={outcome.passed ? 'pop-in' : 'wobble'} />
-          <div className="rc-text">
-            <h2>{outcome.passed ? 'Урок пройден!' : 'Почти получилось!'}</h2>
-            <p>
-              Верно {outcome.score} из {outcome.max}.{' '}
-              {outcome.passed ? 'Отличная работа.' : 'Посмотри подсказки под заданиями и попробуй ещё раз.'}
-            </p>
-            {outcome.rewards && (outcome.rewards.xp > 0 || outcome.rewards.coins > 0) && (
-              <div className="rewards">
-                <span className="chip chip-xp">+{outcome.rewards.xp} XP</span>
-                <span className="chip chip-coin">
-                  <Sprite svg={COIN} size={20} /> +{outcome.rewards.coins}
-                </span>
-              </div>
+      {tab === 'theory' ? (
+        <section className="theory">
+          {lesson.sections.map((s, i) => (
+            <article key={i} className="theory-card">
+              {s.title && <h3>{s.title}</h3>}
+              <p>{s.text}</p>
+              {s.code && <pre className="code">{s.code}</pre>}
+              {s.tip && <div className="tip">⭐ {s.tip}</div>}
+            </article>
+          ))}
+          <div className={`read-card${done ? ' done' : ''}`}>
+            {done ? (
+              <>
+                <div>
+                  <h2>{t('Урок пройден!')}</h2>
+                  <p className="muted">{t('Хочешь закрепить? Выбери задания или викторину. Это по желанию.')}</p>
+                </div>
+                <div className="modal-actions">
+                  <button className="btn btn-light" onClick={() => open('practice')}>
+                    {t('Задания')}
+                  </button>
+                  <button className="btn btn-light" onClick={() => open('quiz')}>
+                    {t('Викторина')}
+                  </button>
+                  {nextLink}
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <h2>{t('Прочитал(а) теорию?')}</h2>
+                  <p className="muted">{t('Отметь урок, и откроется следующий. Задания и викторина по желанию.')}</p>
+                </div>
+                <button className="btn btn-go btn-xl" onClick={markRead} disabled={busy}>
+                  {t('Я прочитал(а) урок')} ✓
+                </button>
+              </>
             )}
           </div>
-          <div className="modal-actions">
-            <button className="btn btn-light" onClick={retry}>
-              Пройти заново
-            </button>
-            {outcome.passed && nextLesson ? (
-              <Link to={`${base}/${course.id}/${nextLesson.id}`} className="btn btn-primary">
-                Следующий урок →
-              </Link>
-            ) : outcome.passed ? (
-              <Link to={`${base}/${course.id}`} className="btn btn-primary">
-                К курсу
-              </Link>
-            ) : null}
-          </div>
-        </div>
+        </section>
+      ) : (
+        partView(tab)
       )}
     </main>
   );

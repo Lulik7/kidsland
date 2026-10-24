@@ -85,16 +85,30 @@ describe.skipIf(!url)('marketplace', () => {
     expect((await request(app!).get(`/api/bookings/${first.body.booking.id}`).set(auth(other))).status).toBe(404);
     expect((await request(app!).post(`/api/bookings/${first.body.booking.id}/cancel`).set(auth(other))).status).toBe(400);
 
-    const cancel = await request(app!).post(`/api/bookings/${second.body.booking.id}/cancel`).set(auth(parent));
+    const blocked = await request(app!)
+      .post(`/api/bookings/${second.body.booking.id}/cancel`)
+      .set(auth(parent))
+      .send({ reason: 'sick', note: 'Позвоните мне 8 900 123 45 67' });
+    expect(blocked.status).toBe(422);
+    const cancel = await request(app!)
+      .post(`/api/bookings/${second.body.booking.id}/cancel`)
+      .set(auth(parent))
+      .send({ reason: 'sick', note: 'Давайте перенесём на четверг' });
     expect(cancel.body.booking.status).toBe('cancelled');
+    expect(cancel.body.booking.cancellation).toEqual({ by: 'parent', reason: 'sick', label: 'Ребёнок заболел', note: 'Давайте перенесём на четверг' });
     const freed = await request(app!).get(`/api/tutors/${tutorId}`);
     expect(freed.body.slots.map((s: { id: string }) => s.id)).toContain(s2.id);
   });
 
   it("will not book another family's child", async () => {
     const list = await request(app!).get('/api/tutors');
-    const detail = await request(app!).get(`/api/tutors/${list.body.tutors[1].id}`);
-    const res = await request(app!).post('/api/bookings').set(auth(parent)).send({ slotId: detail.body.slots[0].id, childId: otherChildId });
+    let slotId = '';
+    for (const t of list.body.tutors as { id: string }[]) {
+      const detail = await request(app!).get(`/api/tutors/${t.id}`);
+      if (detail.body.slots.length) { slotId = detail.body.slots[0].id; break; }
+    }
+    expect(slotId).not.toBe('');
+    const res = await request(app!).post('/api/bookings').set(auth(parent)).send({ slotId, childId: otherChildId });
     expect(res.status).toBe(404);
   });
 

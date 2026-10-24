@@ -1,5 +1,6 @@
 import type { Answer, Question } from '@kidsland/shared';
 import { useMemo } from 'react';
+import { useT } from '../i18n';
 
 /** Deterministic shuffle that never returns the original order (when there are 2+ items). */
 export function shuffled(items: string[], seed: string): string[] {
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function QuestionView({ q, n, value, onChange, result }: Props) {
+  const t = useT();
   const checked = result !== undefined;
   const initialOrder = useMemo(() => (q.kind === 'order' ? shuffled(q.items, q.id) : []), [q]);
   const cls = `question${checked ? (result ? ' right' : ' wrong') : ''}`;
@@ -67,12 +69,12 @@ export function QuestionView({ q, n, value, onChange, result }: Props) {
           <input
             value={(value as string | undefined) ?? ''}
             disabled={checked}
-            placeholder={q.placeholder ?? 'Твой ответ'}
+            placeholder={q.placeholder ?? t('Твой ответ')}
             onChange={(e) => onChange(e.target.value)}
             maxLength={200}
-            aria-label="Ответ"
+            aria-label={t('Ответ')}
           />
-          {checked && !result && <span className="small">Правильный ответ: <b>{q.answer[0]}</b></span>}
+          {checked && !result && <span className="small">{t('Правильный ответ:')}{' '}<b>{q.answer[0]}</b></span>}
         </div>
       );
       break;
@@ -92,10 +94,10 @@ export function QuestionView({ q, n, value, onChange, result }: Props) {
                 <code>{item}</code>
                 {!checked && (
                   <span className="order-btns">
-                    <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Выше">
+                    <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label={t('Выше')}>
                       ▲
                     </button>
-                    <button type="button" disabled={i === list.length - 1} onClick={() => move(i, 1)} aria-label="Ниже">
+                    <button type="button" disabled={i === list.length - 1} onClick={() => move(i, 1)} aria-label={t('Ниже')}>
                       ▼
                     </button>
                   </span>
@@ -105,7 +107,7 @@ export function QuestionView({ q, n, value, onChange, result }: Props) {
           </ol>
           {checked && !result && (
             <div className="small order-right">
-              Правильный порядок: {q.items.map((x, i) => <code key={i}>{x}</code>)}
+              {t('Правильный порядок:')}{' '}{q.items.map((x, i) => <code key={i}>{x}</code>)}
             </div>
           )}
         </>
@@ -123,7 +125,7 @@ export function QuestionView({ q, n, value, onChange, result }: Props) {
           {q.kind === 'multi' && <span className="muted small"> (несколько ответов)</span>}
           {q.kind === 'order' && <span className="muted small"> (двигай стрелками)</span>}
         </p>
-        {checked && <span className="q-mark" aria-label={result ? 'Верно' : 'Неверно'}>{result ? '✓' : '✗'}</span>}
+        {checked && <span className="q-mark" aria-label={result ? t('Верно') : t('Неверно')}>{result ? '✓' : '✗'}</span>}
       </div>
       {q.code && <pre className="code">{q.code}</pre>}
       {body}

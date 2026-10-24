@@ -89,6 +89,8 @@ CREATE TABLE IF NOT EXISTS bookings (
 CREATE UNIQUE INDEX IF NOT EXISTS bookings_active_slot_idx ON bookings(slot_id) WHERE status <> 'cancelled';
 CREATE INDEX IF NOT EXISTS bookings_parent_idx ON bookings(parent_id);
 CREATE INDEX IF NOT EXISTS bookings_tutor_idx ON bookings(tutor_id);
+-- Why a lesson was cancelled and by whom, shown to the other side.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancelled_by text, ADD COLUMN IF NOT EXISTS cancel_reason text, ADD COLUMN IF NOT EXISTS cancel_note text;
 -- Self-study courses: best result per lesson. Course content lives in @kidsland/shared.
 CREATE TABLE IF NOT EXISTS course_progress (
   child_id     uuid NOT NULL REFERENCES child_profiles(id) ON DELETE CASCADE,
@@ -101,6 +103,15 @@ CREATE TABLE IF NOT EXISTS course_progress (
   updated_at   timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (child_id, lesson_id)
 );
+
+-- Per-question results (best ever) and whether the first-pass reward was paid. Lessons can now be
+-- completed by reading the theory, so completion and reward are tracked separately.
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'course_progress' AND column_name = 'rewarded') THEN
+    ALTER TABLE course_progress ADD COLUMN results jsonb NOT NULL DEFAULT '{}', ADD COLUMN rewarded boolean NOT NULL DEFAULT false;
+    UPDATE course_progress SET rewarded = true WHERE completed_at IS NOT NULL;
+  END IF;
+END $$;
 
 -- One support conversation per user.
 CREATE TABLE IF NOT EXISTS support_threads (

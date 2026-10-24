@@ -3,41 +3,43 @@ import type { Tutor } from '../api';
 import { fmtDateTime, languageName, rub, subjectName } from '../format';
 import { StarIcon } from './Icons';
 import { TutorAvatar } from './TutorAvatar';
+import { useT } from '../i18n';
 
-export function TutorCard({ tutor: t, childId }: { tutor: Tutor; childId?: string | null }) {
-  const link = `/tutors/${t.id}${childId ? `?child=${childId}` : ''}`;
+export function TutorCard({ tutor: tu, childId }: { tutor: Tutor; childId?: string | null }) {
+  const t = useT();
+  const link = `/tutors/${tu.id}${childId ? `?child=${childId}` : ''}`;
   return (
     <Link to={link} className="tutor-card">
       <div className="tc-top">
-        <TutorAvatar name={t.displayName} size={68} />
+        <TutorAvatar name={tu.displayName} size={68} />
         <div className="tc-who">
-          <h3>{t.displayName}</h3>
+          <h3>{tu.displayName}</h3>
           <span className="tc-rating">
-            <StarIcon on size={16} /> <b>{t.rating.toFixed(1)}</b> <span className="muted">· {t.reviewsCount} отзывов</span>
+            <StarIcon on size={16} /> <b>{tu.rating.toFixed(1)}</b> <span className="muted">· {tu.reviewsCount}{' '}{t('отзывов')}</span>
           </span>
         </div>
       </div>
-      <p className="tc-headline">{t.headline}</p>
+      <p className="tc-headline">{tu.headline}</p>
       <div className="tags">
-        {t.subjects.map((s) => (
+        {tu.subjects.map((s) => (
           <span key={s} className="tag">
-            {subjectName(s)}
+            {t(subjectName(s))}
           </span>
         ))}
       </div>
       <div className="tc-meta">
         <span>
-          {t.ageMin}–{t.ageMax} лет
+          {tu.ageMin}–{tu.ageMax}{' '}{t('лет')}
         </span>
-        <span>{t.languages.map(languageName).join(', ')}</span>
+        <span>{tu.languages.map(languageName).join(', ')}</span>
       </div>
       <div className="tc-foot">
         <div>
-          <b className="tc-price">{rub(t.hourlyRate)}</b>
-          <span className="muted small"> / урок</span>
-          <div className="small tc-next">{t.nextSlot ? `Ближайшее: ${fmtDateTime(t.nextSlot)}` : 'Нет свободного времени'}</div>
+          <b className="tc-price">{rub(tu.hourlyRate)}</b>
+          <span className="muted small">{' '}{t('/ урок')}</span>
+          <div className="small tc-next">{tu.nextSlot ? `${t('Ближайшее')}: ${fmtDateTime(tu.nextSlot)}` : t('Нет свободного времени')}</div>
         </div>
-        <span className="btn btn-primary">Выбрать время</span>
+        <span className="btn btn-primary">{t('Выбрать время')}</span>
       </div>
     </Link>
   );

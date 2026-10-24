@@ -167,7 +167,9 @@ function Lessons() {
     api.bookings().then((r) => setBookings(r.bookings));
   }, []);
   if (!bookings) return <div className="center-note">Загружаем…</div>;
-  const upcoming = bookings.filter((b) => b.status === 'scheduled' && new Date(b.startsAt).getTime() > Date.now() - 3_600_000);
+  const upcoming = bookings.filter(
+    (b) => (b.status === 'scheduled' || b.status === 'cancelled') && new Date(b.startsAt).getTime() > Date.now() - 3_600_000,
+  );
   return (
     <section className="card">
       <h2 className="card-title">Ближайшие уроки</h2>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { fmtTime } from '../format';
+import { useT } from '../i18n';
 
 export interface ChatItem {
   id: string;
@@ -25,6 +26,7 @@ export function ChatBox({
   note?: ReactNode;
   disabled?: boolean;
 }) {
+  const t = useT();
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -45,7 +47,7 @@ export function ChatBox({
       await onSend(body);
       setText('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не отправилось');
+      setError(err instanceof Error ? err.message : t('Не отправилось'));
     } finally {
       setBusy(false);
     }
@@ -54,7 +56,7 @@ export function ChatBox({
   return (
     <div className="chat">
       <div className="chat-list" ref={listRef} aria-live="polite">
-        {items.length === 0 && <div className="chat-empty">{empty ?? 'Сообщений пока нет'}</div>}
+        {items.length === 0 && <div className="chat-empty">{empty ?? t('Сообщений пока нет')}</div>}
         {items.map((m) => (
           <div key={m.id} className={m.mine ? 'msg mine' : 'msg'}>
             <span className="msg-author">{m.author}</span>
@@ -66,9 +68,9 @@ export function ChatBox({
       {note && <div className="chat-note">{note}</div>}
       {error && <div className="error chat-error">{error}</div>}
       <form className="chat-form" onSubmit={send}>
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} maxLength={1000} disabled={disabled} aria-label="Сообщение" />
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} maxLength={1000} disabled={disabled} aria-label={t('Сообщение')} />
         <button className="btn btn-primary" disabled={busy || disabled || !text.trim()}>
-          Отправить
+          {t('Отправить')}
         </button>
       </form>
     </div>

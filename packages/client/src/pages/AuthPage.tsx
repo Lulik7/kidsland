@@ -4,8 +4,10 @@ import { api } from '../api';
 import { homeFor, useAuth } from '../auth';
 import { Sprite } from '../components/Sprite';
 import { HERO } from '../game/sprites';
+import { useT } from '../i18n';
 
 export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
+  const t = useT();
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -30,7 +32,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       // Only follow same-site paths from ?next=, never absolute URLs.
       navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : homeFor(user));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка');
+      setError(err instanceof Error ? err.message : t('Ошибка'));
     } finally {
       setBusy(false);
     }
@@ -44,27 +46,27 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           <Sprite svg={HERO.robot('down')} size={64} />
           <Sprite svg={HERO.ocean('right')} size={56} className="float" />
         </div>
-        <h1>{isLogin ? 'С возвращением!' : 'Создать аккаунт'}</h1>
+        <h1>{isLogin ? t('С возвращением!') : t('Создать аккаунт')}</h1>
         {!isLogin && (
-          <div className="segmented" role="radiogroup" aria-label="Кто вы">
+          <div className="segmented" role="radiogroup" aria-label={t('Кто вы')}>
             <button type="button" role="radio" aria-checked={role === 'parent'} className={role === 'parent' ? 'on' : ''} onClick={() => setRole('parent')}>
-              Я родитель
+              {t('Я родитель')}
             </button>
             <button type="button" role="radio" aria-checked={role === 'tutor'} className={role === 'tutor' ? 'on' : ''} onClick={() => setRole('tutor')}>
-              Я наставник
+              {t('Я наставник')}
             </button>
           </div>
         )}
         <p className="muted">
           {isLogin
-            ? 'Войдите, чтобы продолжить.'
+            ? t('Войдите, чтобы продолжить.')
             : role === 'parent'
-              ? 'Потом добавите профиль ребёнка, и можно играть.'
-              : 'Потом заполните профиль и расписание, и родители смогут записываться.'}
+              ? t('Потом добавите профиль ребёнка, и можно играть.')
+              : t('Потом заполните профиль и расписание, и родители смогут записываться.')}
         </p>
         {!isLogin && role === 'tutor' && (
           <label>
-            Имя и фамилия
+            {t('Имя и фамилия')}
             <input required minLength={2} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
           </label>
         )}
@@ -73,7 +75,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
         </label>
         <label>
-          Пароль
+          {t('Пароль')}
           <input
             type="password"
             required
@@ -83,19 +85,19 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
             autoComplete={isLogin ? 'current-password' : 'new-password'}
           />
         </label>
-        {!isLogin && <span className="hint">Не короче 8 символов</span>}
+        {!isLogin && <span className="hint">{t('Не короче 8 символов')}</span>}
         {error && <div className="error">{error}</div>}
         <button className="btn btn-primary btn-lg" disabled={busy}>
-          {busy ? 'Минутку…' : isLogin ? 'Войти' : 'Зарегистрироваться'}
+          {busy ? t('Минутку…') : isLogin ? t('Войти') : t('Зарегистрироваться')}
         </button>
         <p className="muted switch">
           {isLogin ? (
             <>
-              Нет аккаунта? <Link to={keep('/register')}>Зарегистрируйтесь</Link>
+              {t('Нет аккаунта?')}{' '}<Link to={keep('/register')}>{t('Зарегистрируйтесь')}</Link>
             </>
           ) : (
             <>
-              Уже есть аккаунт? <Link to={keep('/login')}>Войдите</Link>
+              {t('Уже есть аккаунт?')}{' '}<Link to={keep('/login')}>{t('Войдите')}</Link>
             </>
           )}
         </p>

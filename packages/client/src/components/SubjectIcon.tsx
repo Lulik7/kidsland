@@ -4,6 +4,28 @@ import type { SubjectId } from '@kidsland/shared';
 export function SubjectIcon({ subject, size = 48 }: { subject: SubjectId; size?: number }) {
   const common = { width: size, height: size, viewBox: '0 0 48 48', 'aria-hidden': true } as const;
   switch (subject) {
+    case 'computer':
+      return (
+        <svg {...common}>
+          <rect x="6" y="8" width="36" height="24" rx="4" fill="#fff" />
+          <rect x="10" y="12" width="28" height="16" rx="2" fill="currentColor" opacity=".35" />
+          <path d="M18 38h12M24 32v6" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" />
+        </svg>
+      );
+    case 'roblox':
+      return (
+        <svg {...common}>
+          <rect x="10" y="10" width="28" height="28" rx="3" fill="#fff" transform="rotate(15 24 24)" />
+          <rect x="20" y="20" width="8" height="8" fill="currentColor" transform="rotate(15 24 24)" />
+        </svg>
+      );
+    case 'unity':
+      return (
+        <svg {...common}>
+          <path d="M24 5l16 9v20l-16 9-16-9V14z" fill="#fff" />
+          <path d="M24 24l16-10M24 24v19M24 24L8 14" stroke="currentColor" strokeWidth="3" fill="none" strokeLinejoin="round" />
+        </svg>
+      );
     case 'scratch':
       return (
         <svg {...common}>

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import type { User } from './api';
 import { homeFor, useAuth } from './auth';
+import { HeaderTools } from './components/HeaderTools';
 import { Sprite } from './components/Sprite';
 import { HERO } from './game/sprites';
 import { AdminPage } from './pages/AdminPage';
@@ -20,14 +21,16 @@ import { ParentDashboard } from './pages/ParentDashboard';
 import { TutorCabinet } from './pages/TutorCabinet';
 import { TutorPage } from './pages/TutorPage';
 import { TutorsPage } from './pages/TutorsPage';
+import { useT } from './i18n';
 
 // Blockly is heavy, so the game screen loads in its own chunk.
 const PlayPage = lazy(() => import('./pages/PlayPage').then((m) => ({ default: m.PlayPage })));
 
 function RequireAuth({ children, role }: { children: ReactNode; role?: User['role'] }) {
+  const t = useT();
   const { user, loading } = useAuth();
   const location = useLocation();
-  if (loading) return <div className="center-note">Загружаем…</div>;
+  if (loading) return <div className="center-note">{t('Загружаем…')}</div>;
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   if (role && user.role !== role) return <Navigate to={homeFor(user)} replace />;
   return children;
@@ -36,22 +39,21 @@ function RequireAuth({ children, role }: { children: ReactNode; role?: User['rol
 interface MenuItem {
   to: string;
   label: string;
-  icon: string;
 }
 
 function menuFor(user: User | null): MenuItem[] {
-  const common = [
-    { to: '/courses', label: 'Курсы', icon: '📚' },
-    { to: '/tutors', label: 'Наставники', icon: '👩‍🏫' },
-  ];
-  const support = { to: '/support', label: 'Поддержка', icon: '💬' };
-  if (!user) return [{ to: '/register', label: 'Игры', icon: '🎮' }, ...common, { to: '/lessons/demo', label: 'Демо-урок', icon: '🎬' }, support];
-  if (user.role === 'tutor') return [{ to: '/tutor', label: 'Кабинет', icon: '🏠' }, ...common, support];
-  if (user.role === 'admin') return [{ to: '/admin', label: 'Админ', icon: '🛠' }, ...common, support];
-  return [{ to: '/kids', label: 'Игры', icon: '🎮' }, ...common, { to: '/parent', label: 'Кабинет', icon: '🏠' }, support];
+  const home = { to: '/', label: 'Главная' };
+  const courses = { to: '/courses', label: 'Курсы' };
+  const tutors = { to: '/tutors', label: 'Наставники' };
+  const support = { to: '/support', label: 'Поддержка' };
+  if (!user) return [home, { to: '/register', label: 'Играть' }, courses, tutors, support];
+  if (user.role === 'tutor') return [home, { to: '/tutor', label: 'Кабинет' }, courses, tutors, support];
+  if (user.role === 'admin') return [home, { to: '/admin', label: 'Админ' }, courses, tutors, support];
+  return [home, { to: '/kids', label: 'Играть' }, courses, tutors, { to: '/parent', label: 'Кабинет' }, support];
 }
 
 function Header() {
+  const t = useT();
   const { user, logout } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -61,24 +63,21 @@ function Header() {
   }, [open]);
   const items = menuFor(user);
   const link = (m: MenuItem) => (
-    <NavLink key={m.to} to={m.to} className={({ isActive }) => `navlink${isActive ? ' on' : ''}`}>
-      <span className="nav-icon" aria-hidden>
-        {m.icon}
-      </span>
-      {m.label}
+    <NavLink key={m.to} to={m.to} end={m.to === '/'} className={({ isActive }) => `navlink${isActive ? ' on' : ''}`}>
+      {t(m.label)}
     </NavLink>
   );
   const account = user ? (
     <button className="btn btn-ghost" onClick={logout}>
-      Выйти
+      {t('Выйти')}
     </button>
   ) : (
     <>
       <Link to="/login" className="btn btn-ghost">
-        Войти
+        {t('Войти')}
       </Link>
       <Link to="/register" className="btn btn-primary">
-        Начать бесплатно
+        {t('Начать бесплатно')}
       </Link>
     </>
   );
@@ -90,11 +89,12 @@ function Header() {
           Kids<b>land</b>
         </span>
       </Link>
-      <nav className="main-nav" aria-label="Главное меню">
+      <nav className="main-nav" aria-label={t('Главное меню')}>
         {items.map(link)}
       </nav>
+      <HeaderTools />
       <div className="account">{account}</div>
-      <button className={open ? 'burger on' : 'burger'} onClick={() => setOpen(!open)} aria-label="Меню" aria-expanded={open}>
+      <button className={open ? 'burger on' : 'burger'} onClick={() => setOpen(!open)} aria-label={t('Меню')} aria-expanded={open}>
         <i />
         <i />
         <i />
@@ -103,13 +103,7 @@ function Header() {
       {open &&
         createPortal(
         <div className="drawer-bg" onClick={() => setOpen(false)}>
-          <nav className="drawer" aria-label="Меню" onClick={(e) => e.stopPropagation()}>
-            <NavLink to="/" end className={({ isActive }) => `navlink${isActive ? ' on' : ''}`}>
-              <span className="nav-icon" aria-hidden>
-                🏡
-              </span>
-              Главная
-            </NavLink>
+          <nav className="drawer" aria-label={t('Меню')} onClick={(e) => e.stopPropagation()}>
             {items.map(link)}
             <div className="drawer-account">{account}</div>
           </nav>
@@ -121,6 +115,7 @@ function Header() {
 }
 
 export function App() {
+  const t = useT();
   return (
     <>
       <Header />
@@ -145,7 +140,7 @@ export function App() {
           path="/kids/:childId/play/:slug"
           element={
             <RequireAuth role="parent">
-              <Suspense fallback={<div className="center-note">Загружаем игру…</div>}>
+              <Suspense fallback={<div className="center-note">{t('Загружаем игру…')}</div>}>
                 <PlayPage />
               </Suspense>
             </RequireAuth>

@@ -1,4 +1,4 @@
-import type { Answers, BookingStatus, Concept, CourseLevel, FailReason, LevelConfig, Program, SubjectId, Theme } from '@kidsland/shared';
+import type { Answers, BookingStatus, Concept, CourseLevel, FailReason, LessonPart, LevelConfig, Program, SubjectId, Theme } from '@kidsland/shared';
 
 export interface User {
   id: string;
@@ -83,6 +83,7 @@ export interface Booking {
   meetingLink: string;
   tutor: { id: string; displayName: string; avatar: string | null };
   child: { id: string; nickname: string; avatarUrl: string | null };
+  cancellation: { by: 'parent' | 'tutor'; reason: string; label: string; note: string | null } | null;
 }
 
 export interface ChildReport {
@@ -266,7 +267,8 @@ export const api = {
   booking: (id: string) => request<{ booking: Booking }>(`/bookings/${id}`),
   book: (slotId: string, childId: string) =>
     request<{ booking: Booking }>('/bookings', { method: 'POST', body: { slotId, childId } }),
-  cancelBooking: (id: string) => request<{ booking: Booking }>(`/bookings/${id}/cancel`, { method: 'POST' }),
+  cancelBooking: (id: string, reason: string, note: string) =>
+    request<{ booking: Booking }>(`/bookings/${id}/cancel`, { method: 'POST', body: { reason, note } }),
 
   myTutorProfile: () => request<{ tutor: Tutor }>('/tutor/profile'),
   saveTutorProfile: (p: TutorProfileInput) => request<{ tutor: Tutor }>('/tutor/profile', { method: 'PUT', body: p }),
@@ -279,8 +281,10 @@ export const api = {
 
   courseProgress: (childId: string) =>
     request<{ progress: LessonProgress[]; courses: CourseSummary[] }>(`/children/${childId}/courses`),
-  submitLesson: (childId: string, lessonId: string, answers: Answers) =>
-    request<LessonResult>(`/children/${childId}/lessons/${lessonId}/submit`, { method: 'POST', body: { answers } }),
+  submitLesson: (childId: string, lessonId: string, answers: Answers, part?: LessonPart) =>
+    request<LessonResult>(`/children/${childId}/lessons/${lessonId}/submit`, { method: 'POST', body: { answers, part } }),
+  completeLesson: (childId: string, lessonId: string) =>
+    request<{ progress: LessonProgress }>(`/children/${childId}/lessons/${lessonId}/complete`, { method: 'POST', body: {} }),
 
   support: () => request<{ thread: SupportThread | null; messages: SupportMessage[] }>('/support'),
   sendSupport: (body: string) =>

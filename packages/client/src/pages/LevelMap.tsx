@@ -6,10 +6,11 @@ import { KidHud } from '../components/KidHud';
 import { Sprite } from '../components/Sprite';
 import { avatarSvg, HERO } from '../game/sprites';
 import { THEMES } from '../themes';
+import { useT } from '../i18n';
 
 export function Stars({ n, size }: { n: number; size?: number }) {
   return (
-    <span className="stars" aria-label={`${n} из 3 звёзд`}>
+    <span className="stars" aria-label={`${n} / 3`}>
       {[1, 2, 3].map((i) => (
         <StarIcon key={i} on={i <= n} size={size} />
       ))}
@@ -22,6 +23,7 @@ const ROW = 150;
 const xAt = (i: number) => 50 + Math.sin(i * 1.15) * 30;
 
 export function LevelMap() {
+  const t = useT();
   const { childId = '' } = useParams();
   const [levels, setLevels] = useState<LevelSummary[] | null>(null);
   const [child, setChild] = useState<Child | null>(null);
@@ -33,7 +35,7 @@ export function LevelMap() {
     api.children().then((r) => setChild(r.children.find((c) => c.id === childId) ?? null)).catch(() => {});
   }, [childId]);
 
-  if (!levels) return <div className="center-note">{error ?? 'Загружаем карту…'}</div>;
+  if (!levels) return <div className="center-note">{error ?? t('Загружаем карту…')}</div>;
 
   const current = levels.findIndex((l) => l.unlocked && !l.completed);
   const height = levels.length * ROW + 60;
@@ -66,13 +68,13 @@ export function LevelMap() {
           <path d={path} className="path-dash" vectorEffect="non-scaling-stroke" />
         </svg>
         {levels.map((l, i) => {
-          const t = THEMES[l.theme];
+          const th = THEMES[l.theme];
           const p = points[i];
           const isCurrent = i === current;
           const node = (
             <>
               <span className="node-num">{l.order}</span>
-              <span className="node-face" style={{ background: `linear-gradient(160deg, ${t.bg2}, ${t.bg})` }}>
+              <span className="node-face" style={{ background: `linear-gradient(160deg, ${th.bg2}, ${th.bg})` }}>
                 {l.unlocked ? <Sprite svg={HERO[l.theme]('right')} size={58} /> : <LockIcon />}
               </span>
               {l.isPremium && (
@@ -83,7 +85,7 @@ export function LevelMap() {
               {isCurrent && (
                 <span className="node-me">
                   <Sprite svg={avatarSvg(child?.avatarUrl)} size={44} />
-                  <span className="bubble">Играть!</span>
+                  <span className="bubble">{t('Играть!')}</span>
                 </span>
               )}
             </>
@@ -91,7 +93,7 @@ export function LevelMap() {
           const label = (
             <span className="node-label">
               <b>{l.title}</b>
-              {l.completed ? <Stars n={l.stars} size={18} /> : <span className="node-world">{t.name}</span>}
+              {l.completed ? <Stars n={l.stars} size={18} /> : <span className="node-world">{t(th.name)}</span>}
             </span>
           );
           const style = { left: `${p.x}%`, top: p.y };
@@ -107,7 +109,7 @@ export function LevelMap() {
               className={cls}
               style={style}
               onClick={() => l.paywalled && setPaywall(true)}
-              title={l.paywalled ? 'Доступно в премиум-подписке' : 'Сначала пройди предыдущий уровень'}
+              title={l.paywalled ? t('Доступно в премиум-подписке') : t('Сначала пройди предыдущий уровень')}
             >
               {node}
               {label}
@@ -120,10 +122,10 @@ export function LevelMap() {
         <div className="modal-bg" onClick={() => setPaywall(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <CrownIcon size={72} />
-            <h2>Премиум-уровни</h2>
-            <p>Условия, вложенные циклы и лабиринты. Подписку можно будет оформить совсем скоро.</p>
+            <h2>{t('Премиум-уровни')}</h2>
+            <p>{t('Условия, вложенные циклы и лабиринты. Подписку можно будет оформить совсем скоро.')}</p>
             <button className="btn btn-primary" onClick={() => setPaywall(false)}>
-              Понятно
+              {t('Понятно')}
             </button>
           </div>
         </div>

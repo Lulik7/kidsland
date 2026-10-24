@@ -8,14 +8,16 @@ import { SubjectIcon } from '../components/SubjectIcon';
 import { coursesBase, levelName } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { subjectName } from '../format';
+import { useT } from '../i18n';
 
 export function CoursePage() {
+  const t = useT();
   const { childId, courseId = '' } = useParams();
   const course = getCourse(courseId);
   const { child, progress, error } = useCourseProgress(childId);
   const base = coursesBase(childId);
   if (!course) return <Navigate to={base} replace />;
-  if (!progress) return <div className="center-note">{error ?? 'Загружаем курс…'}</div>;
+  if (!progress) return <div className="center-note">{error ?? t('Загружаем курс…')}</div>;
 
   const passed = new Set(progress.filter((p) => p.completed).map((p) => p.lessonId));
   const best = new Map(progress.map((p) => [p.lessonId, p]));
@@ -29,7 +31,7 @@ export function CoursePage() {
     <main className="page course-page">
       {childId && <KidHud childId={childId} child={child} />}
       <Link to={base} className="back-link">
-        ← Все курсы
+        {t('← Все курсы')}
       </Link>
       <section className="course-hero" style={{ ['--c' as string]: course.color }}>
         <div className="ch-icon">
@@ -37,26 +39,26 @@ export function CoursePage() {
         </div>
         <div className="ch-text">
           <div className="chips">
-            <span className="chip ch-chip">{subjectName(course.subject)}</span>
+            <span className="chip ch-chip">{t(subjectName(course.subject))}</span>
             <LevelBadge level={course.level} />
             <span className="chip ch-chip">
-              {course.ageMin}–{course.ageMax} лет
+              {course.ageMin}–{course.ageMax}{' '}{t('лет')}
             </span>
           </div>
           <h1>{course.title}</h1>
           <p>{course.description}</p>
           {next && (
             <Link to={`${base}/${course.id}/${next.id}`} className="btn btn-light btn-xl">
-              {doneCount > 0 ? 'Продолжить' : 'Начать курс'}
+              {doneCount > 0 ? t('Продолжить') : t('Начать курс')}
             </Link>
           )}
-          {childId && doneCount === course.lessons.length && <div className="ch-done">🏆 Курс пройден!</div>}
+          {childId && doneCount === course.lessons.length && <div className="ch-done">{t('🏆 Курс пройден!')}</div>}
         </div>
       </section>
 
       <div className="course-layout">
         <section>
-          <h2 className="card-title">Уроки</h2>
+          <h2 className="card-title">{t('Уроки')}</h2>
           <ol className="lesson-list">
             {course.lessons.map((l, i) => {
               const open = unlocked(i);
@@ -68,7 +70,7 @@ export function CoursePage() {
                   <span className="ll-main">
                     <b>{l.title}</b>
                     <span className="muted small">
-                      {l.minutes} мин · теория, {l.practice.length} задания, викторина · {tasks} вопросов
+                      {l.minutes}{' '}{t('мин · теория,')}{' '}{l.practice.length}{' '}{t('задания, викторина ·')}{' '}{tasks}{' '}{t('вопросов')}
                     </span>
                   </span>
                   <span className="ll-side">
@@ -83,7 +85,7 @@ export function CoursePage() {
                       {body}
                     </Link>
                   ) : (
-                    <div className="ll locked" title="Сначала пройди предыдущий урок">
+                    <div className="ll locked" title={t('Сначала пройди предыдущий урок')}>
                       {body}
                     </div>
                   )}
@@ -91,12 +93,12 @@ export function CoursePage() {
               );
             })}
           </ol>
-          <h2 className="card-title faq-title">Вопросы и ответы</h2>
+          <h2 className="card-title faq-title">{t('Вопросы и ответы')}</h2>
           <Faq items={course.faq} />
         </section>
         <aside className="course-side">
           <div className="card">
-            <h3 className="card-title">Уровни направления</h3>
+            <h3 className="card-title">{t('Уровни направления')}</h3>
             <div className="level-ladder">
               {siblings.map((c) => (
                 <Link key={c.id} to={`${base}/${c.id}`} className={c.id === course.id ? 'rung on' : 'rung'}>
@@ -106,14 +108,14 @@ export function CoursePage() {
               ))}
             </div>
             <p className="muted small">
-              Не уверен, какой уровень выбрать? Начни с уровня «{levelName('beginner')}»: если всё знакомо, викторины пройдутся быстро.
+              {t('Не уверен, какой уровень выбрать? Начни с уровня «')}{t(levelName('beginner'))}{t('»: если всё знакомо, викторины пройдутся быстро.')}
             </p>
           </div>
           <div className="card soft">
-            <h3 className="card-title">Нужна помощь?</h3>
-            <p className="muted">Наставник объяснит сложную тему на живом уроке. Первый урок бесплатный.</p>
+            <h3 className="card-title">{t('Нужна помощь?')}</h3>
+            <p className="muted">{t('Наставник объяснит сложную тему на живом уроке. Первый урок бесплатный.')}</p>
             <Link to={`/tutors?subject=${course.subject}`} className="btn btn-primary">
-              Выбрать наставника
+              {t('Выбрать наставника')}
             </Link>
           </div>
         </aside>

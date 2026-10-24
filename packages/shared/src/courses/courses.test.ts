@@ -45,3 +45,11 @@ describe('courses', () => {
     expect(gradeLesson(lesson, {}).passed).toBe(false);
   });
 });
+
+describe('theory', () => {
+  it('has at least three theory sections in every lesson', async () => {
+    const { EXTRA_THEORY } = await import('./extraTheory');
+    for (const id of Object.keys(EXTRA_THEORY)) expect(findLesson(id), id).toBeDefined();
+    for (const c of COURSES) for (const l of c.lessons) expect(l.sections.length, l.id).toBeGreaterThanOrEqual(3);
+  });
+});

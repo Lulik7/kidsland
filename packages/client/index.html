@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kidsland: программирование для детей</title>
     <link rel="icon" href="/favicon.svg" />
+    <script>
+      try {
+        if (localStorage.getItem('kidsland.theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+        if (localStorage.getItem('kidsland.lang') === 'en') document.documentElement.lang = 'en';
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&family=Rubik:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&family=Rubik:wght@600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

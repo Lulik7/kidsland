@@ -9,6 +9,7 @@ import { Sprite } from '../components/Sprite';
 import { StarsChart } from '../components/StarsChart';
 import { avatarSvg, COIN } from '../game/sprites';
 import { relativeDays } from '../format';
+import { useT } from '../i18n';
 
 const CONCEPTS: { id: Concept; name: string; hint: string }[] = [
   { id: 'sequence', name: 'Последовательности', hint: 'Порядок команд' },
@@ -17,6 +18,7 @@ const CONCEPTS: { id: Concept; name: string; hint: string }[] = [
 ];
 
 export function ParentDashboard() {
+  const t = useT();
   const [kids, setKids] = useState<Child[] | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const [report, setReport] = useState<ChildReport | null>(null);
@@ -40,30 +42,32 @@ export function ParentDashboard() {
     api.report(active).then(setReport).catch((e) => setError(e.message));
   }, [active]);
 
-  if (!kids) return <div className="center-note">{error ?? 'Загружаем…'}</div>;
+  if (!kids) return <div className="center-note">{error ?? t('Загружаем…')}</div>;
   if (kids.length === 0) {
     return (
       <main className="page">
         <div className="empty card">
-          <h1>Добавьте профиль ребёнка</h1>
-          <p className="muted">Здесь появится прогресс, как только ребёнок начнёт играть.</p>
+          <h1>{t('Добавьте профиль ребёнка')}</h1>
+          <p className="muted">{t('Здесь появится прогресс, как только ребёнок начнёт играть.')}</p>
           <Link to="/kids" className="btn btn-primary">
-            Добавить игрока
+            {t('Добавить игрока')}
           </Link>
         </div>
       </main>
     );
   }
 
-  const upcoming = bookings.filter((b) => b.status === 'scheduled' && new Date(b.startsAt).getTime() > Date.now() - 3_600_000);
+  const upcoming = bookings.filter(
+    (b) => (b.status === 'scheduled' || b.status === 'cancelled') && new Date(b.startsAt).getTime() > Date.now() - 3_600_000,
+  );
   const hasTrial = bookings.some((b) => b.isTrial && b.status !== 'cancelled');
 
   return (
     <main className="page dash">
       <div className="dash-head">
         <div>
-          <h1 className="page-title left">Кабинет родителя</h1>
-          <p className="muted">Что ребёнок уже умеет и что дальше.</p>
+          <h1 className="page-title left">{t('Кабинет родителя')}</h1>
+          <p className="muted">{t('Что ребёнок уже умеет и что дальше.')}</p>
         </div>
         <div className="tabs" role="tablist">
           {kids.map((k) => (
@@ -74,57 +78,54 @@ export function ParentDashboard() {
         </div>
       </div>
 
+      <section className="lessons">
+        <h2 className="card-title">{t('Ближайшие уроки')}</h2>
+        {upcoming.length === 0 ? (
+          <p className="muted">{t('Уроков пока нет.')}</p>
+        ) : (
+          <div className="booking-list">
+            {upcoming.map((b) => (
+              <BookingCard key={b.id} booking={b} viewer="parent" onChange={(nb) => setBookings((all) => all.map((x) => (x.id === nb.id ? nb : x)))} />
+            ))}
+          </div>
+        )}
+      </section>
+
       {!report ? (
-        <div className="center-note">Загружаем отчёт…</div>
+        <div className="center-note">{t('Загружаем отчёт…')}</div>
       ) : (
         <>
-          {report.baseCourseCompleted && (
-            <div className="nudge">
-              <Sprite svg={avatarSvg(report.child.avatarUrl)} size={72} className="float" />
-              <div>
-                <h2>{report.child.nickname} прошёл(а) все базовые уровни!</h2>
-                <p>
-                  {hasTrial
-                    ? 'Самое время продолжить с наставником: Scratch, Python или создание игр.'
-                    : 'Запишитесь на бесплатный пробный урок с наставником: он поможет перейти к следующей ступени.'}
-                </p>
-              </div>
-              <Link to={`/tutors?child=${report.child.id}`} className="btn btn-primary btn-xl">
-                {hasTrial ? 'Выбрать наставника' : 'Бесплатный урок'}
-              </Link>
-            </div>
-          )}
 
           <div className="tiles">
             <div className="tile">
-              <span className="tile-label">Пройдено уровней</span>
+              <span className="tile-label">{t('Пройдено уровней')}</span>
               <b>
                 {report.totals.completed}
                 <small> / {report.totals.levels}</small>
               </b>
             </div>
             <div className="tile">
-              <span className="tile-label">Звёзды</span>
+              <span className="tile-label">{t('Звёзды')}</span>
               <b>
                 <StarIcon on size={26} /> {report.totals.stars}
                 <small> / {report.totals.levels * 3}</small>
               </b>
             </div>
             <div className="tile">
-              <span className="tile-label">Опыт и монеты</span>
+              <span className="tile-label">{t('Опыт и монеты')}</span>
               <b>
                 {report.child.xp} XP <Sprite svg={COIN} size={24} /> {report.child.coins}
               </b>
             </div>
             <div className="tile">
-              <span className="tile-label">Последняя игра</span>
+              <span className="tile-label">{t('Последняя игра')}</span>
               <b className="tile-text">{relativeDays(report.lastPlayedAt)}</b>
             </div>
           </div>
 
           <div className="dash-grid">
             <section className="card">
-              <h2 className="card-title">Освоенные темы</h2>
+              <h2 className="card-title">{t('Освоенные темы')}</h2>
               <div className="concepts">
                 {CONCEPTS.map((c) => {
                   const v = report.concepts[c.id] ?? { done: 0, total: 0 };
@@ -133,15 +134,15 @@ export function ParentDashboard() {
                     <div key={c.id} className="concept">
                       <div className="concept-row">
                         <span>
-                          <b>{c.name}</b> <span className="muted small">{c.hint}</span>
+                          <b>{t(c.name)}</b> <span className="muted small">{t(c.hint)}</span>
                         </span>
                         <b>{pct}%</b>
                       </div>
-                      <div className="meter" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={c.name}>
+                      <div className="meter" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t(c.name)}>
                         <i style={{ width: `${pct}%` }} />
                       </div>
                       <span className="muted small">
-                        {v.done} из {v.total} уровней
+                        {v.done}{' '}{t('из')}{' '}{v.total}{' '}{t('уровней')}
                       </span>
                     </div>
                   );
@@ -149,23 +150,50 @@ export function ParentDashboard() {
               </div>
             </section>
             <section className="card">
-              <h2 className="card-title">Звёзды по уровням</h2>
+              <h2 className="card-title">{t('Звёзды по уровням')}</h2>
               <StarsChart levels={report.levels} />
-              <p className="muted small chart-note">Три звезды значат, что ребёнок нашёл самое короткое решение. Наведите на столбик, чтобы увидеть уровень.</p>
+              <p className="muted small chart-note">{t('Три звезды значат, что ребёнок нашёл самое короткое решение. Наведите на столбик, чтобы увидеть уровень.')}</p>
             </section>
           </div>
 
+          {report.baseCourseCompleted && (
+            <div className="nudge">
+              <Sprite svg={avatarSvg(report.child.avatarUrl)} size={72} className="float" />
+              <div>
+                <h2>{report.child.nickname} прошёл(а) все базовые уровни!</h2>
+                <p>
+                  {hasTrial
+                    ? t('Самое время продолжить с наставником: Scratch, Python или создание игр.')
+                    : t('Запишитесь на бесплатный пробный урок с наставником: он поможет перейти к следующей ступени.')}
+                </p>
+              </div>
+              <Link to={`/tutors?child=${report.child.id}`} className="btn btn-primary btn-xl">
+                {hasTrial ? t('Выбрать наставника') : t('Бесплатный урок')}
+              </Link>
+            </div>
+          )}
+          {!report.baseCourseCompleted && (
+            <div className="soft-cta">
+              <span>
+                {t('После базовых уровней мы предложим бесплатный урок с наставником. А можно выбрать наставника уже сейчас.')}
+              </span>
+              <Link to={`/tutors?child=${report.child.id}`} className="btn btn-light">
+                {t('Наставники')}
+              </Link>
+            </div>
+          )}
+
           <section className="card dash-courses">
             <div className="concept-row">
-              <h2 className="card-title">Курсы</h2>
+              <h2 className="card-title">{t('Курсы')}</h2>
               <Link to={`/kids/${report.child.id}/courses`} className="btn btn-light">
-                Открыть курсы
+                {t('Открыть курсы')}
               </Link>
             </div>
             {report.courses.length === 0 ? (
               <p className="muted">
-                {report.child.nickname} ещё не начинал(а) курсы. В них теория, задания и викторины по Scratch, Python, сайтам,
-                играм и логике на трёх уровнях сложности.
+                {report.child.nickname} ещё не начинал(а) курсы. В них теория, задания и викторины по Scratch, Roblox, Python, Unity, сайтам
+                и логике на трёх уровнях сложности.
               </p>
             ) : (
               <div className="concepts">
@@ -191,31 +219,10 @@ export function ParentDashboard() {
             )}
           </section>
 
-          {!report.baseCourseCompleted && (
-            <div className="soft-cta">
-              <span>
-                После базовых уровней мы предложим бесплатный урок с наставником. А можно выбрать наставника уже сейчас.
-              </span>
-              <Link to={`/tutors?child=${report.child.id}`} className="btn btn-light">
-                Наставники
-              </Link>
-            </div>
-          )}
+
         </>
       )}
 
-      <section className="lessons">
-        <h2 className="card-title">Ближайшие уроки</h2>
-        {upcoming.length === 0 ? (
-          <p className="muted">Уроков пока нет.</p>
-        ) : (
-          <div className="booking-list">
-            {upcoming.map((b) => (
-              <BookingCard key={b.id} booking={b} viewer="parent" onChange={(nb) => setBookings((all) => all.map((x) => (x.id === nb.id ? nb : x)))} />
-            ))}
-          </div>
-        )}
-      </section>
     </main>
   );
 }

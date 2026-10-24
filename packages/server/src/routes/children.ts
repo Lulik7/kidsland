@@ -32,7 +32,10 @@ const answerSchema = z.union([
   z.string().max(200),
   z.array(z.string().max(300)).max(20),
 ]);
-const lessonSubmitSchema = z.object({ answers: z.record(z.string().max(32), answerSchema) });
+const lessonSubmitSchema = z.object({
+  answers: z.record(z.string().max(32), answerSchema),
+  part: z.enum(['practice', 'quiz']).optional(),
+});
 
 interface CourseProgressRow {
   course_id: string;
@@ -41,6 +44,8 @@ interface CourseProgressRow {
   max_score: number;
   attempts: number;
   completed_at: Date | null;
+  results: Record<string, boolean>;
+  rewarded: boolean;
 }
 
 const publicLessonProgress = (p: CourseProgressRow) => ({
@@ -139,46 +144,72 @@ export function childrenRouter(db: Db) {
     res.json({ progress: rows.map(publicLessonProgress), courses: courseSummary(rows) });
   });
 
-  /**
-   * Submit answers to a lesson's tasks and quiz. Grading happens here with the shared answer key,
-   * so rewards cannot be faked. XP and coins are granted once, on the first pass.
-   */
-  r.post('/:childId/lessons/:lessonId/submit', async (req, res) => {
-    const body = lessonSubmitSchema.parse(req.body);
-    const found = findLesson(req.params.lessonId);
+  /** Lessons open in order: the previous one must be completed (read or passed). */
+  const lessonFor = async (childId: string, lessonId: string) => {
+    const found = findLesson(lessonId);
     if (!found) throw new HttpError(404, 'Урок не найден');
-    const { course, lesson, index } = found;
-    const child = await getChildForUser(db, req.params.childId, req.user!.id);
-
-    if (index > 0) {
-      const prev = course.lessons[index - 1];
+    if (found.index > 0) {
+      const prev = found.course.lessons[found.index - 1];
       const { rows } = await db.query(
         'SELECT 1 FROM course_progress WHERE child_id = $1 AND lesson_id = $2 AND completed_at IS NOT NULL',
-        [child.id, prev.id],
+        [childId, prev.id],
       );
       if (!rows[0]) throw new HttpError(403, 'Сначала пройди предыдущий урок');
     }
+    return found;
+  };
 
-    const grade = gradeLesson(lesson, body.answers as Answers);
+  /** Marks a lesson as read. Tasks and the quiz are optional; rewards come only from passing them. */
+  r.post('/:childId/lessons/:lessonId/complete', async (req, res) => {
+    const child = await getChildForUser(db, req.params.childId, req.user!.id);
+    const { course, lesson } = await lessonFor(child.id, req.params.lessonId);
+    const max = lesson.practice.length + lesson.quiz.length;
+    const { rows } = await db.query<CourseProgressRow>(
+      `INSERT INTO course_progress (child_id, course_id, lesson_id, max_score, completed_at)
+       VALUES ($1, $2, $3, $4, now())
+       ON CONFLICT (child_id, lesson_id) DO UPDATE SET
+         completed_at = COALESCE(course_progress.completed_at, now()), updated_at = now()
+       RETURNING *`,
+      [child.id, course.id, lesson.id, max],
+    );
+    res.json({ progress: publicLessonProgress(rows[0]) });
+  });
+
+  /**
+   * Submit answers to a lesson's tasks or quiz (or both). Grading happens here with the shared answer
+   * key, so rewards cannot be faked. XP and coins are granted once, the first time a part is passed.
+   */
+  r.post('/:childId/lessons/:lessonId/submit', async (req, res) => {
+    const body = lessonSubmitSchema.parse(req.body);
+    const child = await getChildForUser(db, req.params.childId, req.user!.id);
+    const { course, lesson } = await lessonFor(child.id, req.params.lessonId);
+    const grade = gradeLesson(lesson, body.answers as Answers, body.part);
+    const max = lesson.practice.length + lesson.quiz.length;
+
     const client = await db.connect();
     try {
       await client.query('BEGIN');
-      const { rows: before } = await client.query(
-        'SELECT completed_at FROM course_progress WHERE child_id = $1 AND lesson_id = $2 FOR UPDATE',
+      await client.query(
+        `INSERT INTO course_progress (child_id, course_id, lesson_id, max_score) VALUES ($1, $2, $3, $4)
+         ON CONFLICT (child_id, lesson_id) DO NOTHING`,
+        [child.id, course.id, lesson.id, max],
+      );
+      const { rows: before } = await client.query<CourseProgressRow>(
+        'SELECT * FROM course_progress WHERE child_id = $1 AND lesson_id = $2 FOR UPDATE',
         [child.id, lesson.id],
       );
-      const firstPass = grade.passed && !before[0]?.completed_at;
+      const merged: Record<string, boolean> = { ...before[0].results };
+      for (const [id, ok] of Object.entries(grade.results)) merged[id] = Boolean(merged[id]) || ok;
+      const best = Object.values(merged).filter(Boolean).length;
+      const firstPass = grade.passed && !before[0].rewarded;
       const { rows } = await client.query<CourseProgressRow>(
-        `INSERT INTO course_progress (child_id, course_id, lesson_id, best_score, max_score, attempts, completed_at)
-         VALUES ($1, $2, $3, $4, $5, 1, CASE WHEN $6 THEN now() END)
-         ON CONFLICT (child_id, lesson_id) DO UPDATE SET
-           best_score = GREATEST(course_progress.best_score, EXCLUDED.best_score),
-           max_score = EXCLUDED.max_score,
-           attempts = course_progress.attempts + 1,
-           completed_at = COALESCE(course_progress.completed_at, EXCLUDED.completed_at),
+        `UPDATE course_progress SET
+           results = $3, best_score = $4, max_score = $5, attempts = attempts + 1,
+           rewarded = rewarded OR $6,
+           completed_at = CASE WHEN $6 THEN COALESCE(completed_at, now()) ELSE completed_at END,
            updated_at = now()
-         RETURNING *`,
-        [child.id, course.id, lesson.id, grade.score, grade.max, grade.passed],
+         WHERE child_id = $1 AND lesson_id = $2 RETURNING *`,
+        [child.id, lesson.id, JSON.stringify(merged), best, max, grade.passed],
       );
       const rewards = firstPass ? LESSON_REWARD : { xp: 0, coins: 0 };
       const { rows: childRows } = await client.query(

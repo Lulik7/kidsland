@@ -4,8 +4,10 @@ import { api, type Child } from '../api';
 import { Sprite } from '../components/Sprite';
 import { AVATAR_IDS, avatarSvg, COIN } from '../game/sprites';
 import { plural } from '../plural';
+import { useT } from '../i18n';
 
 export function KidsPage() {
+  const t = useT();
   const [kids, setKids] = useState<Child[] | null>(null);
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState(AVATAR_IDS[0]);
@@ -31,15 +33,15 @@ export function KidsPage() {
       setNickname('');
       setAdding(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка');
+      setError(err instanceof Error ? err.message : t('Ошибка'));
     }
   };
 
-  if (!kids) return <div className="center-note">{error ?? 'Загружаем…'}</div>;
+  if (!kids) return <div className="center-note">{error ?? t('Загружаем…')}</div>;
 
   return (
     <main className="page kids-page">
-      <h1 className="page-title">Кто сегодня играет?</h1>
+      <h1 className="page-title">{t('Кто сегодня играет?')}</h1>
       <div className="kids">
         {kids.map((k) => (
           <Link key={k.id} to={`/kids/${k.id}`} className="kid">
@@ -52,14 +54,14 @@ export function KidsPage() {
               </span>
             </div>
             <span className="muted small">
-              {k.completedLevels.length} {plural(k.completedLevels.length, ['уровень пройден', 'уровня пройдено', 'уровней пройдено'])}
+              {k.completedLevels.length} {plural(k.completedLevels.length, [t('уровень пройден'), t('уровня пройдено'), t('уровней пройдено')])}
             </span>
-            <span className="btn btn-primary kid-play">Играть</span>
+            <span className="btn btn-primary kid-play">{t('Играть')}</span>
           </Link>
         ))}
         {adding ? (
           <form className="kid kid-new" onSubmit={add}>
-            <h3>Новый игрок</h3>
+            <h3>{t('Новый игрок')}</h3>
             <Sprite svg={avatarSvg(avatar)} size={96} className="kid-avatar" />
             <div className="avatars">
               {AVATAR_IDS.map((a) => (
@@ -68,20 +70,20 @@ export function KidsPage() {
                   key={a}
                   className={a === avatar ? 'avatar on' : 'avatar'}
                   onClick={() => setAvatar(a)}
-                  aria-label="Выбрать аватар"
+                  aria-label={t('Выбрать аватар')}
                 >
                   <Sprite svg={avatarSvg(a)} size={36} />
                 </button>
               ))}
             </div>
-            <input placeholder="Имя или ник" required maxLength={30} value={nickname} onChange={(e) => setNickname(e.target.value)} />
-            <button className="btn btn-primary">Добавить</button>
+            <input placeholder={t('Имя или ник')} required maxLength={30} value={nickname} onChange={(e) => setNickname(e.target.value)} />
+            <button className="btn btn-primary">{t('Добавить')}</button>
             {error && <div className="error">{error}</div>}
           </form>
         ) : (
           <button className="kid kid-add" onClick={() => setAdding(true)}>
             <span className="plus">+</span>
-            <h3>Добавить игрока</h3>
+            <h3>{t('Добавить игрока')}</h3>
           </button>
         )}
       </div>

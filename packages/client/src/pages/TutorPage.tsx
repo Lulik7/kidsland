@@ -8,6 +8,7 @@ import { Sprite } from '../components/Sprite';
 import { TutorAvatar } from '../components/TutorAvatar';
 import { avatarSvg } from '../game/sprites';
 import { dayKey, fmtDateTime, fmtTime, languageName, rub, subjectName } from '../format';
+import { useT } from '../i18n';
 
 /** Turns YouTube / Vimeo page links into embeddable URLs; other links are shown as a plain link. */
 function embedUrl(url: string): string | null {
@@ -21,6 +22,7 @@ function embedUrl(url: string): string | null {
 const DAYS = 14;
 
 export function TutorPage() {
+  const t = useT();
   const { id = '' } = useParams();
   const [params] = useSearchParams();
   const location = useLocation();
@@ -79,10 +81,10 @@ export function TutorPage() {
     if (!day && slots.length) setDay(dayKey(slots[0].startsAt));
   }, [slots, day]);
 
-  if (!tutor) return <div className="center-note">{error ?? 'Загружаем…'}</div>;
+  if (!tutor) return <div className="center-note">{error ?? t('Загружаем…')}</div>;
 
   const video = tutor.videoUrl ? embedUrl(tutor.videoUrl) : null;
-  const price = hasTrial ? rub(tutor.hourlyRate) : 'Бесплатно';
+  const price = hasTrial ? rub(tutor.hourlyRate) : t('Бесплатно');
 
   const book = async () => {
     if (!slot || !childId) return;
@@ -94,7 +96,7 @@ export function TutorPage() {
       setSlot(null);
       void load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Ошибка');
+      setError(e instanceof Error ? e.message : t('Ошибка'));
       void load();
     } finally {
       setBusy(false);
@@ -104,7 +106,7 @@ export function TutorPage() {
   return (
     <main className="page tutor-page">
       <Link to={`/tutors${childId ? `?child=${childId}` : ''}`} className="back-link">
-        ← Все наставники
+        {t('← Все наставники')}
       </Link>
       <div className="tutor-layout">
         <section className="card tutor-profile">
@@ -114,31 +116,31 @@ export function TutorPage() {
               <h1>{tutor.displayName}</h1>
               <p className="tp-headline">{tutor.headline}</p>
               <span className="tc-rating">
-                <StarIcon on size={18} /> <b>{tutor.rating.toFixed(1)}</b> <span className="muted">· {tutor.reviewsCount} отзывов</span>
+                <StarIcon on size={18} /> <b>{tutor.rating.toFixed(1)}</b> <span className="muted">· {tutor.reviewsCount}{' '}{t('отзывов')}</span>
               </span>
             </div>
           </div>
           <div className="tags">
             {tutor.subjects.map((s) => (
               <span key={s} className="tag">
-                {subjectName(s)}
+                {t(subjectName(s))}
               </span>
             ))}
           </div>
           <dl className="facts">
             <div>
-              <dt>Возраст учеников</dt>
+              <dt>{t('Возраст учеников')}</dt>
               <dd>
-                {tutor.ageMin}–{tutor.ageMax} лет
+                {tutor.ageMin}–{tutor.ageMax}{' '}{t('лет')}
               </dd>
             </div>
             <div>
-              <dt>Язык уроков</dt>
+              <dt>{t('Язык уроков')}</dt>
               <dd>{tutor.languages.map(languageName).join(', ')}</dd>
             </div>
             <div>
-              <dt>Стоимость</dt>
-              <dd>{rub(tutor.hourlyRate)} за 45 минут</dd>
+              <dt>{t('Стоимость')}</dt>
+              <dd>{rub(tutor.hourlyRate)}{' '}{t('за 45 минут')}</dd>
             </div>
           </dl>
           {tutor.videoUrl?.startsWith('/api/uploads/') ? (
@@ -151,16 +153,16 @@ export function TutorPage() {
             </div>
           ) : tutor.videoUrl ? (
             <a href={tutor.videoUrl} target="_blank" rel="noreferrer" className="btn btn-light">
-              Смотреть видео-знакомство
+              {t('Смотреть видео-знакомство')}
             </a>
           ) : null}
-          <h2 className="card-title">О себе</h2>
+          <h2 className="card-title">{t('О себе')}</h2>
           <p className="tp-bio">{tutor.bio}</p>
         </section>
 
         <aside className="card booking-panel">
-          <h2 className="card-title">Выберите время</h2>
-          <p className="muted small">Время указано по вашему часовому поясу. Урок длится 45 минут.</p>
+          <h2 className="card-title">{t('Выберите время')}</h2>
+          <p className="muted small">{t('Время указано по вашему часовому поясу. Урок длится 45 минут.')}</p>
           <div className="day-strip">
             {days.map((d) => {
               const n = byDay.get(d.key)?.length ?? 0;
@@ -187,28 +189,28 @@ export function TutorPage() {
                 {fmtTime(s.startsAt)}
               </button>
             ))}
-            {slots.length === 0 && <p className="muted">Свободного времени пока нет.</p>}
+            {slots.length === 0 && <p className="muted">{t('Свободного времени пока нет.')}</p>}
           </div>
 
           {!user ? (
             <div className="bp-foot">
-              <p className="small muted">Чтобы записаться, войдите или создайте аккаунт родителя. Первый урок бесплатный.</p>
+              <p className="small muted">{t('Чтобы записаться, войдите или создайте аккаунт родителя. Первый урок бесплатный.')}</p>
               <Link to={`/register?next=${encodeURIComponent(location.pathname + location.search)}`} className="btn btn-primary">
-                Создать аккаунт
+                {t('Создать аккаунт')}
               </Link>
             </div>
           ) : user.role !== 'parent' ? (
-            <p className="small muted">Записываться на уроки могут только родители.</p>
+            <p className="small muted">{t('Записываться на уроки могут только родители.')}</p>
           ) : kids.length === 0 ? (
             <div className="bp-foot">
-              <p className="small muted">Сначала добавьте профиль ребёнка.</p>
+              <p className="small muted">{t('Сначала добавьте профиль ребёнка.')}</p>
               <Link to="/kids" className="btn btn-light">
-                Добавить ребёнка
+                {t('Добавить ребёнка')}
               </Link>
             </div>
           ) : (
             <div className="bp-foot">
-              <span className="small muted">Для кого урок</span>
+              <span className="small muted">{t('Для кого урок')}</span>
               <div className="kid-pick">
                 {kids.map((k) => (
                   <button key={k.id} className={childId === k.id ? 'kp on' : 'kp'} onClick={() => setChildId(k.id)}>
@@ -217,14 +219,14 @@ export function TutorPage() {
                 ))}
               </div>
               <div className="bp-price">
-                <span>{hasTrial ? 'Стоимость урока' : 'Пробный урок'}</span>
+                <span>{hasTrial ? t('Стоимость урока') : t('Пробный урок')}</span>
                 <b className={hasTrial ? '' : 'free'}>{price}</b>
               </div>
               {error && <div className="error">{error}</div>}
               <button className="btn btn-primary btn-xl" disabled={!slot || !childId || busy} onClick={book}>
-                {slot ? `Записаться на ${fmtDateTime(slot.startsAt)}` : 'Выберите время'}
+                {slot ? `Записаться на ${fmtDateTime(slot.startsAt)}` : t('Выберите время')}
               </button>
-              {hasTrial && <p className="small muted">Оплата платных уроков появится позже, пока урок просто бронируется.</p>}
+              {hasTrial && <p className="small muted">{t('Оплата платных уроков появится позже, пока урок просто бронируется.')}</p>}
             </div>
           )}
         </aside>
@@ -235,18 +237,18 @@ export function TutorPage() {
           <Confetti />
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <TutorAvatar name={tutor.displayName} size={84} />
-            <h2>Вы записаны!</h2>
+            <h2>{t('Вы записаны!')}</h2>
             <p>
-              {fmtDateTime(booked.startsAt)}, урок с наставником {tutor.displayName}. Ученик: {booked.child.nickname}.
-              {booked.isTrial && ' Это бесплатный пробный урок.'}
+              {fmtDateTime(booked.startsAt)}{t(', урок с наставником')}{' '}{tutor.displayName}{t('. Ученик:')}{' '}{booked.child.nickname}.
+              {booked.isTrial && t(' Это бесплатный пробный урок.')}
             </p>
-            <p className="small">Ссылка на урок появится в кабинете родителя. Войти можно за 10 минут до начала.</p>
+            <p className="small">{t('Ссылка на урок появится в кабинете родителя. Войти можно за 10 минут до начала.')}</p>
             <div className="modal-actions">
               <Link to="/parent" className="btn btn-primary">
-                В кабинет родителя
+                {t('В кабинет родителя')}
               </Link>
               <button className="btn btn-light" onClick={() => setBooked(null)}>
-                Закрыть
+                {t('Закрыть')}
               </button>
             </div>
           </div>

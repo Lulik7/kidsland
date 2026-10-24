@@ -1,10 +1,12 @@
 import { randomUUID } from 'node:crypto';
+import { CANCEL_REASONS, cancelReasonLabel, findUnsafeContent } from '@kidsland/shared';
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import { config } from '../config';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
+import { flagUnsafe } from './lessonRoom';
 import { getChildForUser } from '../levels';
 import { isUuid } from '../tutors';
 
@@ -33,6 +35,16 @@ const publicBooking = (b: any) => ({
   tutor: { id: b.tutor_id, displayName: b.tutor_name, avatar: b.tutor_avatar },
   child: { id: b.child_id, nickname: b.child_name, avatarUrl: b.child_avatar },
   createdAt: b.created_at,
+  cancellation:
+    b.status === 'cancelled' && b.cancelled_by
+      ? { by: b.cancelled_by, reason: b.cancel_reason, label: cancelReasonLabel(b.cancelled_by, b.cancel_reason ?? ''), note: b.cancel_note }
+      : null,
+});
+
+const allReasons = [...new Set([...CANCEL_REASONS.parent, ...CANCEL_REASONS.tutor].map((r) => r.id))] as [string, ...string[]];
+const cancelSchema = z.object({
+  reason: z.enum(allReasons, { message: 'Выберите причину отмены' }).default('other'),
+  note: z.string().trim().max(500, 'Сообщение слишком длинное').optional().default(''),
 });
 
 export function bookingsRouter(db: Db) {
@@ -114,13 +126,22 @@ export function bookingsRouter(db: Db) {
 
   r.post('/:id/cancel', async (req, res) => {
     if (!isUuid(req.params.id)) throw new HttpError(404, 'Урок не найден');
+    const { reason, note } = cancelSchema.parse(req.body ?? {});
+    // The note goes to the other side, so the child-safety filter applies to it like to the lesson chat.
+    const unsafe = note ? findUnsafeContent(note) : null;
+    if (unsafe) {
+      await flagUnsafe(db, req.user!.id, `cancel:${req.params.id}`, note, unsafe);
+      throw new HttpError(422, `${unsafe}. Сообщение не отправлено, модератор получил уведомление.`);
+    }
     const { rows } = await db.query(
-      `UPDATE bookings b SET status = 'cancelled'
+      `UPDATE bookings b SET status = 'cancelled',
+              cancelled_by = CASE WHEN b.parent_id = $2 THEN 'parent' ELSE 'tutor' END,
+              cancel_reason = $3, cancel_note = NULLIF($4, '')
          FROM tutor_profiles t
         WHERE b.id = $1 AND t.id = b.tutor_id AND (b.parent_id = $2 OR t.user_id = $2)
           AND b.status = 'scheduled' AND b.slot_time > now()
         RETURNING b.id`,
-      [req.params.id, req.user!.id],
+      [req.params.id, req.user!.id, reason, note],
     );
     if (!rows[0]) throw new HttpError(400, 'Этот урок нельзя отменить');
     const { rows: full } = await db.query(`${BOOKING_SELECT} WHERE b.id = $1`, [rows[0].id]);
