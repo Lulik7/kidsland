@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type LevelSummary, type Tutor } from '../api';
 import { useAuth } from '../auth';
-import { DemoBoard } from '../components/DemoBoard';
+import { HeroCarousel } from '../components/HeroCarousel';
 import { RobotGuide } from '../components/RobotGuide';
 import { WorldScene } from '../components/WorldScene';
 import { Globe } from '../components/Globe';
@@ -62,12 +62,6 @@ export function Landing() {
               </span>
               <span className="hs-sub">{t('Давай учиться вместе!')}</span>
             </div>
-            <h1>
-              {t('Учимся программировать,')}{' '}<span className="hl">{t('играя')}</span>
-            </h1>
-            <p>
-              {t('Ребёнок собирает программу из блоков, а ракета, подводная лодка или робот выполняют её. Так в игре осваиваются циклы, условия и алгоритмы.')}
-            </p>
             <div className="hero-cta">
               <Link to={playLink} className="btn btn-primary btn-xl">
                 {user ? t('Продолжить игру') : t('Играть бесплатно')}
@@ -83,13 +77,7 @@ export function Landing() {
             </ul>
           </div>
           <div className="hero-demo">
-            <div className="window">
-              <div className="window-bar">
-                <i /><i /><i />
-                <span>{t('Уровень «Лестница»')}</span>
-              </div>
-              <DemoBoard />
-            </div>
+            <HeroCarousel />
           </div>
         </div>
         <svg className="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden>

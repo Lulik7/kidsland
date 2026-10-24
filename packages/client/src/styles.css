@@ -1189,3 +1189,21 @@ button.topic-chip { font: inherit; font-weight: 800; cursor: pointer; }
 .rg-topics span { background: #fff; color: #241d4f; border: 2px solid var(--c); border-radius: 999px; padding: 3px 10px; font-weight: 800; font-size: 0.85rem; animation: pop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
 .rg-tiles { display: grid; grid-template-columns: repeat(3, 54px); gap: 10px; }
 .rg-tiles span { --c: var(--violet); display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; color: var(--c); background: var(--c); box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 60%, #000); animation: pop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+
+/* Hero carousel: one slide per section */
+.hc-stage { position: relative; }
+.hc-slide { transition: opacity 0.6s ease; opacity: 0; pointer-events: none; }
+.hc-slide.on { opacity: 1; pointer-events: auto; }
+.hc-slide:not(.hc-coding) { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 28%, var(--card)), color-mix(in srgb, var(--c) 8%, var(--card))); }
+.hc-slide .rg-topics { max-width: 360px; }
+.hc-caption { margin-top: 26px; animation: hc-in 0.6s ease both; min-height: 7.5em; }
+.hc-title { font-size: clamp(1.5rem, 2.6vw, 2.2rem); color: #fff; margin: 0 0 10px; }
+.hc-title a { color: #fff; text-decoration: none; }
+.hc-title a:hover { color: var(--sun); }
+.hc-caption p { font-size: 1.1rem; color: #d9d2ff; margin: 0; }
+.hc-dots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.hc-dots button { width: 12px; height: 12px; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.35); cursor: pointer; transition: width 0.3s, background 0.3s; }
+.hc-dots button.on { width: 34px; background: var(--c); }
+@keyframes hc-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.hero-inner { z-index: 2; }
+.planet-b { left: 40%; bottom: 40px; }

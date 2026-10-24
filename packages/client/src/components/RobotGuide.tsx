@@ -21,7 +21,7 @@ const Blocks = ({ t }: { t: T }) => (
 );
 
 /** A section slide: the section's coloured tile with its icon and a few topics popping in. */
-const SectionArt = ({ t, id }: { t: T; id: string }) => {
+export const SectionArt = ({ t, id }: { t: T; id: string }) => {
   const sec = SECTIONS.find((x) => x.id === id)!;
   const icon = SUBJECTS.find((x) => x.section === id)?.id ?? 'spirit';
   return (
