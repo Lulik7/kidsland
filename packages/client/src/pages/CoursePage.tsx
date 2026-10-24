@@ -25,7 +25,8 @@ export function CoursePage() {
   const unlocked = (i: number) => !childId || i === 0 || passed.has(course.lessons[i - 1].id);
   const doneCount = course.lessons.filter((l) => passed.has(l.id)).length;
   const next = course.lessons.find((l, i) => unlocked(i) && !passed.has(l.id));
-  const siblings = coursesBySubject(course.subject);
+  // Languages and instruments share one subject: list only this language's or instrument's levels.
+  const siblings = coursesBySubject(course.subject).filter((c) => !course.topic || c.topic === course.topic);
   const coding = SUBJECTS.find((s) => s.id === course.subject)?.section === 'coding';
   const tutorsLink = coding ? `/tutors?subject=${course.subject}` : course.subject === 'music' && course.topic ? `/tutors?subject=${course.topic}` : `/tutors?section=${course.subject}`;
 

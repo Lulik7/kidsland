@@ -120,11 +120,21 @@ function Header() {
   );
 }
 
+/** A new page opens at its top instead of keeping the previous page's scroll position. */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 export function App() {
   const t = useT();
   return (
     <>
       <WatercolorDefs />
+      <ScrollToTop />
       <Header />
       <Routes>
         <Route path="/" element={<Landing />} />
