@@ -1071,4 +1071,7 @@ export const EN: Record<string, string> = {
   "Мир животных": "Animal world",
   "Послушать звуки": "Listen to the sounds",
   "Стоп": "Stop",
+  "Луна": "Moon",
+  "Спутник Земли: летит вокруг нашей планеты за 27 дней и светит отражённым светом Солнца.": "Earth’s satellite: it circles our planet in 27 days and shines with reflected sunlight.",
+  "Нажми на планету, чтобы узнать о ней. Маленький серый шарик возле Земли — Луна.": "Tap a planet to learn about it. The small grey ball next to Earth is the Moon.",
 };

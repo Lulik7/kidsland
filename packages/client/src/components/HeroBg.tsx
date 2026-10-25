@@ -133,7 +133,7 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   sketching: { image: '/img/hobby/art-watercolor.jpg', pos: 'center 40%' },
   knitting: { image: '/img/hobby/knit.jpg', pos: 'center 35%' },
   crochet: { image: '/img/hobby/knit.jpg', pos: 'center 60%' },
-  sewing: { image: '/img/hobby/craft-embroidery.jpg' },
+  sewing: { image: '/img/hobby/sew-machine.jpg', pos: 'center 60%' },
   crafts: { image: '/img/hobby/craft-twine.jpg' },
   macrame: { image: '/img/hobby/craft-twine.jpg', pos: 'center 60%' },
   magicCards: { image: '/img/hobby/magic-deck.jpg', pos: 'center 45%' },
@@ -157,13 +157,19 @@ const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
   ['science', /звёзд|звезд|созвезд/i, TOPIC_PHOTO.astronomy],
   ['*', /океан|(^|\s)вод[аыуе]|дожд|плавает|земноводн/i, TOPIC_PHOTO.water],
   ['*', /зим/i, TOPIC_PHOTO.winter],
+  ['science', /наук/i, { image: '/img/bg/science-lab.jpg', pos: '70% 30%' }],
   ['science', /фокус/i, TOPIC_PHOTO.magicCards],
   ['leisure', /вышивк/i, TOPIC_PHOTO.embroidery],
   ['leisure', /ярмарк|выставк/i, TOPIC_PHOTO.market],
   ['leisure', /вязан|спиц|крюч|шапк|шарф/i, TOPIC_PHOTO.knitting],
   ['leisure', /рацион|салат|суп|кухни мира|обед/i, TOPIC_PHOTO.food],
+  ['leisure', /каш[аи]|завтрак/i, { image: '/img/bg/leisure-porridge.jpg', pos: 'center 55%' }],
+  ['leisure', /игрушк/i, { image: '/img/hobby/sew-toy.jpg', pos: 'center 45%' }],
+  ['leisure', /швейн/i, { image: '/img/hobby/sew-machine.jpg', pos: 'center 60%' }],
+  ['leisure', /шов|шв[ыа]|выкройк|мерки/i, { image: '/img/hobby/sew-stitches.jpg' }],
+  ['leisure', /шить|шьём|шьем/i, { image: '/img/hobby/sew-girl.jpg', pos: 'center 30%' }],
   ['leisure', /бутерброд|канапе|закуск|салат/i, { image: '/img/bg/leisure-sandwich.jpg', pos: 'center 55%' }],
-  ['leisure', /кулинар|печенье|выпечк|тесто|блины|праздничный стол|каша/i, TOPIC_PHOTO.cooking],
+  ['leisure', /кулинар|печенье|выпечк|тесто|блины|праздничный стол/i, TOPIC_PHOTO.cooking],
   ['leisure', /гербарий/i, TOPIC_PHOTO.herbarium],
 ];
 
@@ -178,7 +184,7 @@ const COMPOSE_PHOTOS = ['compose-pencil', 'compose-pen', 'compose-notes', 'compo
 
 const hobby = (names: string[]) => names.map((n) => `/img/hobby/${n}.jpg`);
 const ART_PHOTOS = [...hobby(['art-easel', 'art-paints', 'art-watercolor-table', 'art-brushes', 'art-watercolor']), '/img/bg/art-painter.jpg'];
-const CRAFT_PHOTOS = hobby(['knit', 'craft-embroidery-bunny', 'craft-twine', 'craft-embroidery', 'craft-market']);
+const CRAFT_PHOTOS = hobby(['knit', 'craft-embroidery-bunny', 'craft-twine', 'craft-embroidery', 'sew-girl', 'sew-machine', 'sew-stitches', 'sew-toy', 'craft-market']);
 
 /** A strip of photos under a course banner: the language's country, or the DJ studio. */
 const ANIMAL_PHOTOS = ['tiger', 'cat', 'boy-dog', 'turtle', 'fish', 'butterfly', 'bird', 'dog', 'pony'].map((n) => `/img/bg/animals-${n}.jpg`);

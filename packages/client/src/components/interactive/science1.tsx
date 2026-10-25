@@ -340,6 +340,7 @@ export function FloatSink({ tc, salt = false }: { tc: Tc; salt?: boolean }) {
         .filter((it) => !salt || ['egg', 'apple', 'stone'].includes(it.id))
         .map((it) => (
           <g key={it.id} {...get(it.id)}>
+            <circle r="24" fill="transparent" />
             <text y="10" textAnchor="middle" fontSize="30" pointerEvents="none">
               {it.icon}
             </text>

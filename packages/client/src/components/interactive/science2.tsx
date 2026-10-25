@@ -14,6 +14,8 @@ const PLANETS: { name: string; color: string; r: number; fact: string; g: number
   { name: 'Нептун', color: '#4f6fd8', r: 11, fact: 'Самые сильные ветры в Солнечной системе.', g: 1.14 },
 ];
 
+const MOON = { name: 'Луна', fact: 'Спутник Земли: летит вокруг нашей планеты за 27 дней и светит отражённым светом Солнца.' };
+
 /** The Solar System: planets go round the Sun; tap a planet to learn about it. */
 export function SolarSystem({ tc }: { tc: Tc }) {
   const [t, setT] = useState(0);
@@ -24,11 +26,11 @@ export function SolarSystem({ tc }: { tc: Tc }) {
     <Scene
       title={tc('Солнечная система')}
       h={300}
-      notes={[tc('Нажми на планету, чтобы узнать о ней.'), tc('Ближние планеты бегут вокруг Солнца быстрее дальних.')]}
+      notes={[tc('Нажми на планету, чтобы узнать о ней. Маленький серый шарик возле Земли — Луна.'), tc('Ближние планеты бегут вокруг Солнца быстрее дальних.')]}
       controls={
         <>
           <Say>
-            <b>{tc(PLANETS[pick].name)}</b>: {tc(PLANETS[pick].fact)}
+            <b>{tc((PLANETS[pick] ?? MOON).name)}</b>: {tc((PLANETS[pick] ?? MOON).fact)}
           </Say>
           <Slider label={tc('Скорость')} value={speed} min={0} max={4} step={0.5} onChange={setSpeed} />
         </>
@@ -45,6 +47,18 @@ export function SolarSystem({ tc }: { tc: Tc }) {
               <circle r={p.r + 6} fill="transparent" />
               <circle r={p.r} fill={p.color} stroke={pick === i ? '#fff' : 'none'} strokeWidth="2" />
               {i === 5 && <ellipse rx={p.r + 7} ry="3" fill="none" stroke="#e9cf8f" strokeWidth="2" />}
+              {i === 2 && (
+                <g
+                  transform={`translate(${Math.cos(t * 4) * 15} ${Math.sin(t * 4) * 9})`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPick(-1);
+                  }}
+                >
+                  <circle r="7" fill="transparent" />
+                  <circle r="3.5" fill="#d9d9d9" stroke={pick === -1 ? '#fff' : 'none'} strokeWidth="1.5" />
+                </g>
+              )}
             </g>
           </g>
         );
@@ -332,6 +346,7 @@ export function FoodChain({ tc }: { tc: Tc }) {
       ))}
       {order.map((icon, k) => (
         <g key={k} {...get(k)}>
+          <rect x="-32" y="-26" width="64" height="64" rx="12" fill="transparent" />
           <text y="12" textAnchor="middle" fontSize="34" pointerEvents="none">
             {icon}
           </text>
@@ -426,6 +441,7 @@ export function RecycleSort({ tc }: { tc: Tc }) {
       ))}
       {items.map(([id, icon]) => (
         <g key={id} {...get(id)}>
+          <circle r="26" fill="transparent" />
           <text y="12" textAnchor="middle" fontSize="30" pointerEvents="none">
             {icon}
           </text>
