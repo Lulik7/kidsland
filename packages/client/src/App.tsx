@@ -26,6 +26,7 @@ import { TutorCabinet } from './pages/TutorCabinet';
 import { TutorPage } from './pages/TutorPage';
 import { TutorsPage } from './pages/TutorsPage';
 import { useT } from './i18n';
+import { useContentVersion } from './siteContent';
 
 // Blockly is heavy, so the game screen loads in its own chunk.
 const PlayPage = lazy(() => import('./pages/PlayPage').then((m) => ({ default: m.PlayPage })));
@@ -131,12 +132,14 @@ function ScrollToTop() {
 
 export function App() {
   const t = useT();
+  // Redraw every page when the admin's content arrives or changes.
+  const contentVersion = useContentVersion();
   return (
     <>
       <WatercolorDefs />
       <ScrollToTop />
       <Header />
-      <Routes>
+      <Routes key={contentVersion}>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<AuthPage mode="login" />} />
         <Route path="/register" element={<AuthPage mode="register" />} />

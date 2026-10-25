@@ -1,5 +1,5 @@
 import { WcBranch } from '../components/Watercolor';
-import { articlesOfSection, COURSES, findSection, SECTIONS, SUBJECTS, type Section } from '@kidsland/shared';
+import { articlesOfSection, COURSES, findSection, SECTIONS, SUBJECTS, type Article, type Section } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
@@ -75,7 +75,6 @@ function SectionHero({ section }: { section: Section }) {
 /** A section without tutors: topics filter a list of articles to read. */
 function ArticlesSection({ section }: { section: Section }) {
   const t = useT();
-  const tc = useTc();
   const [topic, setTopic] = useState('');
   const articles = articlesOfSection(section.id).filter((a) => !topic || a.topic === topic);
   return (
@@ -92,17 +91,25 @@ function ArticlesSection({ section }: { section: Section }) {
         ))}
       </div>
       <h2 className="track-title">{t('Статьи')}</h2>
-      <div className="article-grid">
-        {articles.map((a) => (
-          <Link key={a.id} to={`/articles/${a.id}`} className="article-card" style={{ ['--c' as string]: section.color }}>
-            <span className="article-topic">{t(section.topics.find((tp) => tp.id === a.topic)?.name ?? '')}</span>
-            <h3>{tc(a.title)}</h3>
-            <p>{tc(a.summary)}</p>
-            <span className="muted small">{t('{n} мин чтения', { n: a.minutes })}</span>
-          </Link>
-        ))}
-      </div>
+      <ArticleGrid section={section} articles={articles} />
     </main>
+  );
+}
+
+function ArticleGrid({ section, articles }: { section: Section; articles: Article[] }) {
+  const t = useT();
+  const tc = useTc();
+  return (
+    <div className="article-grid">
+      {articles.map((a) => (
+        <Link key={a.id} to={`/articles/${a.id}`} className="article-card" style={{ ['--c' as string]: section.color }}>
+          <span className="article-topic">{t(section.topics.find((tp) => tp.id === a.topic)?.name ?? '')}</span>
+          <h3>{tc(a.title)}</h3>
+          <p>{tc(a.summary)}</p>
+          <span className="muted small">{t('{n} мин чтения', { n: a.minutes })}</span>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -142,6 +149,13 @@ export function SectionPage() {
           <CourseCard key={c.id} course={c} to={`/courses/${c.id}`} />
         ))}
       </div>
+
+      {articlesOfSection(section.id).length > 0 && (
+        <>
+          <h2 className="track-title">{t('Статьи')}</h2>
+          <ArticleGrid section={section} articles={articlesOfSection(section.id)} />
+        </>
+      )}
 
       <h2 className="track-title">{t('Наставники')}</h2>
       {!tutors ? (

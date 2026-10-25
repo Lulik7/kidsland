@@ -244,11 +244,11 @@ export function tutorCabinetRouter(db: Db) {
     const t = await myTutor(req.user!.id);
     if (t.verification === 'pending') throw new HttpError(400, 'Анкета уже на проверке');
     const missing: string[] = [];
-    if (t.headline.trim().length < 5 || t.bio.trim().length < 30) missing.push('заполните заголовок и рассказ о себе во вкладке «Профиль»');
-    if (!t.education.length) missing.push('добавьте образование');
+    if (t.headline.trim().length < 5 || t.bio.trim().length < 30) missing.push('Заполните заголовок и рассказ о себе во вкладке «Профиль»');
+    if (!t.education.length) missing.push('Добавьте образование');
     const docs = await documentsOf(db, t.id);
-    if (!docs.length) missing.push('загрузите хотя бы один диплом или сертификат');
-    if (missing.length) throw new HttpError(400, `Чтобы отправить анкету: ${missing.join(', ')}.`);
+    if (!docs.length) missing.push('Загрузите хотя бы один диплом или сертификат');
+    if (missing.length) throw new HttpError(400, ['Анкета ещё не готова', ...missing].join('. '));
     const { rows } = await db.query<TutorRow>(
       `UPDATE tutor_profiles SET verification = 'pending', submitted_at = now(), verification_note = NULL WHERE id = $1 RETURNING *`,
       [t.id],

@@ -62,6 +62,7 @@ export interface Tutor {
   rating: number;
   reviewsCount: number;
   isPublished: boolean;
+  verification?: VerificationStatus;
   nextSlot?: string | null;
   freeSlots?: number;
 }
@@ -176,6 +177,91 @@ export interface SafetyFlag {
   user: { id: string; email: string; role: User['role'] } | null;
 }
 
+export type VerificationStatus = 'draft' | 'pending' | 'approved' | 'rejected';
+
+export interface EducationItem {
+  institution: string;
+  specialty: string;
+  yearFrom: number;
+  yearTo: number | null;
+}
+
+export interface ExperienceItem {
+  place: string;
+  position: string;
+  yearFrom: number;
+  yearTo: number | null;
+}
+
+export interface TutorApplication {
+  status: VerificationStatus;
+  note: string | null;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  education: EducationItem[];
+  experience: ExperienceItem[];
+}
+
+export type DocumentKind = 'diploma' | 'certificate' | 'other';
+
+export interface TutorDocument {
+  id: string;
+  kind: DocumentKind;
+  title: string;
+  mime: string;
+  size: number;
+  createdAt: string;
+}
+
+export interface AdminApplication {
+  tutor: {
+    id: string;
+    email: string;
+    displayName: string;
+    headline: string;
+    bio: string;
+    subjects: string[];
+    languages: string[];
+    ageMin: number;
+    ageMax: number;
+    hourlyRate: number;
+    videoUrl: string | null;
+    isPublished: boolean;
+  };
+  application: TutorApplication;
+  documents: TutorDocument[];
+}
+
+export interface AdminNotification {
+  id: string;
+  kind: 'support' | 'tutor-application' | 'post' | 'safety';
+  title: string;
+  body: string;
+  link: string | null;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface LessonChat {
+  bookingId: string;
+  startsAt: string;
+  status: BookingStatus;
+  tutorName: string;
+  childName: string | null;
+  messages: number;
+  lastAt: string;
+}
+
+export type ContentBlock = { title?: string; text: string; tip?: string };
+
+export interface ContentOverridesDto {
+  topics: { id: string; section: string; name: string }[];
+  articles: { id: string; section: string; topic: string; title: string; summary: string; minutes: number; sections: ContentBlock[]; hidden?: boolean }[];
+  lessons: { lessonId: string; title: string; sections: ContentBlock[] }[];
+}
+
+export type ArticleInput = { section: string; topic: string; title: string; summary: string; minutes: number; sections: ContentBlock[] };
+
 export interface Stroke {
   color: string;
   width: number;
@@ -253,6 +339,21 @@ async function request<T>(path: string, init: { method?: string; body?: unknown;
   return data as T;
 }
 
+/** Opens a file that needs the sign-in token (private documents) in a new tab. */
+export async function openPrivateFile(path: string) {
+  const win = window.open('', '_blank');
+  const token = tokenStore.get();
+  const res = await fetch(`/api${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  if (!res.ok) {
+    win?.close();
+    throw new ApiError(res.status, 'Не удалось открыть документ');
+  }
+  const url = URL.createObjectURL(await res.blob());
+  if (win) win.location.href = url;
+  else window.location.href = url;
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
 export const api = {
   register: (email: string, password: string, role: 'parent' | 'tutor' = 'parent', displayName?: string) =>
     request<{ token: string; user: User }>('/auth/register', { method: 'POST', body: { email, password, role, displayName } }),
@@ -292,6 +393,35 @@ export const api = {
   deleteSlot: (id: string) => request<void>(`/tutor/slots/${id}`, { method: 'DELETE' }),
   uploadVideo: (file: File) => request<{ tutor: Tutor }>('/tutor/video', { method: 'POST', file }),
   deleteVideo: () => request<{ tutor: Tutor }>('/tutor/video', { method: 'DELETE' }),
+  myApplication: () => request<{ application: TutorApplication; documents: TutorDocument[] }>('/tutor/application'),
+  saveApplication: (a: { education: EducationItem[]; experience: ExperienceItem[] }) =>
+    request<{ application: TutorApplication }>('/tutor/application', { method: 'PUT', body: a }),
+  uploadDocument: (file: File, kind: DocumentKind, title: string) =>
+    request<{ document: TutorDocument }>(`/tutor/documents?${new URLSearchParams({ kind, title })}`, { method: 'POST', file }),
+  deleteDocument: (id: string) => request<void>(`/tutor/documents/${id}`, { method: 'DELETE' }),
+  submitApplication: () => request<{ application: TutorApplication; tutor: Tutor }>('/tutor/application/submit', { method: 'POST' }),
+
+  content: () => request<ContentOverridesDto>('/content'),
+  adminNotifications: () => request<{ unread: number; notifications: AdminNotification[] }>('/admin/notifications'),
+  readNotifications: (ids?: string[]) => request<{ ok: true }>('/admin/notifications/read', { method: 'POST', body: { ids } }),
+  tutorApplications: (status: VerificationStatus | 'all') =>
+    request<{ applications: AdminApplication[] }>(`/admin/tutor-applications?status=${status}`),
+  reviewTutor: (tutorId: string, decision: 'approve' | 'reject', note: string) =>
+    request<AdminApplication>(`/admin/tutor-applications/${tutorId}/review`, { method: 'POST', body: { decision, note } }),
+  lessonChats: () => request<{ chats: LessonChat[] }>('/admin/lesson-chats'),
+  lessonChat: (bookingId: string) => request<{ messages: RoomMessage[] }>(`/admin/lesson-chats/${bookingId}`),
+  adminContent: () => request<ContentOverridesDto>('/admin/content'),
+  addTopic: (section: string, name: string) =>
+    request<ContentOverridesDto>('/admin/content/topics', { method: 'POST', body: { section, name } }),
+  deleteTopic: (id: string) => request<ContentOverridesDto>(`/admin/content/topics/${id}`, { method: 'DELETE' }),
+  createArticle: (a: ArticleInput) => request<{ id: string; content: ContentOverridesDto }>('/admin/content/articles', { method: 'POST', body: a }),
+  saveArticle: (id: string, a: ArticleInput) =>
+    request<{ id: string; content: ContentOverridesDto }>(`/admin/content/articles/${id}`, { method: 'PUT', body: a }),
+  hideArticle: (id: string, hidden: boolean) =>
+    request<ContentOverridesDto>(`/admin/content/articles/${id}/hidden`, { method: 'POST', body: { hidden } }),
+  saveLesson: (lessonId: string, l: { title: string; sections: ContentBlock[] }) =>
+    request<ContentOverridesDto>(`/admin/content/lessons/${lessonId}`, { method: 'PUT', body: l }),
+  resetLesson: (lessonId: string) => request<ContentOverridesDto>(`/admin/content/lessons/${lessonId}`, { method: 'DELETE' }),
 
   courseProgress: (childId: string) =>
     request<{ progress: LessonProgress[]; courses: CourseSummary[] }>(`/children/${childId}/courses`),

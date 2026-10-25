@@ -1,12 +1,23 @@
 import { useState } from 'react';
-import { api, type CommunityPost, type SafetyFlag, type SupportMessage, type SupportThread } from '../api';
+import { api, type AdminNotification, type CommunityPost, type SafetyFlag, type SupportMessage, type SupportThread } from '../api';
 import { ChatBox, usePolling } from '../components/ChatBox';
 import { fmtDateTime } from '../format';
+import { ContentEditor } from './admin/ContentEditor';
+import { LessonChats } from './admin/LessonChats';
+import { Notifications } from './admin/Notifications';
+import { TutorApplications } from './admin/TutorApplications';
+
+type Tab = 'notes' | 'support' | 'tutors' | 'chats' | 'content' | 'posts' | 'safety';
 
 const roleName = { parent: 'родитель', tutor: 'наставник', admin: 'админ' } as const;
 
 export function AdminPage() {
-  const [tab, setTab] = useState<'support' | 'posts' | 'safety'>('support');
+  const [tab, setTab] = useState<Tab>('notes');
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [unreadNotes, setUnreadNotes] = useState(0);
+  const [pendingTutors, setPendingTutors] = useState(0);
+  const [focusTutor, setFocusTutor] = useState<string | null>(null);
+  const [roleFilter, setRoleFilter] = useState<'' | 'parent' | 'tutor'>('');
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [threads, setThreads] = useState<SupportThread[]>([]);
@@ -20,7 +31,35 @@ export function AdminPage() {
     api.adminThreads().then((r) => setThreads(r.threads)).catch((e) => setError(e.message));
     api.safetyFlags().then((r) => setFlags(r.flags)).catch(() => {});
     api.adminPosts('pending').then((r) => setPosts(r.posts)).catch(() => {});
+    loadNotes();
   }, 10_000, []);
+
+  const loadNotes = () => {
+    api
+      .adminNotifications()
+      .then((r) => {
+        setNotifications(r.notifications);
+        setUnreadNotes(r.unread);
+      })
+      .catch(() => {});
+    api.tutorApplications('pending').then((r) => setPendingTutors(r.applications.length)).catch(() => {});
+  };
+
+  const openNote = async (n: AdminNotification) => {
+    if (!n.read) {
+      await api.readNotifications([n.id]).catch(() => {});
+      loadNotes();
+    }
+    const link = n.link ?? '';
+    if (link.startsWith('support:')) {
+      setTab('support');
+      setCurrent(link.slice(8));
+    } else if (link.startsWith('tutor:')) {
+      setFocusTutor(link.slice(6));
+      setTab('tutors');
+    } else if (link === 'posts') setTab('posts');
+    else if (link === 'safety') setTab('safety');
+  };
 
   usePolling(
     () => {
@@ -35,30 +74,62 @@ export function AdminPage() {
   );
 
   const unread = threads.filter((t) => t.staffUnread).length;
+  const shownThreads = threads.filter((t) => !roleFilter || t.user?.role === roleFilter);
+  const tabButton = (id: Tab, label: string, count = 0) => (
+    <button className={tab === id ? 'tab on' : 'tab'} onClick={() => setTab(id)}>
+      {label} {count > 0 && <span className="badge">{count}</span>}
+    </button>
+  );
 
   return (
     <main className="page admin-page">
       <div className="dash-head">
-        <h1 className="page-title left">Панель администратора</h1>
+        <h1 className="page-title left">Кабинет администратора</h1>
         <div className="tabs">
-          <button className={tab === 'support' ? 'tab on' : 'tab'} onClick={() => setTab('support')}>
-            Обращения {unread > 0 && <span className="badge">{unread}</span>}
-          </button>
-          <button className={tab === 'posts' ? 'tab on' : 'tab'} onClick={() => setTab('posts')}>
-            Посты на проверку {posts.length > 0 && <span className="badge">{posts.length}</span>}
-          </button>
-          <button className={tab === 'safety' ? 'tab on' : 'tab'} onClick={() => setTab('safety')}>
-            Безопасность {flags.length > 0 && <span className="badge">{flags.length}</span>}
-          </button>
+          {tabButton('notes', 'Уведомления', unreadNotes)}
+          {tabButton('support', 'Сообщения', unread)}
+          {tabButton('tutors', 'Преподаватели', pendingTutors)}
+          {tabButton('chats', 'Чаты уроков')}
+          {tabButton('content', 'Темы, статьи, уроки')}
+          {tabButton('posts', 'Посты на проверку', posts.length)}
+          {tabButton('safety', 'Безопасность', flags.length)}
         </div>
       </div>
       {error && <div className="error">{error}</div>}
 
-      {tab === 'support' ? (
+      {tab === 'notes' ? (
+        <Notifications
+          items={notifications}
+          onOpen={openNote}
+          onReadAll={async () => {
+            await api.readNotifications().catch(() => {});
+            loadNotes();
+          }}
+        />
+      ) : tab === 'tutors' ? (
+        <TutorApplications focus={focusTutor} onChanged={loadNotes} />
+      ) : tab === 'chats' ? (
+        <LessonChats />
+      ) : tab === 'content' ? (
+        <ContentEditor />
+      ) : tab === 'support' ? (
         <div className="admin-layout">
           <div className="card thread-list">
-            {threads.length === 0 && <p className="muted">Обращений пока нет.</p>}
-            {threads.map((t) => (
+            <div className="chips-row">
+              {(
+                [
+                  ['', 'Все'],
+                  ['parent', 'Родители'],
+                  ['tutor', 'Наставники'],
+                ] as const
+              ).map(([id, label]) => (
+                <button key={id} className={roleFilter === id ? 'fchip on' : 'fchip'} onClick={() => setRoleFilter(id)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {shownThreads.length === 0 && <p className="muted">Сообщений пока нет.</p>}
+            {shownThreads.map((t) => (
               <button key={t.id} className={`thread-row${t.id === current ? ' on' : ''}${t.staffUnread ? ' unread' : ''}`} onClick={() => setCurrent(t.id)}>
                 <b>{t.user?.email}</b>
                 <span className="muted small">

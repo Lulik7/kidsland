@@ -3,11 +3,12 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Slot, type Tutor, type TutorProfileInput } from '../api';
 import { BookingCard } from '../components/BookingCard';
+import { TutorApplicationForm } from '../components/TutorApplicationForm';
 import { TutorAvatar } from '../components/TutorAvatar';
 import { dayKey, fmtDay, fmtTime } from '../format';
 import { tSentences, useT } from '../i18n';
 
-type Tab = 'lessons' | 'schedule' | 'profile';
+type Tab = 'lessons' | 'schedule' | 'profile' | 'application';
 const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 const toInput = (t: Tutor): TutorProfileInput => ({
@@ -49,7 +50,15 @@ export function TutorCabinet() {
           <div>
             <h1 className="page-title left">{t('Кабинет наставника')}</h1>
             <span className={`chip ${tutor.isPublished ? 'chip-free' : 'chip-muted'}`}>
-              {tutor.isPublished ? t('Профиль виден родителям') : t('Профиль скрыт: заполните и опубликуйте')}
+              {tutor.isPublished
+                ? t('Профиль виден родителям')
+                : tutor.verification === 'pending'
+                  ? t('Анкета на проверке у администратора')
+                  : tutor.verification === 'rejected'
+                    ? t('Анкета отклонена: посмотрите комментарий')
+                    : tutor.verification === 'approved'
+                      ? t('Профиль скрыт: заполните и опубликуйте')
+                      : t('Профиль скрыт: заполните анкету и отправьте на проверку')}
             </span>
           </div>
         </div>
@@ -65,6 +74,7 @@ export function TutorCabinet() {
             ['lessons', 'Уроки'],
             ['schedule', 'Расписание'],
             ['profile', 'Профиль'],
+            ['application', 'Анкета и документы'],
           ] as [Tab, string][]
         ).map(([k, label]) => (
           <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'tab on' : 'tab'} onClick={() => setTab(k)}>
@@ -74,9 +84,10 @@ export function TutorCabinet() {
       </div>
       {tab === 'lessons' && <Lessons />}
       {tab === 'schedule' && <Schedule />}
+      {tab === 'application' && <TutorApplicationForm tutor={tutor} onTutor={setTutor} />}
       {tab === 'profile' && (
         <div className="profile-layout">
-          <ProfileForm tutor={tutor} onSaved={setTutor} />
+          <ProfileForm tutor={tutor} onSaved={setTutor} onApplication={() => setTab('application')} />
           <aside className="profile-side">
             <VideoIntro tutor={tutor} onSaved={setTutor} />
             <div className="card safety-card">
@@ -287,7 +298,7 @@ function Schedule() {
   );
 }
 
-function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => void }) {
+function ProfileForm({ tutor, onSaved, onApplication }: { tutor: Tutor; onSaved: (t: Tutor) => void; onApplication: () => void }) {
   const t = useT();
   const [p, setP] = useState<TutorProfileInput>(toInput(tutor));
   useEffect(() => setP((x) => ({ ...x, videoUrl: tutor.videoUrl ?? '' })), [tutor.videoUrl]);
@@ -377,9 +388,13 @@ function ProfileForm({ tutor, onSaved }: { tutor: Tutor; onSaved: (t: Tutor) => 
           <button type="button" className="btn btn-ghost" disabled={busy} onClick={(e) => save(e, false)}>
             {t('Скрыть профиль')}
           </button>
-        ) : (
+        ) : tutor.verification === 'approved' ? (
           <button type="button" className="btn btn-primary" disabled={busy} onClick={(e) => save(e, true)}>
             {t('Сохранить и опубликовать')}
+          </button>
+        ) : (
+          <button type="button" className="btn btn-primary" disabled={busy} onClick={onApplication}>
+            {t('Дальше: анкета и документы')}
           </button>
         )}
       </div>

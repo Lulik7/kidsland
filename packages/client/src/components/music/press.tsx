@@ -286,8 +286,8 @@ export function StaffNotes({ tc }: { tc: Tc }) {
 /** Keyboard pictures for scales, chords and semitones. */
 export function KeyboardTheory({ tc, kind }: { tc: Tc; kind: 'major' | 'minor' | 'triad' | 'sharps' | 'tones' }) {
   const spec = {
-    major: { title: 'Гамма До мажор: только белые клавиши от До до До', marks: [0, 1, 2, 3, 4, 5, 6, 7], black: [] as number[] },
-    minor: { title: 'Гамма Ля минор: белые клавиши от Ля до Ля', marks: [5, 6, 7, 8, 9, 10, 11, 12], black: [] },
+    major: { title: 'Гамма До мажор: только белые клавиши от ноты До до ноты До', marks: [0, 1, 2, 3, 4, 5, 6, 7], black: [] as number[] },
+    minor: { title: 'Гамма Ля минор: белые клавиши от ноты Ля до ноты Ля', marks: [5, 6, 7, 8, 9, 10, 11, 12], black: [] },
     triad: { title: 'Трезвучие До мажор: До, Ми, Соль (через одну клавишу)', marks: [0, 2, 4], black: [] },
     sharps: { title: 'Чёрные клавиши: диез выше, бемоль ниже', marks: [0, 1], black: [0] },
     tones: { title: 'Полутон: соседние клавиши. Тон: через одну', marks: [2, 3], black: [] },
