@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
 import { CourseCard } from '../components/CourseCard';
-import { HeroBg, SECTION_BG, TOPIC_PHOTO } from '../components/HeroBg';
+import { HeroBg, SECTION_BG, SECTION_PAGE_VIDEO, TOPIC_PHOTO } from '../components/HeroBg';
 import { TutorCard } from '../components/TutorCard';
 import { useTc } from '../content';
 import { useT } from '../i18n';
@@ -88,18 +88,23 @@ function ArticlesSection({ section }: { section: Section }) {
   return (
     <main className="page sections-page">
       <SectionHero section={section} />
-      <div className="topic-chips" role="group" aria-label={t('Темы')}>
-        <button className={topic ? 'topic-chip' : 'topic-chip on'} style={{ ['--c' as string]: section.color }} onClick={() => setTopic('')}>
-          {t('Все темы')}
-        </button>
-        {section.topics.map((tp) => (
-          <button key={tp.id} className={topic === tp.id ? 'topic-chip on' : 'topic-chip'} style={{ ['--c' as string]: section.color }} onClick={() => setTopic(tp.id)}>
-            {t(tp.name)}
+      <div className={`section-body${SECTION_PAGE_VIDEO[section.id] ? ' video-backdrop' : ''}`}>
+        {SECTION_PAGE_VIDEO[section.id] && (
+          <video className="vb-video" src={SECTION_PAGE_VIDEO[section.id].video} poster={SECTION_PAGE_VIDEO[section.id].image} autoPlay muted loop playsInline aria-hidden />
+        )}
+        <div className="topic-chips" role="group" aria-label={t('Темы')}>
+          <button className={topic ? 'topic-chip' : 'topic-chip on'} style={{ ['--c' as string]: section.color }} onClick={() => setTopic('')}>
+            {t('Все темы')}
           </button>
-        ))}
+          {section.topics.map((tp) => (
+            <button key={tp.id} className={topic === tp.id ? 'topic-chip on' : 'topic-chip'} style={{ ['--c' as string]: section.color }} onClick={() => setTopic(tp.id)}>
+              {t(tp.name)}
+            </button>
+          ))}
+        </div>
+        <h2 className="track-title">{t('Статьи')}</h2>
+        <ArticleGrid section={section} articles={articles} />
       </div>
-      <h2 className="track-title">{t('Статьи')}</h2>
-      <ArticleGrid section={section} articles={articles} />
     </main>
   );
 }

@@ -3,10 +3,15 @@ import type { Course } from '@kidsland/shared';
 /** A photo or looping video behind a hero banner, fading into the banner on the left. */
 export type HeroMedia = { image?: string; video?: string; pos?: string };
 
+/** Looping videos behind the content of a section page (below the header), by section id. */
+export const SECTION_PAGE_VIDEO: Record<string, HeroMedia> = {
+  spirit: { video: '/video/spirit-stones.mp4', image: '/video/spirit-stones.jpg' },
+};
+
 /** Background media of section pages, by section id. */
 export const SECTION_BG: Record<string, HeroMedia> = {
   animals: { image: '/img/bg/animals-dog.jpg', pos: 'center 22%' },
-  spirit: { video: '/video/spirit-stones.mp4', image: '/video/spirit-stones.jpg', pos: 'center 50%' },
+  spirit: { image: '/img/bg/spirit-lotus.jpg', pos: 'center 35%' },
   music: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
   art: { image: '/img/bg/art-painter.jpg', pos: 'center 30%' },
   science: { image: '/img/bg/science-lab.jpg', pos: 'center 30%' },
@@ -56,7 +61,7 @@ export const COUNTRY_PHOTOS: Record<string, string[]> = {
   'lang-ka': ['ka-kazbegi', 'ka-tbilisi', 'ka-valley', 'ka-batumi'],
   'lang-ru': ['ru-basil', 'ru-hermitage', 'ru-kremlin', 'ru-nature', 'ru-moscow'],
   'lang-en': ['en-towerbridge', 'en-bigben', 'en-stpauls', 'en-westminster'],
-  'lang-he': ['he-jaffa', 'he-jerusalem', 'he-telaviv', 'he-beach', 'he-flag', 'he-flags'],
+  'lang-he': ['he-citadel', 'he-jerusalem', 'he-jaffa', 'he-telaviv', 'he-beach', 'he-flag', 'he-flags'],
 };
 
 export const countryPhoto = (name: string) => `/img/country/${name}.jpg`;

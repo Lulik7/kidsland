@@ -1095,4 +1095,8 @@ export const EN: Record<string, string> = {
   "Скачать весь курс: текст и аудио": "Download the whole course: text and audio",
   "Скачай слова и диалоги уроков в mp3 и слушай их в дороге, а тексты распечатай для повторения. Весь курс скачивается одним архивом.": "Download the lesson words and dialogues as mp3 to listen on the go, and print the texts for review. The whole course downloads as one archive.",
   "Наставник скоро добавит видео, где расскажет о себе.": "The tutor will soon add a video introducing themselves.",
+  "Скачать весь текст": "Download all text",
+  "Скачать всё аудио": "Download all audio",
+  "Собираем аудио…": "Collecting audio…",
+  "Скачай все тексты курса одним файлом, а всё аудио — отдельно, по mp3 на каждый урок. Можно скачать и один урок.": "Download all course texts as one file and all audio separately, one mp3 per lesson. You can also download a single lesson.",
 };

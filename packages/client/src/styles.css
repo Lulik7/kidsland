@@ -2507,3 +2507,23 @@ textarea,
 .tutor-video .card-title { margin: 0 0 10px; }
 .video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
 .video-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 16px; text-align: center; color: var(--muted, #6b7280); background: #f6f1ff; }
+
+/* Photos open big on click */
+.cg-row img, img.lt-photo, img.article-cover, .pc-pic.photo img, img.zoomable { cursor: zoom-in; }
+.lightbox { position: fixed; inset: 0; z-index: 1000; background: rgba(15, 18, 30, 0.88); display: flex; align-items: center; justify-content: center; padding: 24px; animation: lb-in 0.2s ease-out; }
+.lightbox img { max-width: min(1200px, 100%); max-height: 88vh; border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); cursor: default; object-fit: contain; }
+.lightbox button { position: absolute; border: 0; background: rgba(255, 255, 255, 0.15); color: #fff; border-radius: 999px; cursor: pointer; font: inherit; }
+.lightbox button:hover { background: rgba(255, 255, 255, 0.3); }
+.lb-close { top: 16px; right: 16px; width: 46px; height: 46px; font-size: 30px; line-height: 1; }
+.lb-nav { top: 50%; transform: translateY(-50%); width: 54px; height: 54px; font-size: 38px; line-height: 1; }
+.lb-prev { left: 16px; }
+.lb-next { right: 16px; }
+.lb-count { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); color: #fff; font-weight: 700; }
+@keyframes lb-in { from { opacity: 0; } }
+
+/* A calm looping video behind the content of a section page */
+.video-backdrop { position: relative; isolation: isolate; margin-top: 18px; padding: 22px 22px 28px; border-radius: 28px; overflow: hidden; }
+.video-backdrop .vb-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; }
+.video-backdrop .topic-chips .topic-chip:not(.on) { background: rgba(255, 255, 255, 0.92); }
+.video-backdrop .track-title { color: #fff; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
+.video-backdrop .article-card { background: rgba(255, 255, 255, 0.94); }

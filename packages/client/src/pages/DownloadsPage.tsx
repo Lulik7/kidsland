@@ -91,21 +91,23 @@ export function DownloadsPage() {
 
   const courseText = () => [shown!.title, '', ...shown!.lessons.map((l, i) => lessonText(l, i + 1))].join('\n');
 
-  /** The whole course in one zip: the text of every lesson and, where recorded, an mp3 per lesson. */
-  const allCourse = async () => {
-    setBusy('all');
+  /** All lesson texts in one file. */
+  const allText = () => save(new Blob([courseText()], { type: 'text/plain;charset=utf-8' }), `${course.id}.txt`);
+
+  /** All lesson audio in one zip: an mp3 per lesson, named by lesson number and title. */
+  const allAudio = async () => {
+    setBusy('audio');
     try {
-      const enc = new TextEncoder();
-      const files: Record<string, Uint8Array> = { [`${course.id}.txt`]: enc.encode(courseText()) };
-      const pause = audio ? await pauseMp3() : null;
+      const pause = await pauseMp3();
+      const files: Record<string, Uint8Array> = {};
       for (const [i, l] of course.lessons.entries()) {
-        files[`text/${num(i + 1)}.txt`] = enc.encode(lessonText(shown!.lessons[i], i + 1));
-        const data = pause && (await lessonMp3(l, pause));
-        if (data) files[`audio/${course.id}-${num(i + 1)}.mp3`] = data;
+        const data = await lessonMp3(l, pause);
+        const title = shown!.lessons[i].title.replace(/[\\/:*?"<>|]/g, '').slice(0, 60);
+        if (data) files[`${num(i + 1)} ${title}.mp3`] = data;
       }
-      // mp3 is already compressed: store it as is, squeeze only the texts.
-      const zip = zipSync(Object.fromEntries(Object.entries(files).map(([k, v]) => [k, [v, { level: k.endsWith('.mp3') ? 0 : 6 }]])));
-      save(new Blob([zip as Uint8Array<ArrayBuffer>], { type: 'application/zip' }), `${course.id}.zip`);
+      // mp3 is already compressed, so it is stored as is.
+      const zip = zipSync(files, { level: 0 });
+      save(new Blob([zip as Uint8Array<ArrayBuffer>], { type: 'application/zip' }), `${course.id}-audio.zip`);
     } finally {
       setBusy(null);
     }
@@ -117,13 +119,18 @@ export function DownloadsPage() {
       <h1>📥 {t('Комната скачивания')}</h1>
       <p className="muted">
         {audio
-          ? t('Скачай слова и диалоги уроков в mp3 и слушай их в дороге, а тексты распечатай для повторения. Весь курс скачивается одним архивом.')
+          ? t('Скачай все тексты курса одним файлом, а всё аудио — отдельно, по mp3 на каждый урок. Можно скачать и один урок.')
           : t('Скачай тексты уроков со словами и диалогами, чтобы повторять без интернета. Аудио этого языка звучит прямо в уроках.')}
       </p>
       <div className="dl-top">
-        <button type="button" className="btn btn-go" disabled={busy !== null} onClick={allCourse}>
-          {busy === 'all' ? '⏳ ' + t('Собираем архив…') : audio ? '📦 ' + t('Скачать весь курс: текст и аудио') : '📄 ' + t('Скачать весь курс (текст)')}
+        <button type="button" className="btn btn-go" onClick={allText}>
+          📄 {t('Скачать весь текст')}
         </button>
+        {audio && (
+          <button type="button" className="btn btn-go" disabled={busy !== null} onClick={allAudio}>
+            {busy === 'audio' ? '⏳ ' + t('Собираем аудио…') : '🎧 ' + t('Скачать всё аудио')}
+          </button>
+        )}
       </div>
       <ol className="dl-list">
         {course.lessons.map((l, i) => (

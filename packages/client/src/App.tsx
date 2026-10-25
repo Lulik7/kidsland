@@ -29,6 +29,7 @@ import { TutorCabinet } from './pages/TutorCabinet';
 import { TutorPage } from './pages/TutorPage';
 import { TutorsPage } from './pages/TutorsPage';
 import { useT } from './i18n';
+import { Lightbox } from './components/Lightbox';
 import { LessonReminder } from './components/LessonReminder';
 import { useContentVersion } from './siteContent';
 
@@ -159,6 +160,7 @@ export function App() {
       <ScrollToTop />
       <Header />
       <LessonReminder />
+      <Lightbox />
       <Routes key={contentVersion}>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<AuthPage mode="login" />} />
