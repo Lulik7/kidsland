@@ -55,46 +55,86 @@ export function GuitarParts({ tc, uke = false }: { tc: Tc; uke?: boolean }) {
 /** Violin or cello standing upright, with the bow next to it. */
 export function ViolinParts({ tc, cello = false }: { tc: Tc; cello?: boolean }) {
   return (
-    <Figure title={tc(cello ? 'Из чего состоит виолончель' : 'Из чего состоит скрипка')} h={340}>
+    <Figure title={tc(cello ? 'Из чего состоит виолончель' : 'Из чего состоит скрипка')} h={350}>
+      <defs>
+        <radialGradient id="vl-varnish" cx="0.45" cy="0.55" r="0.65">
+          <stop offset="0" stopColor="#e7a253" />
+          <stop offset="0.6" stopColor="#c46f2a" />
+          <stop offset="1" stopColor="#7e3d17" />
+        </radialGradient>
+      </defs>
       <g transform="translate(150 10)">
         {/* scroll and pegbox */}
-        <circle cx="0" cy="18" r="12" fill={WOOD_DARK} />
-        <rect x="-7" y="26" width="14" height="40" fill={WOOD_DARK} />
-        {[34, 46, 58].map((y) => (
+        <path d="M-7 20h14l-1 42h-12z" fill="#8a4a1f" />
+        <circle cx="0" cy="12" r="11" fill="#9b5524" stroke="#6b3412" strokeWidth="2" />
+        <path d="M0 12a4 4 0 1 1 4 4M4 16a8 8 0 1 1-12-6" stroke="#5a2b10" strokeWidth="1.6" fill="none" />
+        {[
+          [-1, 30],
+          [1, 37],
+          [-1, 44],
+          [1, 51],
+        ].map(([side, y]) => (
           <g key={y}>
-            <rect x="-18" y={y - 2} width="11" height="5" rx="2" fill={BROWN} />
-            <rect x="7" y={y + 2} width="11" height="5" rx="2" fill={BROWN} />
+            <rect x={side < 0 ? -20 : 6} y={y - 2} width="14" height="4" rx="2" fill="#2a1a12" />
+            <ellipse cx={side < 0 ? -21 : 21} cy={y} rx="4" ry="5" fill="#2a1a12" />
           </g>
         ))}
-        {/* neck / fingerboard */}
-        <rect x="-9" y="64" width="18" height="120" rx="4" fill="#2f2a2a" />
+        {/* neck */}
+        <path d="M-6 60h12l2 44h-16z" fill="#a85e2a" />
         {/* body */}
-        <path d="M0 96C40 96 52 110 50 140C48 160 30 168 30 190C30 210 60 214 62 250C64 290 30 310 0 310C-30 310 -64 290 -62 250C-60 214 -30 210 -30 190C-30 168 -48 160 -50 140C-52 110 -40 96 0 96Z" fill={WOOD} stroke={WOOD_DARK} strokeWidth="3" />
-        <rect x="-9" y="96" width="18" height="110" rx="4" fill="#2f2a2a" />
+        <path
+          d="M0 100C22 100 40 104 48 116C56 128 56 150 46 164L54 170C38 174 32 198 40 214L56 214C68 226 70 262 62 284C52 308 26 318 0 318C-26 318 -52 308 -62 284C-70 262 -68 226 -56 214L-40 214C-32 198 -38 174 -54 170L-46 164C-56 150 -56 128 -48 116C-40 104 -22 100 0 100Z"
+          fill="url(#vl-varnish)"
+          stroke="#5a2b10"
+          strokeWidth="2.5"
+        />
+        <path
+          d="M0 100C22 100 40 104 48 116C56 128 56 150 46 164L54 170C38 174 32 198 40 214L56 214C68 226 70 262 62 284C52 308 26 318 0 318C-26 318 -52 308 -62 284C-70 262 -68 226 -56 214L-40 214C-32 198 -38 174 -54 170L-46 164C-56 150 -56 128 -48 116C-40 104 -22 100 0 100Z"
+          fill="none"
+          stroke="#3b1c0b"
+          strokeWidth="1"
+          transform="translate(0 209) scale(0.92) translate(0 -209)"
+          opacity="0.7"
+        />
+        <ellipse cx="-14" cy="150" rx="14" ry="30" fill="#fff" opacity="0.13" />
+        {/* fingerboard */}
+        <path d="M-6 60h12l5 146h-22z" fill="#1f1a18" />
         {/* f-holes */}
-        <path d="M-30 210c6 10-6 20 0 32M30 210c-6 10 6 20 0 32" stroke={BROWN} strokeWidth="3" fill="none" />
+        {[1, -1].map((k) => (
+          <g key={k} transform={`scale(${k} 1)`} fill="none" stroke="#2a1208" strokeLinecap="round">
+            <path d="M24 206c8 4-2 18 2 28s-2 20 6 26" strokeWidth="3" />
+            <circle cx="24" cy="206" r="2.5" fill="#2a1208" strokeWidth="0" />
+            <circle cx="32" cy="260" r="2.5" fill="#2a1208" strokeWidth="0" />
+          </g>
+        ))}
         {/* bridge, tailpiece, chin rest */}
-        <rect x="-18" y="226" width="36" height="6" rx="2" fill="#f0e2c8" stroke={WOOD_DARK} />
-        <path d="M-10 250h20l-4 46h-12z" fill="#2f2a2a" />
-        {cello ? <line x1="0" y1="300" x2="0" y2="332" stroke={METAL} strokeWidth="4" /> : <ellipse cx="-30" cy="296" rx="16" ry="8" fill="#2f2a2a" />}
+        <path d="M-17 240h34l-4-6c-6-3-20-3-26 0z" fill="#f2dfbd" stroke="#8a5a2a" strokeWidth="1.2" />
+        <path d="M-9 252h18l-4 50c-1 4-9 4-10 0z" fill="#1f1a18" />
+        <circle cx="0" cy="317" r="3" fill="#1f1a18" />
+        {cello ? (
+          <line x1="0" y1="318" x2="0" y2="336" stroke={METAL} strokeWidth="4" strokeLinecap="round" />
+        ) : (
+          <path d="M-46 300c4-8 24-10 34-4 4 6 0 14-8 16-12 2-26-2-26-12z" fill="#1f1a18" />
+        )}
         {/* strings */}
-        {[-6, -2, 2, 6].map((dx) => (
-          <line key={dx} x1={dx} y1="40" x2={dx * 1.2} y2="252" stroke="#e8e3d6" strokeWidth="1" />
+        {[-4.5, -1.5, 1.5, 4.5].map((dx) => (
+          <path key={dx} d={`M${dx} 60L${dx * 2.6} 236L${dx * 1.8} 254`} stroke="#eee6d3" strokeWidth="0.9" fill="none" />
         ))}
       </g>
       {/* bow */}
       <g transform="translate(330 20) rotate(8)">
+        <path d="M-2 -4l12 2-2 12h-6z" fill="#f3eee2" stroke={BROWN} strokeWidth="1.5" />
         <line x1="0" y1="0" x2="0" y2="290" stroke={BROWN} strokeWidth="5" strokeLinecap="round" />
         <line x1="8" y1="8" x2="8" y2="270" stroke="#f3eee2" strokeWidth="4" />
         <rect x="-4" y="262" width="16" height="24" rx="3" fill="#2f2a2a" />
       </g>
-      <Callout x={150} y={20} tx={60} ty={20} text={tc('Завиток')} anchor="end" />
-      <Callout x={134} y={46} tx={60} ty={56} text={tc('Колки')} anchor="end" />
-      <Callout x={150} y={130} tx={60} ty={110} text={tc('Гриф')} anchor="end" />
-      <Callout x={120} y={226} tx={50} ty={190} text={tc('Эфы')} anchor="end" />
-      <Callout x={168} y={239} tx={240} ty={160} text={tc('Подставка')} />
-      <Callout x={150} y={280} tx={240} ty={250} text={tc('Подгрифник')} />
-      {cello ? <Callout x={150} y={330} tx={60} ty={330} text={tc('Шпиль')} anchor="end" /> : <Callout x={120} y={306} tx={60} ty={330} text={tc('Подбородник')} anchor="end" />}
+      <Callout x={150} y={22} tx={60} ty={20} text={tc('Завиток')} anchor="end" />
+      <Callout x={130} y={40} tx={60} ty={56} text={tc('Колки')} anchor="end" />
+      <Callout x={150} y={150} tx={60} ty={110} text={tc('Гриф')} anchor="end" />
+      <Callout x={124} y={240} tx={50} ty={200} text={tc('Эфы')} anchor="end" />
+      <Callout x={166} y={247} tx={240} ty={170} text={tc('Подставка')} />
+      <Callout x={150} y={290} tx={240} ty={262} text={tc('Подгрифник')} />
+      {cello ? <Callout x={150} y={342} tx={60} ty={342} text={tc('Шпиль')} anchor="end" /> : <Callout x={124} y={316} tx={60} ty={340} text={tc('Подбородник')} anchor="end" />}
       <Callout x={334} y={120} tx={380} ty={110} text={tc('Трость смычка')} />
       <Callout x={341} y={200} tx={380} ty={190} text={tc('Волос')} />
       <Callout x={330} y={300} tx={380} ty={300} text={tc('Колодка')} />

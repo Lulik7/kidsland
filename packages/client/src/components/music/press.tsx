@@ -31,7 +31,7 @@ function NotesButton({ tc, midis, label, bpm = 100, onStep }: { tc: Tc; midis: n
 export function PianoPress({ tc }: { tc: Tc }) {
   return (
     <Figure
-      title={tc('Куда нажимать: позиция «До»')}
+      title={tc('Нажми на любую клавишу')}
       h={220}
       notes={[tc('Большой палец (1) на До, мизинец (5) на Соль.'), tc('До всегда слева от двух чёрных клавиш.'), tc('Нажимай на клавиши: каждая звучит.')]}
       extra={<NotesButton tc={tc} midis={[60, 62, 64, 65, 67, 65, 64, 62, 60]} label="Послушать: До, Ре, Ми, Фа, Соль" />}
