@@ -22,7 +22,7 @@ export function ReceiptPage() {
   return (
     <main className="page receipt-page">
       <Link to="/billing" className="back-link no-print">
-        ← {t('Оплата')}
+        ← {t('Подписка')}
       </Link>
       <article className="receipt card">
         <header>

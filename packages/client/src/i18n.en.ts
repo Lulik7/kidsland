@@ -1063,4 +1063,9 @@ export const EN: Record<string, string> = {
   "Как пишут музыку": "How music is written",
   "Мастерская художника": "The artist's studio",
   "Мастерская рукоделия": "The craft workshop",
+  "с учеником {n}": "with pupil {n}",
+  "с наставником {n}": "with tutor {n}",
+  "Урок {who} начнётся через {m} мин": "Lesson {who} starts in {m} min",
+  "Сегодня урок {who} в {time}": "Lesson {who} today at {time}",
+  "Урок {who} уже идёт": "Lesson {who} is on now",
 };

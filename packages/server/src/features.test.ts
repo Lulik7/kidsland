@@ -1,4 +1,4 @@
-import { findLesson, homeworkFor } from '@kidsland/shared';
+import { findLesson, getCourse, homeworkFor } from '@kidsland/shared';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from './app';
@@ -98,7 +98,7 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
 
     const courses = await request(app!).get(`/api/children/${childId}/courses`).set(auth(parent));
     expect(courses.body.progress).toHaveLength(3);
-    expect(courses.body.courses.find((c: { courseId: string }) => c.courseId === 'scratch')).toMatchObject({ completed: 3, lessons: 4 });
+    expect(courses.body.courses.find((c: { courseId: string }) => c.courseId === 'scratch')).toMatchObject({ completed: 3, lessons: getCourse('scratch')!.lessons.length });
 
     const report = await request(app!).get(`/api/children/${childId}/report`).set(auth(parent));
     expect(report.body.courses).toEqual([expect.objectContaining({ courseId: 'scratch', completed: 3 })]);

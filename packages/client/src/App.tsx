@@ -29,6 +29,7 @@ import { TutorCabinet } from './pages/TutorCabinet';
 import { TutorPage } from './pages/TutorPage';
 import { TutorsPage } from './pages/TutorsPage';
 import { useT } from './i18n';
+import { LessonReminder } from './components/LessonReminder';
 import { useContentVersion } from './siteContent';
 
 // Blockly is heavy, so the game screen loads in its own chunk.
@@ -59,7 +60,7 @@ function menuFor(user: User | null): MenuItem[] {
   if (!user) return [home, sections, { to: '/register', label: 'Играть' }, courses, tutors, beAdmin, support];
   if (user.role === 'tutor') return [home, sections, { to: '/tutor', label: 'Кабинет' }, courses, tutors, beAdmin, support];
   if (user.role === 'admin') return [home, sections, { to: '/admin', label: 'Админ' }, courses, tutors, beAdmin, support];
-  return [home, sections, { to: '/kids', label: 'Играть' }, courses, tutors, beAdmin, { to: '/billing', label: 'Оплата' }, { to: '/parent', label: 'Кабинет' }, support];
+  return [home, sections, { to: '/kids', label: 'Играть' }, courses, tutors, beAdmin, { to: '/billing', label: 'Подписка' }, { to: '/parent', label: 'Кабинет' }, support];
 }
 
 function Header() {
@@ -156,6 +157,7 @@ export function App() {
       <TutorPresence />
       <ScrollToTop />
       <Header />
+      <LessonReminder />
       <Routes key={contentVersion}>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<AuthPage mode="login" />} />

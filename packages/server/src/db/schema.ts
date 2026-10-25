@@ -287,6 +287,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 -- Money left after moving lessons to a cheaper or dearer tutor; used up by the next purchase.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet integer NOT NULL DEFAULT 0;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS package_id uuid REFERENCES lesson_packages(id) ON DELETE SET NULL;
+-- Lesson reminders already sent (server/src/reminders.ts): lesson day for each side, and 30 minutes before.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS reminded_day_parent_at timestamptz, ADD COLUMN IF NOT EXISTS reminded_day_tutor_at timestamptz, ADD COLUMN IF NOT EXISTS reminded_soon_at timestamptz;
 
 -- Tutor card: online status, pupils and reviews.
 ALTER TABLE tutor_profiles ADD COLUMN IF NOT EXISTS last_seen_at timestamptz;
