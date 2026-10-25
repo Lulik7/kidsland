@@ -4,6 +4,8 @@ import { AccordionParts, DrumParts, FluteParts, GuitarParts, PianoParts, SaxPart
 import type { Tc } from './parts';
 import { Accidentals, Accompaniment, BluesScale, ClapRhythm, Dynamics, IntervalHouse, MajorMinorChords, Metronome, Rests, RhythmExample, ToneExample } from './live';
 import { Posture } from './posture';
+import { Composer } from './compose';
+import { DjMixer } from './dj';
 import { AccordionPress, BowedPress, DrumPress, Durations, GuitarPress, KeyboardTheory, PianoPress, StaffNotes, UkulelePress, VoiceLadder, WindPress } from './press';
 
 type Topic = 'guitar' | 'piano' | 'violin' | 'drums' | 'flute' | 'saxophone' | 'ukulele' | 'accordion' | 'cello' | 'vocal';
@@ -48,9 +50,32 @@ const THEORY: [RegExp, (tc: Tc) => ReactNode][] = [
   [/^Аккорды: трезвучия|^Главные аккорды/, (tc) => <KeyboardTheory tc={tc} kind="triad" />],
 ];
 
+const SOLFEGGIO: [RegExp, (tc: Tc) => ReactNode][] = [
+  [/^Высокие и низкие|^Скрипичный ключ|^Пение с листа/, (tc) => <StaffNotes tc={tc} />],
+  [/^Семь нот|^Лесенка гаммы|^Строение мажорной|^Устойчивые|^Тоника/, (tc) => <KeyboardTheory tc={tc} kind="major" />],
+  [/^Четверть|^Половинная/, (tc) => <Durations tc={tc} />],
+  [/^Пульс и метроном|^Темп/, (tc) => <Metronome tc={tc} />],
+  [/^Такт и размер|^Размер|^Пунктирный|^Шестнадцатые|^Затакт/, (tc) => <ClapRhythm tc={tc} />],
+  [/^Пауза/, (tc) => <Rests tc={tc} />],
+  [/^Мажор и минор|^Мажорное и минорное/, (tc) => <MajorMinorChords tc={tc} />],
+  [/^Тон и полутон/, (tc) => <KeyboardTheory tc={tc} kind="tones" />],
+  [/^Диез, бемоль/, (tc) => <Accidentals tc={tc} />],
+  [/^Натуральный минор|^Три вида минора|^Параллельные/, (tc) => <KeyboardTheory tc={tc} kind="minor" />],
+  [/^Что такое интервал|^Терции|^Кварта|^Секста|^Обращения интервалов|^Тритон/, (tc) => <IntervalHouse tc={tc} />],
+  [/^Трезвучие|^Главные ступени|^Обращения трезвучий|^Каденции/, (tc) => <KeyboardTheory tc={tc} kind="triad" />],
+  [/^Громко и тихо/, (tc) => <Dynamics tc={tc} />],
+  [/^Первый музыкальный диктант|^Мелодический диктант|^Как движется мелодия/, (tc) => <Composer tc={tc} />],
+];
+
 /** Pictures for a music lesson: parts of the instrument, how to hold it, where to press, music theory. */
 export function musicDiagrams(course: Course, lessonTitle: string, tc: Tc): ReactNode[] {
   if (course.subject !== 'music') return [];
+  if (course.topic === 'dj') return [<DjMixer key="dj" tc={tc} />];
+  if (course.topic === 'composition') return [<Composer key="c" tc={tc} />];
+  if (course.topic === 'solfeggio') {
+    const hit = SOLFEGGIO.find(([re]) => re.test(lessonTitle)) ?? THEORY.find(([re]) => re.test(lessonTitle));
+    return hit ? [hit[1](tc)] : [];
+  }
   const topic = course.topic as Topic | undefined;
   if (topic) {
     if (/^Знакомство/.test(lessonTitle)) return [parts(topic, tc)];

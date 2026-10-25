@@ -73,6 +73,8 @@ export const SECTIONS: Section[] = [
       { id: 'cello', name: 'Виолончель' },
       { id: 'vocal', name: 'Вокал' },
       { id: 'solfeggio', name: 'Сольфеджио' },
+      { id: 'dj', name: 'Диджей' },
+      { id: 'composition', name: 'Композиция' },
     ],
   },
   {

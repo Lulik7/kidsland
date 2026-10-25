@@ -13,7 +13,7 @@ export function audio(): AudioContext | null {
 const freq = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
 
 /** A soft piano-like note. `at` is AudioContext time; 0 means now. */
-export function playNote(midi: number, dur = 0.6, at = 0, volume = 0.35) {
+export function playNote(midi: number, dur = 0.6, at = 0, volume = 0.35, out?: AudioNode) {
   const a = audio();
   if (!a) return;
   const t = Math.max(at, a.currentTime);
@@ -22,7 +22,7 @@ export function playNote(midi: number, dur = 0.6, at = 0, volume = 0.35) {
   gain.gain.exponentialRampToValueAtTime(volume, t + 0.01);
   gain.gain.exponentialRampToValueAtTime(volume * 0.4, t + 0.25);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(dur, 0.2) + 0.35);
-  gain.connect(a.destination);
+  gain.connect(out ?? a.destination);
   for (const [type, mult, vol] of [
     ['triangle', 1, 1],
     ['sine', 2, 0.35],
@@ -103,10 +103,11 @@ export function playSteps(steps: { beats: number; play: (at: number) => void }[]
 }
 
 /** Simple synthesized drums for the rock beat. */
-export function playDrum(kind: 'kick' | 'snare' | 'hat', at = 0) {
+export function playDrum(kind: 'kick' | 'snare' | 'hat', at = 0, out?: AudioNode) {
   const a = audio();
   if (!a) return;
   const t = Math.max(at, a.currentTime);
+  const dest = out ?? a.destination;
   if (kind === 'kick') {
     const o = a.createOscillator();
     const g = a.createGain();
@@ -114,7 +115,7 @@ export function playDrum(kind: 'kick' | 'snare' | 'hat', at = 0) {
     o.frequency.exponentialRampToValueAtTime(45, t + 0.15);
     g.gain.setValueAtTime(0.8, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-    o.connect(g).connect(a.destination);
+    o.connect(g).connect(dest);
     o.start(t);
     o.stop(t + 0.32);
     return;
@@ -130,7 +131,7 @@ export function playDrum(kind: 'kick' | 'snare' | 'hat', at = 0) {
   f.frequency.value = kind === 'hat' ? 7000 : 1800;
   const g = a.createGain();
   g.gain.value = kind === 'hat' ? 0.25 : 0.6;
-  src.connect(f).connect(g).connect(a.destination);
+  src.connect(f).connect(g).connect(dest);
   src.start(t);
   if (kind === 'snare') {
     const o = a.createOscillator();
@@ -138,7 +139,7 @@ export function playDrum(kind: 'kick' | 'snare' | 'hat', at = 0) {
     o.frequency.value = 190;
     og.gain.setValueAtTime(0.3, t);
     og.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-    o.connect(og).connect(a.destination);
+    o.connect(og).connect(dest);
     o.start(t);
     o.stop(t + 0.12);
   }
@@ -150,4 +151,67 @@ export function strum(midis: number[], at = 0) {
   if (!a) return;
   const t = Math.max(at, a.currentTime);
   midis.forEach((m, i) => playNote(m, 1.2, t + i * 0.035, 0.22));
+}
+
+/** Sound colours for the composer and the DJ decks. */
+export type Voice = 'piano' | 'bells' | 'synth' | 'bass';
+
+/** One note in a chosen sound colour, sent to `out` (the speakers by default). */
+export function playVoice(voice: Voice, midi: number, dur = 0.3, at = 0, volume = 0.3, out?: AudioNode) {
+  if (voice === 'piano') return playNote(midi, dur, at, volume, out);
+  const a = audio();
+  if (!a) return;
+  const t = Math.max(at, a.currentTime);
+  const g = a.createGain();
+  const end = t + dur + (voice === 'bells' ? 0.9 : 0.12);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(volume, t + 0.008);
+  g.gain.exponentialRampToValueAtTime(voice === 'bells' ? volume * 0.3 : volume * 0.7, t + 0.12);
+  g.gain.exponentialRampToValueAtTime(0.0001, end);
+  let last: AudioNode = g;
+  if (voice === 'synth' || voice === 'bass') {
+    const f = a.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.setValueAtTime(voice === 'bass' ? 900 : 3200, t);
+    f.frequency.exponentialRampToValueAtTime(voice === 'bass' ? 220 : 900, end);
+    f.Q.value = 6;
+    g.connect(f);
+    last = f;
+  }
+  last.connect(out ?? a.destination);
+  const parts: [OscillatorType, number, number][] =
+    voice === 'bells' ? [['sine', 1, 1], ['sine', 4, 0.25], ['sine', 2.76, 0.15]] : voice === 'bass' ? [['sawtooth', 1, 1], ['square', 0.5, 0.5]] : [['sawtooth', 1, 0.6], ['sawtooth', 1.006, 0.6]];
+  for (const [type, mult, vol] of parts) {
+    const o = a.createOscillator();
+    const og = a.createGain();
+    o.type = type;
+    o.frequency.value = freq(midi) * mult;
+    og.gain.value = vol;
+    o.connect(og).connect(g);
+    o.start(t);
+    o.stop(end + 0.05);
+  }
+}
+
+/** A noise burst swept through a filter: claps, scratches and risers for the DJ pads. */
+export function playNoise(at: number, dur: number, from: number, to: number, volume: number, out?: AudioNode, type: BiquadFilterType = 'bandpass') {
+  const a = audio();
+  if (!a) return;
+  const t = Math.max(at, a.currentTime);
+  const len = Math.floor(a.sampleRate * dur);
+  const buf = a.createBuffer(1, len, a.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const src = a.createBufferSource();
+  src.buffer = buf;
+  const f = a.createBiquadFilter();
+  f.type = type;
+  f.Q.value = 4;
+  f.frequency.setValueAtTime(from, t);
+  f.frequency.exponentialRampToValueAtTime(to, t + dur);
+  const g = a.createGain();
+  g.gain.setValueAtTime(volume, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  src.connect(f).connect(g).connect(out ?? a.destination);
+  src.start(t);
 }

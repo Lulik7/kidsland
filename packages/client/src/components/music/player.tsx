@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { playSteps } from './sound';
+import { audio, playSteps } from './sound';
 import type { Tc } from './parts';
 
 export type Step = { beats: number; play: (at: number) => void };
@@ -31,4 +31,54 @@ export function ListenButton({ tc, playing, onPlay, onStop, label = 'Послу�
       {playing ? `■ ${tc('Стоп')}` : `▶ ${tc(label)}`}
     </button>
   );
+}
+
+/**
+ * A steady clock of sixteenth notes for loops. `onStep(i, at)` schedules sound for step i at AudioContext time
+ * `at` and returns false to stop. `step` is the step that sounds now, for the playhead.
+ */
+export function useLoop(bpm: number, onStep: (i: number, at: number) => boolean) {
+  const [step, setStep] = useState(-1);
+  const [running, setRunning] = useState(false);
+  const bpmRef = useRef(bpm);
+  bpmRef.current = bpm;
+  const cb = useRef(onStep);
+  cb.current = onStep;
+  const timer = useRef(0);
+  const shows = useRef<number[]>([]);
+  const stop = () => {
+    window.clearInterval(timer.current);
+    timer.current = 0;
+    shows.current.forEach(clearTimeout);
+    shows.current = [];
+    setStep(-1);
+    setRunning(false);
+  };
+  const start = () => {
+    stop();
+    const a = audio();
+    if (!a) return;
+    setRunning(true);
+    let next = a.currentTime + 0.08;
+    let i = 0;
+    const tick = () => {
+      while (next < a.currentTime + 0.12) {
+        if (!cb.current(i, next)) {
+          const end = window.setTimeout(stop, (next - a.currentTime) * 1000);
+          shows.current.push(end);
+          window.clearInterval(timer.current);
+          return;
+        }
+        const s = i;
+        shows.current.push(window.setTimeout(() => setStep(s), Math.max(0, (next - a.currentTime) * 1000)));
+        if (shows.current.length > 64) shows.current.splice(0, 32);
+        next += 60 / bpmRef.current / 4;
+        i++;
+      }
+    };
+    tick();
+    timer.current = window.setInterval(tick, 25);
+  };
+  useEffect(() => stop, []);
+  return { step, running, start, stop };
 }
