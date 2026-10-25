@@ -23,6 +23,8 @@ export const config = {
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean),
+  // Password for the ADMIN_EMAILS accounts, set on the hosting: the server creates them or resets their password on start.
+  adminPassword: process.env.ADMIN_PASSWORD ?? '',
   // Demo admin account with a known password, never in production.
   seedDemoAdmin: !isProd && process.env.SEED_DEMO_ADMIN !== 'false',
   // Sample tutors for showing the site; DEMO_TUTORS=false keeps them out of a new database.

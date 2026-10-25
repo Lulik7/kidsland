@@ -7,7 +7,11 @@ import { createPool } from './db/pool';
 import { refreshContent } from './routes/admin';
 
 const db = createPool(config.databaseUrl);
-await migrate(db, { demoAdmin: config.seedDemoAdmin, demoTutors: config.seedDemoTutors });
+await migrate(db, {
+  demoAdmin: config.seedDemoAdmin,
+  demoTutors: config.seedDemoTutors,
+  admins: { emails: config.adminEmails, password: config.adminPassword },
+});
 await refreshContent(db);
 // Payment confirmations and other letters go out from the outbox every 20 seconds.
 setInterval(() => deliverMail(db).catch((e) => console.error('mail', e)), 20_000);

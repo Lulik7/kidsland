@@ -7,7 +7,10 @@ import { SCHEMA_SQL } from './schema';
 /** Creates tables and upserts the built-in levels (matched by slug). Safe to run on every start. */
 export const DEMO_ADMIN = { email: 'admin@kidsland.local', password: 'admin12345' };
 
-export async function migrate(db: Db, opts: { demoTutors?: boolean; demoAdmin?: boolean } = {}): Promise<void> {
+export async function migrate(
+  db: Db,
+  opts: { demoTutors?: boolean; demoAdmin?: boolean; admins?: { emails: string[]; password: string } } = {},
+): Promise<void> {
   await db.query(SCHEMA_SQL);
   for (const [i, level] of LEVELS.entries()) {
     await db.query(
@@ -21,6 +24,16 @@ export async function migrate(db: Db, opts: { demoTutors?: boolean; demoAdmin?: 
     );
   }
   if (opts.demoTutors ?? true) await seedDemoTutors(db);
+  // The site owner's admin accounts, so the first login on a fresh database works without signing up.
+  if (opts.admins?.password) {
+    const hash = await bcrypt.hash(opts.admins.password, 10);
+    for (const email of opts.admins.emails)
+      await db.query(
+        `INSERT INTO users (email, password_hash, role) VALUES ($1, $2, 'admin')
+         ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = 'admin'`,
+        [email, hash],
+      );
+  }
   if (opts.demoAdmin) {
     await db.query(
       `INSERT INTO users (email, password_hash, role) VALUES ($1, $2, 'admin') ON CONFLICT (email) DO NOTHING`,

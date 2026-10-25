@@ -21,6 +21,9 @@ services:
       # Your email: whoever registers with it becomes the admin.
       - key: ADMIN_EMAILS
         sync: false
+      # Admin password: the account above is created with it (or gets it back) on every start.
+      - key: ADMIN_PASSWORD
+        sync: false
       # Address of the site, e.g. https://kidsland.onrender.com (later your own domain).
       - key: APP_URL
         sync: false
