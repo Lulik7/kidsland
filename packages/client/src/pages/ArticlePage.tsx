@@ -1,4 +1,5 @@
 import { articlesOfSection, findArticle, findSection } from '@kidsland/shared';
+import { TOPIC_PHOTO } from '../components/HeroBg';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ListenText } from '../components/ListenText';
@@ -22,6 +23,7 @@ export function ArticlePage() {
       <Link to={`/sections/${section.id}`} className="back-link">← {t(section.name)}</Link>
       <article className="card article">
         <span className="article-topic">{t(section.topics.find((tp) => tp.id === article.topic)?.name ?? '')}</span>
+        {TOPIC_PHOTO[article.topic] && <img className="article-cover" src={TOPIC_PHOTO[article.topic].image} alt="" style={{ objectPosition: TOPIC_PHOTO[article.topic].pos }} />}
         <h1>{article.title}</h1>
         <p className="article-lead">{article.summary}</p>
         <ListenText parts={[article.title, ...article.sections.map((s) => [s.title, s.text, s.tip].filter(Boolean).join('. '))]} onPart={(i) => setReading(i - 1)} />

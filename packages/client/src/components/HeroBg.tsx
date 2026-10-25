@@ -8,6 +8,7 @@ export const SECTION_BG: Record<string, HeroMedia> = {
   animals: { image: '/img/bg/animals-dog.jpg', pos: 'center 22%' },
   spirit: { image: '/img/bg/spirit-lotus.jpg', pos: 'center 35%' },
   music: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
+  art: { image: '/img/bg/art-painter.jpg', pos: 'center 30%' },
 };
 
 const p = (topic: string, pos = 'center 30%'): HeroMedia => ({ image: `/img/posture/${topic}.jpg`, pos });
@@ -102,7 +103,8 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   dogs: { image: '/img/bg/animals-dog.jpg', pos: 'center 25%' },
   birds: { image: '/img/bg/animals-bird.jpg', pos: '68% 45%' },
   pets: { image: '/img/bg/animals-pony.jpg', pos: 'center 25%' },
-  yoga: { image: '/img/bg/spirit-lotus.jpg' },
+  yoga: { image: '/img/bg/spirit-yoga.jpg', pos: '20% 50%' },
+  food: { image: '/img/bg/leisure-food.jpg' },
   herbarium: { image: '/img/bg/spirit-lotus.jpg' },
   cooking: { image: '/img/bg/leisure-cake.jpg', pos: 'center 40%' },
 };
@@ -111,6 +113,7 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
 const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
   ['animals', /птиц|попуга|канар/i, TOPIC_PHOTO.birds],
   ['animals', /лошад|пони/i, TOPIC_PHOTO.pets],
+  ['leisure', /рацион|салат|суп|кухни мира|обед/i, TOPIC_PHOTO.food],
   ['leisure', /кулинар|печенье|выпечк|тесто|блины|праздничный стол|бутерброд|каша/i, TOPIC_PHOTO.cooking],
   ['leisure', /гербарий/i, TOPIC_PHOTO.herbarium],
 ];
