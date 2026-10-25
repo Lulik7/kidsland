@@ -127,6 +127,25 @@ function ArticleGrid({ section, articles }: { section: Section; articles: Articl
 }
 
 /** One section: topics, its courses and tutors who teach it. */
+/**
+ * Groups a section's courses by topic (or direction when a course has no topic), keeping their order.
+ * A topic with several levels gets a row of its own; single courses in a row share one.
+ */
+function courseGroups(courses: ReturnType<typeof coursesOf>) {
+  const byKey = new Map<string, typeof courses>();
+  for (const c of courses) {
+    const key = c.topic ?? c.subject;
+    byKey.set(key, [...(byKey.get(key) ?? []), c]);
+  }
+  const groups: { key: string; list: typeof courses }[] = [];
+  for (const [key, list] of byKey) {
+    const last = groups[groups.length - 1];
+    if (list.length === 1 && last?.key.startsWith('single:')) last.list.push(...list);
+    else groups.push({ key: list.length === 1 ? `single:${key}` : key, list: [...list] });
+  }
+  return groups;
+}
+
 export function SectionPage() {
   const t = useT();
   const { sectionId } = useParams();
@@ -158,11 +177,14 @@ export function SectionPage() {
       <p className="muted small">{t('Нажми на тему, чтобы найти наставника по ней.')}</p>
 
       <h2 className="track-title">{t('Курсы')}</h2>
-      <div className="track-row">
-        {courses.map((c) => (
-          <CourseCard key={c.id} course={c} to={`/courses/${c.id}`} />
-        ))}
-      </div>
+      {/* One row per language, instrument or direction: its levels side by side. */}
+      {courseGroups(courses).map((g) => (
+        <div key={g.key} className="track-row section-course-row">
+          {g.list.map((c) => (
+            <CourseCard key={c.id} course={c} to={`/courses/${c.id}`} />
+          ))}
+        </div>
+      ))}
 
       {articlesOfSection(section.id).length > 0 && (
         <>
