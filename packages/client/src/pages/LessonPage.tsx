@@ -13,6 +13,7 @@ import { COIN, HERO } from '../game/sprites';
 import { useLang } from '../i18n';
 import { ChessBoard } from '../components/ChessBoard';
 import { Dialog, ReadingText, WordsListen } from '../components/LessonExtras';
+import { lessonScene } from '../components/interactive';
 import { musicDiagrams, musicSectionPicture } from '../components/music';
 import { useLocal, useTc } from '../content';
 import { CHESS_DIAGRAMS } from '../content/chess';
@@ -286,7 +287,7 @@ export function LessonPage() {
             )}
             {i === 0 && music.length > 0 && <div className="music-diagrams">{music.map((d, k) => <Fragment key={k}>{d}</Fragment>)}</div>}
             {(() => {
-              const live = musicSectionPicture(course, title, tc);
+              const live = musicSectionPicture(course, title, tc) ?? lessonScene(course, lesson.id, title, tc);
               return live && <div className="music-diagrams">{live}</div>;
             })()}
             </article>

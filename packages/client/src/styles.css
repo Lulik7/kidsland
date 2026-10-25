@@ -1616,3 +1616,7 @@ h1, h2 { color: #34404f; }
 .ih-key { width: 44px; height: 56px; border: 2px solid #8a94a3; border-radius: 0 0 8px 8px; background: #fffdf8; font: inherit; font-size: 0.75rem; font-weight: 700; color: var(--ink); display: flex; align-items: end; justify-content: center; padding-bottom: 4px; cursor: pointer; touch-action: manipulation; }
 .ih-key.on { background: #ffd9a8; }
 .ih-both { width: 34px; height: 34px; margin-left: 4px; border-radius: 50%; border: 0; background: var(--primary); color: #fff; cursor: pointer; }
+.scene-controls { display: grid; gap: 12px; justify-items: center; width: 100%; max-width: 520px; }
+.scene-controls .metro-slider { width: 100%; }
+.scene-say { background: #fff7ef; border: 2px dashed #f4c9b8; border-radius: 16px; padding: 10px 14px; text-align: center; font-weight: 600; }
+.scene svg text { user-select: none; }
