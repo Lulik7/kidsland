@@ -185,4 +185,66 @@ UPDATE tutor_profiles
                     WHERE x NOT IN ('emotions', 'kindness', 'mindfulness', 'gratitude', 'values', 'stories'))
  WHERE subjects && ARRAY['emotions', 'kindness', 'mindfulness', 'gratitude', 'values', 'stories'];
 UPDATE tutor_profiles SET is_published = false WHERE cardinality(subjects) = 0 AND is_published;
+-- Tutor applications: education, work experience and documents, checked by an admin before the profile goes public.
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'tutor_profiles' AND column_name = 'verification') THEN
+    ALTER TABLE tutor_profiles
+      ADD COLUMN verification text NOT NULL DEFAULT 'draft' CHECK (verification IN ('draft', 'pending', 'approved', 'rejected')),
+      ADD COLUMN verification_note text,
+      ADD COLUMN submitted_at timestamptz,
+      ADD COLUMN reviewed_at timestamptz,
+      ADD COLUMN education jsonb NOT NULL DEFAULT '[]',
+      ADD COLUMN experience jsonb NOT NULL DEFAULT '[]';
+    -- Tutors already shown to families stay public.
+    UPDATE tutor_profiles SET verification = 'approved' WHERE is_published;
+  END IF;
+END $$;
+CREATE TABLE IF NOT EXISTS tutor_documents (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tutor_id   uuid NOT NULL REFERENCES tutor_profiles(id) ON DELETE CASCADE,
+  kind       text NOT NULL CHECK (kind IN ('diploma', 'certificate', 'other')),
+  title      text NOT NULL,
+  file_name  text NOT NULL,
+  mime       text NOT NULL,
+  size       integer NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS tutor_documents_tutor_idx ON tutor_documents(tutor_id);
+
+-- What admins should look at: new support messages, tutor applications, posts, blocked messages.
+CREATE TABLE IF NOT EXISTS admin_notifications (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  kind       text NOT NULL,
+  title      text NOT NULL,
+  body       text NOT NULL DEFAULT '',
+  link       text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  read_at    timestamptz
+);
+CREATE INDEX IF NOT EXISTS admin_notifications_created_idx ON admin_notifications(created_at DESC);
+
+-- Content the admin adds or edits on top of the built-in courses and articles.
+CREATE TABLE IF NOT EXISTS cms_topics (
+  id         text PRIMARY KEY,
+  section    text NOT NULL,
+  name       text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS cms_articles (
+  id         text PRIMARY KEY,
+  section    text NOT NULL,
+  topic      text NOT NULL,
+  title      text NOT NULL,
+  summary    text NOT NULL DEFAULT '',
+  minutes    integer NOT NULL DEFAULT 3,
+  sections   jsonb NOT NULL DEFAULT '[]',
+  is_hidden  boolean NOT NULL DEFAULT false,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS cms_lessons (
+  lesson_id  text PRIMARY KEY,
+  title      text NOT NULL,
+  sections   jsonb NOT NULL DEFAULT '[]',
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
 `;

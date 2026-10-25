@@ -35,6 +35,10 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
     tutor = await reg(tutorEmail, { role: 'tutor', displayName: 'Видео Наставник' });
     admin = (await request(app!).post('/api/auth/login').send(DEMO_ADMIN)).body.token;
     childId = (await request(app!).post('/api/children').set(auth(parent)).send({ nickname: 'Ника' })).body.child.id;
+    await db!.query(
+      "UPDATE tutor_profiles SET verification = 'approved' WHERE user_id = (SELECT id FROM users WHERE email = $1)",
+      [tutorEmail],
+    );
 
     await request(app!).put('/api/tutor/profile').set(auth(tutor)).send({
       displayName: 'Видео Наставник', headline: 'Scratch', bio: 'Учу детей.', videoUrl: '',
@@ -176,5 +180,72 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
     const del = await request(app!).delete('/api/tutor/video').set(auth(tutor));
     expect(del.body.tutor.videoUrl).toBeNull();
     expect((await request(app!).get(up.body.tutor.videoUrl)).status).toBe(404);
+  });
+
+  it('sends a tutor application with documents to the admin and publishes after approval', async () => {
+    const newbie = (
+      await request(app!).post('/api/auth/register').send({
+        email: `ft-new-${stamp}@example.com`, password: 'secret123', role: 'tutor', displayName: 'Новый Наставник',
+      })
+    ).body.token;
+    const profile = {
+      displayName: 'Новый Наставник', headline: 'Рисование для малышей', bio: 'Десять лет учу детей рисовать акварелью и гуашью.',
+      videoUrl: '', subjects: ['scratch'], languages: ['ru'], ageMin: 5, ageMax: 10, hourlyRate: 900,
+    };
+    expect((await request(app!).put('/api/tutor/profile').set(auth(newbie)).send({ ...profile, isPublished: true })).status).toBe(400);
+    expect((await request(app!).put('/api/tutor/profile').set(auth(newbie)).send({ ...profile, isPublished: false })).status).toBe(200);
+
+    expect((await request(app!).post('/api/tutor/application/submit').set(auth(newbie))).status).toBe(400);
+    const app1 = await request(app!).put('/api/tutor/application').set(auth(newbie)).send({
+      education: [{ institution: 'Художественное училище', specialty: 'Живопись', yearFrom: 2008, yearTo: 2012 }],
+      experience: [{ place: 'Детская студия', position: 'Педагог', yearFrom: 2013, yearTo: null }],
+    });
+    expect(app1.status).toBe(200);
+    const doc = await request(app!)
+      .post('/api/tutor/documents?kind=diploma&title=' + encodeURIComponent('Диплом училища'))
+      .set(auth(newbie)).set('Content-Type', 'application/pdf').send(Buffer.from('%PDF-1.4 fake'));
+    expect(doc.status).toBe(201);
+    const sent = await request(app!).post('/api/tutor/application/submit').set(auth(newbie));
+    expect(sent.status).toBe(200);
+    expect(sent.body.application.status).toBe('pending');
+
+    const notes = await request(app!).get('/api/admin/notifications').set(auth(admin));
+    expect(notes.body.notifications.some((n: { kind: string }) => n.kind === 'tutor-application')).toBe(true);
+    expect((await request(app!).get('/api/admin/notifications').set(auth(parent))).status).toBe(403);
+
+    const list = await request(app!).get('/api/admin/tutor-applications?status=pending').set(auth(admin));
+    const mine = list.body.applications.find((a: { tutor: { displayName: string } }) => a.tutor.displayName === 'Новый Наставник');
+    expect(mine.application.education).toHaveLength(1);
+    expect(mine.documents).toHaveLength(1);
+    const file = await request(app!).get(`/api/admin/tutor-applications/${mine.tutor.id}/documents/${mine.documents[0].id}`).set(auth(admin));
+    expect(file.status).toBe(200);
+    expect(file.headers['content-type']).toMatch(/pdf/);
+    expect((await request(app!).get(`/api/admin/tutor-applications/${mine.tutor.id}/documents/${mine.documents[0].id}`).set(auth(parent))).status).toBe(403);
+
+    const ok = await request(app!).post(`/api/admin/tutor-applications/${mine.tutor.id}/review`).set(auth(admin)).send({ decision: 'approve' });
+    expect(ok.body.application.status).toBe('approved');
+    expect(ok.body.tutor.isPublished).toBe(true);
+  });
+
+  it('lets the admin add topics, articles and edit lesson texts', async () => {
+    const topic = await request(app!).post('/api/admin/content/topics').set(auth(admin)).send({ section: 'art', name: `Лепка ${stamp}` });
+    expect(topic.status).toBe(201);
+    const t = topic.body.topics.find((x: { name: string }) => x.name === `Лепка ${stamp}`);
+    const art = await request(app!).post('/api/admin/content/articles').set(auth(admin)).send({
+      section: 'art', topic: t.id, title: 'Пластилиновый ёжик', summary: 'Лепим ёжика', minutes: 3,
+      sections: [{ title: 'Начало', text: 'Скатай шарик.' }],
+    });
+    expect(art.status).toBe(201);
+    const pub = await request(app!).get('/api/content');
+    expect(pub.body.articles.some((a: { id: string }) => a.id === art.body.id)).toBe(true);
+
+    const lesson = await request(app!).put('/api/admin/content/lessons/computer-1').set(auth(admin)).send({
+      title: 'Новый первый урок', sections: [{ title: '', text: 'Новый текст урока.' }],
+    });
+    expect(lesson.status).toBe(200);
+    expect(findLesson('computer-1')!.lesson.title).toBe('Новый первый урок');
+    await request(app!).delete('/api/admin/content/lessons/computer-1').set(auth(admin));
+    expect(findLesson('computer-1')!.lesson.title).not.toBe('Новый первый урок');
+    await request(app!).delete(`/api/admin/content/topics/${t.id}`).set(auth(admin));
   });
 });

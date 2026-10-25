@@ -16,6 +16,25 @@ export interface TutorRow {
   rating: string;
   reviews_count: number;
   is_published: boolean;
+  verification: 'draft' | 'pending' | 'approved' | 'rejected';
+  verification_note: string | null;
+  submitted_at: Date | null;
+  reviewed_at: Date | null;
+  education: EducationItem[];
+  experience: ExperienceItem[];
+}
+
+export interface EducationItem {
+  institution: string;
+  specialty: string;
+  yearFrom: number;
+  yearTo: number | null;
+}
+export interface ExperienceItem {
+  place: string;
+  position: string;
+  yearFrom: number;
+  yearTo: number | null;
 }
 
 export const publicTutor = (t: TutorRow & { next_slot?: Date | null; free_slots?: number }) => ({
@@ -33,6 +52,7 @@ export const publicTutor = (t: TutorRow & { next_slot?: Date | null; free_slots?
   rating: Number(t.rating),
   reviewsCount: t.reviews_count,
   isPublished: t.is_published,
+  verification: t.verification,
   ...(t.next_slot !== undefined ? { nextSlot: t.next_slot, freeSlots: t.free_slots ?? 0 } : {}),
 });
 

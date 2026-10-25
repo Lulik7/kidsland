@@ -3,3 +3,4 @@ dist
 .env
 *.log
 packages/server/uploads
+packages/server/private-documents

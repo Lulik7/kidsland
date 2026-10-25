@@ -1,13 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import { unlink, writeFile } from 'node:fs/promises';
 import { LANGUAGE_IDS, TOPIC_IDS, findUnsafeContent } from '@kidsland/shared';
+import { createReadStream } from 'node:fs';
 import express, { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import { config } from '../config';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
-import { isUuid, publicTutor, tutorForUser } from '../tutors';
+import { notifyAdmins } from '../notify';
+import { isUuid, publicTutor, tutorForUser, type TutorRow } from '../tutors';
 import { flagUnsafe } from './lessonRoom';
 
 const profileSchema = z
@@ -19,7 +21,11 @@ const profileSchema = z
       .union([z.string().trim().url().max(300), z.string().regex(/^\/api\/uploads\/videos\/[\w-]+\.\w+$/), z.literal('')])
       .optional(),
     avatar: z.string().max(40).optional(),
-    subjects: z.array(z.enum(TOPIC_IDS as [string, ...string[]])).min(1, 'Выберите хотя бы один предмет'),
+    // Checked against the live list: the admin can add topics while the server runs.
+    subjects: z
+      .array(z.string().max(40))
+      .min(1, 'Выберите хотя бы один предмет')
+      .refine((ids) => ids.every((id) => TOPIC_IDS.includes(id)), 'Неизвестный предмет'),
     languages: z.array(z.enum(LANGUAGE_IDS as [string, ...string[]])).min(1, 'Выберите хотя бы один язык'),
     ageMin: z.number().int().min(4).max(18),
     ageMax: z.number().int().min(4).max(18),
@@ -34,6 +40,70 @@ const UPLOAD_PREFIX = '/api/uploads/videos/';
 async function removeUploadedVideo(url: string | null) {
   if (!url?.startsWith(UPLOAD_PREFIX)) return;
   await unlink(`${config.uploadsDir}/videos/${url.slice(UPLOAD_PREFIX.length)}`).catch(() => {});
+}
+
+const year = () => new Date().getFullYear();
+const yearFrom = z.number().int().min(1950).max(year());
+const yearTo = z.number().int().min(1950).max(year() + 6).nullable();
+const applicationSchema = z.object({
+  education: z
+    .array(
+      z
+        .object({
+          institution: z.string().trim().min(2, 'Укажите учебное заведение').max(200),
+          specialty: z.string().trim().max(200),
+          yearFrom,
+          yearTo,
+        })
+        .refine((e) => e.yearTo === null || e.yearTo >= e.yearFrom, { message: 'Год окончания раньше года начала' }),
+    )
+    .max(10),
+  experience: z
+    .array(
+      z
+        .object({
+          place: z.string().trim().min(2, 'Укажите место работы').max(200),
+          position: z.string().trim().max(200),
+          yearFrom,
+          yearTo,
+        })
+        .refine((e) => e.yearTo === null || e.yearTo >= e.yearFrom, { message: 'Год окончания раньше года начала' }),
+    )
+    .max(20),
+});
+
+export const DOCUMENT_TYPES: Record<string, string> = { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png' };
+const MAX_DOCUMENTS = 15;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const publicDocument = (d: any) => ({ id: d.id, kind: d.kind, title: d.title, mime: d.mime, size: d.size, createdAt: d.created_at });
+
+export const publicApplication = (t: TutorRow) => ({
+  status: t.verification,
+  note: t.verification_note,
+  submittedAt: t.submitted_at,
+  reviewedAt: t.reviewed_at,
+  education: t.education,
+  experience: t.experience,
+});
+
+export async function documentsOf(db: Db, tutorId: string) {
+  const { rows } = await db.query('SELECT * FROM tutor_documents WHERE tutor_id = $1 ORDER BY created_at', [tutorId]);
+  return rows.map(publicDocument);
+}
+
+/** Sends a stored document file; the caller has already checked who may see it. */
+export async function sendDocument(db: Db, tutorId: string, docId: string, res: import('express').Response) {
+  if (!isUuid(docId)) throw new HttpError(404, 'Документ не найден');
+  const { rows } = await db.query('SELECT * FROM tutor_documents WHERE id = $1 AND tutor_id = $2', [docId, tutorId]);
+  const d = rows[0];
+  if (!d) throw new HttpError(404, 'Документ не найден');
+  res.setHeader('Content-Type', d.mime);
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(d.title)}.${DOCUMENT_TYPES[d.mime]}"`);
+  createReadStream(`${config.documentsDir}/${d.file_name}`)
+    .on('error', () => res.status(404).end())
+    .pipe(res);
 }
 
 const MAX_DAYS_AHEAD = 60;
@@ -65,6 +135,9 @@ export function tutorCabinetRouter(db: Db) {
     if (unsafe) {
       await flagUnsafe(db, req.user!.id, 'tutor-profile', `${p.headline}\n${p.bio}`, unsafe);
       throw new HttpError(400, `${unsafe}. Уберите контакты из описания: общение идёт только через платформу.`);
+    }
+    if (p.isPublished && t.verification !== 'approved') {
+      throw new HttpError(400, 'Профиль можно опубликовать после проверки администратором. Заполните анкету и отправьте её на проверку.');
     }
     if (t.video_url !== (p.videoUrl || null)) await removeUploadedVideo(t.video_url);
     const { rows } = await db.query(
@@ -102,6 +175,86 @@ export function tutorCabinetRouter(db: Db) {
     await removeUploadedVideo(t.video_url);
     const { rows } = await db.query('UPDATE tutor_profiles SET video_url = NULL WHERE id = $1 RETURNING *', [t.id]);
     res.json({ tutor: publicTutor(rows[0]) });
+  });
+
+  // ---- Application: education, experience and documents, reviewed by an admin ----
+
+  r.get('/application', async (req, res) => {
+    const t = await myTutor(req.user!.id);
+    res.json({ application: publicApplication(t), documents: await documentsOf(db, t.id) });
+  });
+
+  r.put('/application', async (req, res) => {
+    const a = applicationSchema.parse(req.body);
+    const t = await myTutor(req.user!.id);
+    if (t.verification === 'pending') throw new HttpError(400, 'Анкета на проверке. Изменить её можно после ответа администратора.');
+    const { rows } = await db.query<TutorRow>(
+      'UPDATE tutor_profiles SET education = $2, experience = $3 WHERE id = $1 RETURNING *',
+      [t.id, JSON.stringify(a.education), JSON.stringify(a.experience)],
+    );
+    res.json({ application: publicApplication(rows[0]) });
+  });
+
+  /** A diploma or certificate: the raw file is the body, kind and title come in the query string. */
+  r.post(
+    '/documents',
+    express.raw({ type: Object.keys(DOCUMENT_TYPES), limit: `${config.maxDocumentMb}mb` }),
+    async (req, res) => {
+      const mime = req.header('content-type')?.split(';')[0] ?? '';
+      const ext = DOCUMENT_TYPES[mime];
+      if (!ext || !Buffer.isBuffer(req.body) || req.body.length === 0) {
+        throw new HttpError(400, 'Загрузите документ в формате PDF, JPG или PNG');
+      }
+      const { kind, title } = z
+        .object({
+          kind: z.enum(['diploma', 'certificate', 'other']),
+          title: z.string().trim().min(2, 'Как называется документ?').max(120),
+        })
+        .parse(req.query);
+      const t = await myTutor(req.user!.id);
+      if (t.verification === 'pending') throw new HttpError(400, 'Анкета на проверке. Добавить документы можно после ответа администратора.');
+      const { rows: count } = await db.query('SELECT count(*)::int AS n FROM tutor_documents WHERE tutor_id = $1', [t.id]);
+      if (count[0].n >= MAX_DOCUMENTS) throw new HttpError(400, `Можно загрузить до ${MAX_DOCUMENTS} документов`);
+      const name = `${randomUUID()}.${ext}`;
+      await writeFile(`${config.documentsDir}/${name}`, req.body);
+      const { rows } = await db.query(
+        'INSERT INTO tutor_documents (tutor_id, kind, title, file_name, mime, size) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [t.id, kind, title, name, mime, req.body.length],
+      );
+      res.status(201).json({ document: publicDocument(rows[0]) });
+    },
+  );
+
+  r.get('/documents/:id/file', async (req, res) => {
+    const t = await myTutor(req.user!.id);
+    await sendDocument(db, t.id, req.params.id, res);
+  });
+
+  r.delete('/documents/:id', async (req, res) => {
+    if (!isUuid(req.params.id)) throw new HttpError(404, 'Документ не найден');
+    const t = await myTutor(req.user!.id);
+    if (t.verification === 'pending') throw new HttpError(400, 'Анкета на проверке. Удалить документ можно после ответа администратора.');
+    const { rows } = await db.query('DELETE FROM tutor_documents WHERE id = $1 AND tutor_id = $2 RETURNING file_name', [req.params.id, t.id]);
+    if (!rows[0]) throw new HttpError(404, 'Документ не найден');
+    await unlink(`${config.documentsDir}/${rows[0].file_name}`).catch(() => {});
+    res.status(204).end();
+  });
+
+  r.post('/application/submit', async (req, res) => {
+    const t = await myTutor(req.user!.id);
+    if (t.verification === 'pending') throw new HttpError(400, 'Анкета уже на проверке');
+    const missing: string[] = [];
+    if (t.headline.trim().length < 5 || t.bio.trim().length < 30) missing.push('заполните заголовок и рассказ о себе во вкладке «Профиль»');
+    if (!t.education.length) missing.push('добавьте образование');
+    const docs = await documentsOf(db, t.id);
+    if (!docs.length) missing.push('загрузите хотя бы один диплом или сертификат');
+    if (missing.length) throw new HttpError(400, `Чтобы отправить анкету: ${missing.join(', ')}.`);
+    const { rows } = await db.query<TutorRow>(
+      `UPDATE tutor_profiles SET verification = 'pending', submitted_at = now(), verification_note = NULL WHERE id = $1 RETURNING *`,
+      [t.id],
+    );
+    await notifyAdmins(db, 'tutor-application', `Анкета преподавателя на проверку: ${t.display_name}`, t.headline, `tutor:${t.id}`);
+    res.json({ application: publicApplication(rows[0]), tutor: publicTutor(rows[0]) });
   });
 
   r.get('/slots', async (req, res) => {

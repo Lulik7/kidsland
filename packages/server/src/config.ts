@@ -26,4 +26,7 @@ export const config = {
   seedDemoAdmin: !isProd && process.env.SEED_DEMO_ADMIN !== 'false',
   uploadsDir: process.env.UPLOADS_DIR ?? fileURLToPath(new URL('../uploads', import.meta.url)),
   maxVideoMb: Number(process.env.MAX_VIDEO_MB ?? 100),
+  // Tutors' diplomas and certificates. Private: never served statically, only to the tutor and admins.
+  documentsDir: process.env.DOCUMENTS_DIR ?? fileURLToPath(new URL('../private-documents', import.meta.url)),
+  maxDocumentMb: 10,
 };

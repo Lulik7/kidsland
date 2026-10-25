@@ -426,8 +426,8 @@ export async function seedDemoTutors(db: Db, now = new Date()): Promise<void> {
     );
     const { rows: profiles } = await db.query(
       `INSERT INTO tutor_profiles
-         (user_id, display_name, headline, bio, avatar, subjects, languages, age_min, age_max, hourly_rate, rating, reviews_count, is_published)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true)
+         (user_id, display_name, headline, bio, avatar, subjects, languages, age_min, age_max, hourly_rate, rating, reviews_count, is_published, verification)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true, 'approved')
        ON CONFLICT (user_id) DO UPDATE SET
          display_name = EXCLUDED.display_name, headline = EXCLUDED.headline, bio = EXCLUDED.bio, avatar = EXCLUDED.avatar,
          subjects = EXCLUDED.subjects, languages = EXCLUDED.languages, age_min = EXCLUDED.age_min, age_max = EXCLUDED.age_max,

@@ -28,6 +28,10 @@ describe.skipIf(!url)('marketplace', () => {
     other = await reg(otherEmail);
     tutor = await reg(tutorEmail, { role: 'tutor', displayName: 'Тест Наставник' });
     childId = (await request(app!).post('/api/children').set(auth(parent)).send({ nickname: 'Лиза' })).body.child.id;
+    await db!.query(
+      "UPDATE tutor_profiles SET verification = 'approved' WHERE user_id = (SELECT id FROM users WHERE email = $1)",
+      [tutorEmail],
+    );
     otherChildId = (await request(app!).post('/api/children').set(auth(other)).send({ nickname: 'Петя' })).body.child.id;
   });
   afterAll(async () => {

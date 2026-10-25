@@ -5,6 +5,7 @@ import { config } from './config';
 import type { Db } from './db/pool';
 import { errorHandler, HttpError } from './errors';
 import { levelsForChild, publicLevel } from './levels';
+import { adminRouter, loadContentOverrides } from './routes/admin';
 import { authRouter } from './routes/auth';
 import { bookingsRouter } from './routes/bookings';
 import { childrenRouter } from './routes/children';
@@ -23,6 +24,9 @@ export function createApp(db: Db) {
   mkdirSync(`${config.uploadsDir}/videos`, { recursive: true });
   app.use('/api/uploads', express.static(config.uploadsDir, { maxAge: '7d', fallthrough: false }));
 
+  // Tutors' diplomas are private: never served statically, only through checked routes.
+  mkdirSync(config.documentsDir, { recursive: true });
+
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true });
   });
@@ -35,6 +39,13 @@ export function createApp(db: Db) {
   app.use('/api/support', supportRouter(db));
   app.use('/api/posts', postsRouter(db));
   app.use('/api/tutor', tutorCabinetRouter(db));
+  app.use('/api/admin', adminRouter(db));
+
+  // Topics, articles and lesson texts the admin added or edited; the client applies them on load.
+  app.get('/api/content', async (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.json(await loadContentOverrides(db));
+  });
 
   // Public catalogue for the landing page: titles and themes only, no level configs.
   app.get('/api/levels', async (_req, res) => {

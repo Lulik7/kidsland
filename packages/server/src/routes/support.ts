@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
+import { notifyAdmins } from '../notify';
 import { isUuid } from '../tutors';
 
 const messageSchema = z.object({ body: z.string().trim().min(1, 'Напишите сообщение').max(2000) });
@@ -66,6 +67,9 @@ export function supportRouter(db: Db) {
         );
       }
       await client.query('COMMIT');
+      const { rows: who } = await db.query('SELECT email, role FROM users WHERE id = $1', [req.user!.id]);
+      const roleName = { parent: 'родителя', tutor: 'наставника', admin: 'админа' }[who[0]?.role as string] ?? 'пользователя';
+      await notifyAdmins(db, 'support', `Новое сообщение от ${roleName} ${who[0]?.email ?? ''}`, body, `support:${thread.id}`);
       res.status(201).json({ thread: publicThread(thread), messages: await messagesOf(db, thread.id) });
     } catch (e) {
       await client.query('ROLLBACK');

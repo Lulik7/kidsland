@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
+import { notifyAdmins } from '../notify';
 import { isUuid } from '../tutors';
 import { flagUnsafe } from './lessonRoom';
 
@@ -59,6 +60,7 @@ export function postsRouter(db: Db) {
       'INSERT INTO community_posts (author_id, author_name, title, body) VALUES ($1, $2, $3, $4) RETURNING *',
       [req.user!.id, post.authorName, post.title, post.body],
     );
+    await notifyAdmins(db, 'post', `Новый пост на проверку: ${post.title}`, post.body, 'posts');
     res.status(201).json({ post: publicPost(rows[0], true) });
   });
 

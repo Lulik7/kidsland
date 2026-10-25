@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireAuth } from '../auth';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
+import { notifyAdmins } from '../notify';
 import { isUuid } from '../tutors';
 
 const MAX_STROKES = 3000;
@@ -28,6 +29,7 @@ export async function flagUnsafe(db: Db, userId: string, context: string, body: 
     body.slice(0, 2000),
     reason,
   ]);
+  await notifyAdmins(db, 'safety', `Заблокировано сообщение: ${reason}`, body, 'safety');
 }
 
 /** Chat and whiteboard of one lesson. Only the booking's parent and its tutor get in. */
