@@ -9,6 +9,7 @@ export const SECTION_BG: Record<string, HeroMedia> = {
   spirit: { image: '/img/bg/spirit-lotus.jpg', pos: 'center 35%' },
   music: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
   art: { image: '/img/bg/art-painter.jpg', pos: 'center 30%' },
+  science: { image: '/img/bg/science-lab.jpg', pos: 'center 30%' },
 };
 
 const p = (topic: string, pos = 'center 30%'): HeroMedia => ({ image: `/img/posture/${topic}.jpg`, pos });
@@ -105,6 +106,7 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   pets: { image: '/img/bg/animals-pony.jpg', pos: 'center 25%' },
   yoga: { image: '/img/bg/spirit-yoga.jpg', pos: '20% 50%' },
   food: { image: '/img/bg/leisure-food.jpg' },
+  experiments: { image: '/img/bg/science-lab.jpg', pos: '70% 30%' },
   herbarium: { image: '/img/bg/spirit-lotus.jpg' },
   cooking: { image: '/img/bg/leisure-cake.jpg', pos: 'center 40%' },
 };
