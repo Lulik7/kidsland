@@ -5,6 +5,7 @@ import { api } from '../api';
 import { useAuth } from '../auth';
 import { Confetti } from '../components/Confetti';
 import { Homework } from '../components/Homework';
+import { Workspace, workspaceFor } from '../components/interactive/workspace';
 import { KidHud } from '../components/KidHud';
 import { QuestionView, shuffled } from '../components/QuestionView';
 import { Sprite } from '../components/Sprite';
@@ -272,6 +273,11 @@ export function LessonPage() {
 
       {tab === 'theory' ? (
         <section className="theory">
+          {index === 0 && workspaceFor(course.subject) && (
+            <article className="theory-card">
+              <Workspace subject={course.subject} tc={tc} />
+            </article>
+          )}
           {shown.lesson.sections.map((s, i) => {
             const title = lesson.sections[i]?.title;
             const pic = i > 0 && title ? cardPic(course, title) : undefined;
