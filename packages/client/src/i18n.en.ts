@@ -1091,4 +1091,7 @@ export const EN: Record<string, string> = {
   "Этот браузер не умеет показывать уведомления. На iPhone добавьте сайт на экран «Домой» и откройте его оттуда.": "This browser cannot show notifications. On iPhone, add the site to the Home Screen and open it from there.",
   "Включите на каждом устройстве: на телефоне родителя, на компьютере или планшете ребёнка.": "Turn it on on each device: the parent’s phone and the child’s computer or tablet.",
   "Телефон для SMS": "Phone for SMS",
+  "Собираем архив…": "Packing the archive…",
+  "Скачать весь курс: текст и аудио": "Download the whole course: text and audio",
+  "Скачай слова и диалоги уроков в mp3 и слушай их в дороге, а тексты распечатай для повторения. Весь курс скачивается одним архивом.": "Download the lesson words and dialogues as mp3 to listen on the go, and print the texts for review. The whole course downloads as one archive.",
 };

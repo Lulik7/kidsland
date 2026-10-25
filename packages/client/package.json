@@ -12,6 +12,7 @@
   "dependencies": {
     "@kidsland/shared": "0.1.0",
     "blockly": "^12.3.1",
+    "fflate": "^0.8.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0"

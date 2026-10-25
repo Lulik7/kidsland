@@ -53,6 +53,10 @@ export const COUNTRY_PHOTOS: Record<string, string[]> = {
   'lang-es': ['es-street', 'es-flag'],
   'lang-it': ['it-cinqueterre', 'it-village', 'it-street', 'it-flag'],
   'lang-el': ['el-church', 'el-athens', 'el-guards', 'el-flag'],
+  'lang-ka': ['ka-kazbegi', 'ka-tbilisi', 'ka-valley', 'ka-batumi'],
+  'lang-ru': ['ru-basil', 'ru-hermitage', 'ru-kremlin', 'ru-nature', 'ru-moscow'],
+  'lang-en': ['en-towerbridge', 'en-bigben', 'en-stpauls', 'en-westminster'],
+  'lang-he': ['he-jaffa', 'he-jerusalem', 'he-telaviv', 'he-beach', 'he-flag', 'he-flags'],
 };
 
 export const countryPhoto = (name: string) => `/img/country/${name}.jpg`;
@@ -110,6 +114,10 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   'lang-es': { image: '/img/country/es-flag.jpg', pos: '40% 30%' },
   'lang-it': { image: '/img/country/it-flag.jpg' },
   'lang-el': { image: '/img/country/el-flag.jpg', pos: '35% 40%' },
+  'lang-ka': { image: '/img/country/ka-kazbegi.jpg', pos: 'center 60%' },
+  'lang-ru': { image: '/img/country/ru-basil.jpg' },
+  'lang-en': { image: '/img/country/en-towerbridge.jpg' },
+  'lang-he': { image: '/img/country/he-flag.jpg' },
   dogs: { image: '/img/bg/animals-dog.jpg', pos: 'center 25%' },
   birds: { image: '/img/bg/animals-bird.jpg', pos: '68% 45%' },
   pets: { image: '/img/bg/animals-boy-dog.jpg', pos: 'center 30%' },

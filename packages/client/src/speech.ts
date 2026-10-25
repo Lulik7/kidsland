@@ -20,7 +20,7 @@ export function setSpeed(s: number) {
   } catch {
     /* storage blocked */
   }
-  if (current) current.playbackRate = Math.min(1, (current as HTMLAudioElement & { baseRate?: number }).baseRate ?? 1) * s;
+  if (current) current.playbackRate = s;
   speedListeners.forEach((f) => f(s));
 }
 export function onSpeed(f: (s: number) => void) {
@@ -29,15 +29,16 @@ export function onSpeed(f: (s: number) => void) {
 }
 
 /** Plays a recorded line; resolves false when there is no recording, so the browser voice can step in. */
-function playRecording(text: string, lang: string, speaker: string | undefined, rate: number): Promise<boolean> {
+function playRecording(text: string, lang: string, speaker: string | undefined): Promise<boolean> {
   const base = lang.split('-')[0];
   if (!isRecorded(base, speaker) || typeof Audio === 'undefined') return Promise.resolve(false);
   return new Promise((resolve) => {
     current?.pause();
     const a = new Audio(recordingUrl(base, text, speaker));
     current = a;
-    (a as HTMLAudioElement & { baseRate?: number }).baseRate = rate + 0.1;
-    a.playbackRate = Math.min(1, rate + 0.1) * speed;
+    // Recordings already have a natural pace: only the child's speed choice changes it, keeping the pitch.
+    a.preservesPitch = true;
+    a.playbackRate = speed;
     a.onended = () => resolve(true);
     a.onerror = () => resolve(false);
     a.play().catch(() => resolve(false));
@@ -69,12 +70,21 @@ function voiceFor(lang: string, speaker?: string): { voice?: SpeechSynthesisVoic
   return match ? { voice: match, exact: true } : { voice: voices[0], exact: false };
 }
 
+const NATURAL = /natural|neural|online|premium|enhanced/i;
+
+/** A natural-sounding browser voice of the speaker's gender, when this computer or phone has one. */
+function naturalVoice(lang: string, speaker?: string) {
+  const female = genderOf(speaker) === 'f';
+  return voicesOf(lang).find((v) => NATURAL.test(v.name) && (!speaker || FEMALE_VOICE.test(v.name) === female));
+}
+
 /**
  * Says `text` in `lang` with the best voice the computer has. In dialogues a woman's or a man's voice is chosen
  * by the speaker; when the computer has only one voice, the second speaker gets it a little higher.
  */
 export async function say(text: string, lang: string, who = 0, rate = 0.9, speaker?: string): Promise<void> {
-  if (await playRecording(text, lang, speaker, rate)) return;
+  // A natural browser voice (Edge, Safari, phones) beats our recordings; otherwise recordings beat robotic voices.
+  if (!naturalVoice(lang, speaker) && (await playRecording(text, lang, speaker))) return;
   return new Promise((resolve) => {
     if (!canSpeak()) return resolve();
     const u = new SpeechSynthesisUtterance(text);

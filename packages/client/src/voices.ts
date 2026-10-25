@@ -5,6 +5,12 @@
  */
 export const RECORDED_LANGS = new Set(['el', 'fr', 'ka', 'it', 'de']);
 
+/** Languages with recorded mp3 files for the downloads room (lessons may still prefer the browser's voices). */
+export const AUDIO_FILE_LANGS = new Set([...RECORDED_LANGS, 'en', 'es']);
+/** Whether a line has an mp3 file to download. */
+export const hasAudioFile = (lang: string, speaker?: string) =>
+  AUDIO_FILE_LANGS.has(lang) && (!RECORDED_GENDERS[lang] || RECORDED_GENDERS[lang] === genderOf(speaker));
+
 /** Languages where only one gender is recorded; the other keeps the browser's voice. */
 const RECORDED_GENDERS: Record<string, 'f' | 'm'> = { it: 'm' };
 export const isRecorded = (lang: string, speaker?: string) =>

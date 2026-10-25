@@ -1,7 +1,7 @@
 """Records lesson lines with Piper neural voices (https://github.com/rhasspy/piper).
 
 Usage: python3 scripts/record_voices.py <lang> <lines.json> <female.onnx> <male.onnx|-> [male pitch factor]
-LENGTH_SCALE (env, default 1.08) sets the speaking pace: smaller is quicker.
+LENGTH_SCALE (env, default 1.0; single words are said 1.3 times slower) sets the speaking pace: smaller is quicker.
 Writes packages/client/public/voice/<lang>/lines/<hash>-<f|m>.mp3 and skips files that already exist.
 With "-" for the male model, the female voice is pitched down for male speakers.
 A model written as "espeak:<voice>" (e.g. espeak:ka+f3) records with espeak-ng, for languages Piper lacks.
@@ -29,12 +29,18 @@ for item in json.load(open(lines_file)):
         rate = 22050
     else:
         with wave.open(wav, 'wb') as w:
-            v.synthesize_wav(item['text'], w, syn_config=SynthesisConfig(length_scale=float(os.environ.get('LENGTH_SCALE', '1.08'))))
+            # Single words come out rushed and clipped: say them slower.
+            pace = float(os.environ.get('LENGTH_SCALE', '1.0')) * (1.3 if len(item['text'].split()) <= 2 else 1.0)
+            v.synthesize_wav(item['text'], w, syn_config=SynthesisConfig(length_scale=pace))
         rate = v.config.sample_rate
+    # Clean-up for every voice: cut rumble and hiss, even out loudness.
+    # Silence before and after, so browsers never swallow the start of a short word.
+    clean = 'highpass=f=70,lowpass=f=7600,afftdn=nf=-30,loudnorm=I=-18:TP=-2,adelay=150:all=1,apad=pad_dur=0.25'
     if item['g'] == 'm' and male_model == '-':
-        af = f'asetrate={rate}*{factor},aresample=22050,atempo={1 / factor:.4f}'
+        # Rubber Band moves the pitch and the voice timbre down without changing the tempo (no slow-motion effect).
+        af = f'aresample=24000,rubberband=pitch={factor}:formant=shifted:pitchq=quality,{clean}'
     else:
-        af = 'aresample=22050'
-    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', af, '-ac', '1', '-b:a', '32k', dst], check=True)
+        af = f'aresample=24000,{clean}'
+    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', af, '-ac', '1', '-b:a', '64k', dst], check=True)
     made += 1
 print(lang, 'recorded', made)
