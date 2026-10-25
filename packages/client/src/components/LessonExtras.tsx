@@ -1,7 +1,7 @@
 import type { DialogLine } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { useT } from '../i18n';
-import { canSpeak, foreignPart, say, stopSpeaking } from '../speech';
+import { canSpeak, foreignPart, getSpeed, onSpeed, say, setSpeed, SPEEDS, stopSpeaking } from '../speech';
 
 /** A round listen button. */
 export function ListenButton({ onPlay, label }: { onPlay: () => Promise<void>; label?: string }) {
@@ -28,6 +28,24 @@ export function ListenButton({ onPlay, label }: { onPlay: () => Promise<void>; l
   );
 }
 
+/** Slower / normal / faster: one choice for all reading aloud on the site. */
+export function SpeedSwitch() {
+  const t = useT();
+  const [cur, setCur] = useState(getSpeed());
+  useEffect(() => onSpeed(setCur), []);
+  if (!canSpeak()) return null;
+  const names = [t('Медленно'), t('Обычно'), t('Быстрее')];
+  return (
+    <span className="speed-switch" role="group" aria-label={t('Скорость')}>
+      {SPEEDS.map((s, i) => (
+        <button key={s} type="button" className={cur === s ? 'on' : ''} onClick={() => setSpeed(s)}>
+          {names[i]}
+        </button>
+      ))}
+    </span>
+  );
+}
+
 /** A dialogue as chat bubbles: each line can be played, or the whole dialogue in turn. */
 export function Dialog({ lines, lang }: { lines: DialogLine[]; lang: string }) {
   const t = useT();
@@ -38,7 +56,7 @@ export function Dialog({ lines, lang }: { lines: DialogLine[]; lang: string }) {
   const playAll = async () => {
     for (let i = 0; i < lines.length; i++) {
       setPlaying(i);
-      await say(lines[i].line, lang, lines[i].who === first ? 0 : 1);
+      await say(lines[i].line, lang, lines[i].who === first ? 0 : 1, 0.9, lines[i].who);
     }
     setPlaying(-1);
   };
@@ -46,6 +64,7 @@ export function Dialog({ lines, lang }: { lines: DialogLine[]; lang: string }) {
     <div className="dialog">
       <div className="dialog-tools">
         <ListenButton onPlay={playAll} label={t('Слушать диалог')} />
+        <SpeedSwitch />
         <button type="button" className="tr-toggle" onClick={() => setShowTr(!showTr)}>
           {showTr ? t('Скрыть перевод') : t('Показать перевод')}
         </button>
@@ -53,7 +72,7 @@ export function Dialog({ lines, lang }: { lines: DialogLine[]; lang: string }) {
       {lines.map((l, i) => (
         <div key={i} className={`bubble ${l.who === first ? 'left' : 'right'}${playing === i ? ' playing' : ''}`}>
           <span className="who">{l.who}</span>
-          <button type="button" className="bubble-line" onClick={() => say(l.line, lang, l.who === first ? 0 : 1)} lang={lang} dir="auto">
+          <button type="button" className="bubble-line" onClick={() => say(l.line, lang, l.who === first ? 0 : 1, 0.9, l.who)} lang={lang} dir="auto">
             {l.line}
           </button>
           {showTr && l.read && <span className="bubble-read">{l.read}</span>}
@@ -76,6 +95,7 @@ export function ReadingText({ text, translation, reading, lang }: { text: string
       </p>
       <div className="dialog-tools">
         {lang && <ListenButton onPlay={() => say(text, lang, 0, 0.85)} />}
+        {lang && <SpeedSwitch />}
         {reading && (
           <button type="button" className="tr-toggle" onClick={() => setRead(!read)}>
             {read ? t('Скрыть чтение') : t('Как читать')}
@@ -96,10 +116,13 @@ export function ReadingText({ text, translation, reading, lang }: { text: string
 /** Listen button for a words section: reads only the foreign words. */
 export function WordsListen({ text, lang }: { text: string; lang: string }) {
   return (
-    <ListenButton
-      onPlay={async () => {
-        for (const w of foreignPart(text)) await say(w, lang, 0, 0.8);
-      }}
-    />
+    <span className="dialog-tools">
+      <ListenButton
+        onPlay={async () => {
+          for (const w of foreignPart(text)) await say(w, lang, 0, 0.8);
+        }}
+      />
+      <SpeedSwitch />
+    </span>
   );
 }

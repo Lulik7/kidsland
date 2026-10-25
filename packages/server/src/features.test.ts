@@ -205,6 +205,13 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
       .post('/api/tutor/documents?kind=diploma&title=' + encodeURIComponent('Диплом училища'))
       .set(auth(newbie)).set('Content-Type', 'application/pdf').send(Buffer.from('%PDF-1.4 fake'));
     expect(doc.status).toBe(201);
+    const noId = await request(app!).post('/api/tutor/application/submit').set(auth(newbie));
+    expect(noId.status).toBe(400);
+    expect(noId.body.error).toMatch(/паспорт/);
+    const id = await request(app!)
+      .post('/api/tutor/documents?kind=identity&title=' + encodeURIComponent('Паспорт'))
+      .set(auth(newbie)).set('Content-Type', 'image/png').send(Buffer.from('fake png'));
+    expect(id.status).toBe(201);
     const sent = await request(app!).post('/api/tutor/application/submit').set(auth(newbie));
     expect(sent.status).toBe(200);
     expect(sent.body.application.status).toBe('pending');
@@ -216,8 +223,8 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
     const list = await request(app!).get('/api/admin/tutor-applications?status=pending').set(auth(admin));
     const mine = list.body.applications.find((a: { tutor: { displayName: string } }) => a.tutor.displayName === 'Новый Наставник');
     expect(mine.application.education).toHaveLength(1);
-    expect(mine.documents).toHaveLength(1);
-    const file = await request(app!).get(`/api/admin/tutor-applications/${mine.tutor.id}/documents/${mine.documents[0].id}`).set(auth(admin));
+    expect(mine.documents).toHaveLength(2);
+    const file = await request(app!).get(`/api/admin/tutor-applications/${mine.tutor.id}/documents/${mine.documents.find((d: { kind: string }) => d.kind === 'diploma').id}`).set(auth(admin));
     expect(file.status).toBe(200);
     expect(file.headers['content-type']).toMatch(/pdf/);
     expect((await request(app!).get(`/api/admin/tutor-applications/${mine.tutor.id}/documents/${mine.documents[0].id}`).set(auth(parent))).status).toBe(403);

@@ -202,7 +202,7 @@ END $$;
 CREATE TABLE IF NOT EXISTS tutor_documents (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tutor_id   uuid NOT NULL REFERENCES tutor_profiles(id) ON DELETE CASCADE,
-  kind       text NOT NULL CHECK (kind IN ('diploma', 'certificate', 'other')),
+  kind       text NOT NULL CHECK (kind IN ('diploma', 'certificate', 'identity', 'other')),
   title      text NOT NULL,
   file_name  text NOT NULL,
   mime       text NOT NULL,
@@ -210,6 +210,9 @@ CREATE TABLE IF NOT EXISTS tutor_documents (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS tutor_documents_tutor_idx ON tutor_documents(tutor_id);
+-- An identity document (ID card or passport) is a kind of its own.
+ALTER TABLE tutor_documents DROP CONSTRAINT IF EXISTS tutor_documents_kind_check;
+ALTER TABLE tutor_documents ADD CONSTRAINT tutor_documents_kind_check CHECK (kind IN ('diploma', 'certificate', 'identity', 'other'));
 
 -- What admins should look at: new support messages, tutor applications, posts, blocked messages.
 CREATE TABLE IF NOT EXISTS admin_notifications (

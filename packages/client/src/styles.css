@@ -1620,3 +1620,16 @@ h1, h2 { color: #34404f; }
 .scene-controls .metro-slider { width: 100%; }
 .scene-say { background: #fff7ef; border: 2px dashed #f4c9b8; border-radius: 16px; padding: 10px 14px; text-align: center; font-weight: 600; }
 .scene svg text { user-select: none; }
+
+/* Reading speed switch */
+.speed-switch { display: inline-flex; border: 2px dashed var(--line, #f3c9b5); border-radius: 999px; overflow: hidden; }
+.speed-switch button { border: 0; background: none; font: inherit; font-size: 0.85rem; font-weight: 700; padding: 6px 12px; cursor: pointer; color: var(--muted, #667); }
+.speed-switch button.on { background: var(--primary, #79c7a6); color: #fff; }
+
+/* "Click here!" hint on the robot guide poster */
+.rg-poster { position: relative; }
+.rg-click { display: inline-flex; align-items: center; gap: 8px; font-family: var(--hand); font-size: 1.9rem; font-weight: 700; color: var(--orange, #e07a3f); animation: rg-click-pulse 1.4s ease-in-out infinite; }
+.rg-arrow { display: inline-block; transform: rotate(-90deg); animation: rg-arrow-bounce 0.9s ease-in-out infinite; }
+@keyframes rg-arrow-bounce { 0%, 100% { transform: rotate(-90deg) translateX(0); } 50% { transform: rotate(-90deg) translateX(10px); } }
+@keyframes rg-click-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .rg-click, .rg-arrow { animation: none; } }

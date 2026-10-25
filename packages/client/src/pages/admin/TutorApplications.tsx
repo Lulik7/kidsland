@@ -9,7 +9,7 @@ export const statusName: Record<VerificationStatus, string> = {
   approved: 'Одобрена',
   rejected: 'Отклонена',
 };
-const docKind = { diploma: 'Диплом', certificate: 'Сертификат', other: 'Документ' } as const;
+const docKind = { diploma: 'Диплом', certificate: 'Сертификат', identity: 'Удостоверение личности', other: 'Документ' } as const;
 const years = (from: number, to: number | null) => `${from} – ${to ?? 'по сей день'}`;
 
 /** Tutors who want a public profile: their story, education, experience and documents. */

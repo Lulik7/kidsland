@@ -17,6 +17,7 @@ const thisYear = new Date().getFullYear();
 const KINDS: [DocumentKind, string][] = [
   ['diploma', 'Диплом'],
   ['certificate', 'Сертификат'],
+  ['identity', 'Удостоверение личности или паспорт'],
   ['other', 'Другой документ'],
 ];
 
@@ -171,7 +172,8 @@ export function TutorApplicationForm({ tutor, onTutor }: { tutor: Tutor; onTutor
         </div>
       )}
 
-      <h2 className="card-title">{t('Дипломы и сертификаты')}</h2>
+      <h2 className="card-title">{t('Документы для проверки')}</h2>
+      <p className="muted small">{t('Нужны диплом или сертификат и копия удостоверения личности или паспорта.')}</p>
       <p className="muted small">{t('PDF, JPG или PNG до {n} МБ. Документы видит только администратор.', { n: MAX_DOC_MB })}</p>
       {docs.length > 0 && (
         <div className="doc-list">

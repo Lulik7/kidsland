@@ -202,7 +202,7 @@ export interface TutorApplication {
   experience: ExperienceItem[];
 }
 
-export type DocumentKind = 'diploma' | 'certificate' | 'other';
+export type DocumentKind = 'diploma' | 'certificate' | 'identity' | 'other';
 
 export interface TutorDocument {
   id: string;

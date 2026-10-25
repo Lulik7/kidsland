@@ -378,7 +378,9 @@ export function RobotGuide() {
               ▶
             </span>
             <b>{t('Робот Кидди расскажет о сайте')}</b>
-            <span>{t('3 минуты · со звуком')}</span>
+            <span className="rg-click" aria-hidden>
+              <span className="rg-arrow">➜</span> {t('Нажми сюда!')}
+            </span>
           </button>
         )}
         {started && noVoice && <div className="rg-novoice">{t('На этом компьютере нет голоса для этого языка, поэтому робот показывает текст. Голос можно добавить в настройках Windows: «Время и язык» → «Речь», или открыть сайт в браузере Microsoft Edge.')}</div>}

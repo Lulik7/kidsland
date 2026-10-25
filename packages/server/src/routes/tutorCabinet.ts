@@ -207,7 +207,7 @@ export function tutorCabinetRouter(db: Db) {
       }
       const { kind, title } = z
         .object({
-          kind: z.enum(['diploma', 'certificate', 'other']),
+          kind: z.enum(['diploma', 'certificate', 'identity', 'other']),
           title: z.string().trim().min(2, 'Как называется документ?').max(120),
         })
         .parse(req.query);
@@ -247,7 +247,8 @@ export function tutorCabinetRouter(db: Db) {
     if (t.headline.trim().length < 5 || t.bio.trim().length < 30) missing.push('Заполните заголовок и рассказ о себе во вкладке «Профиль»');
     if (!t.education.length) missing.push('Добавьте образование');
     const docs = await documentsOf(db, t.id);
-    if (!docs.length) missing.push('Загрузите хотя бы один диплом или сертификат');
+    if (!docs.some((d) => d.kind === 'diploma' || d.kind === 'certificate')) missing.push('Загрузите хотя бы один диплом или сертификат');
+    if (!docs.some((d) => d.kind === 'identity')) missing.push('Загрузите копию удостоверения личности или паспорта');
     if (missing.length) throw new HttpError(400, ['Анкета ещё не готова', ...missing].join('. '));
     const { rows } = await db.query<TutorRow>(
       `UPDATE tutor_profiles SET verification = 'pending', submitted_at = now(), verification_note = NULL WHERE id = $1 RETURNING *`,

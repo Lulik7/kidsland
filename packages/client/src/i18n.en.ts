@@ -918,4 +918,13 @@ export const EN: Record<string, string> = {
   "Укажите учебное заведение": "Enter the school or university",
   "Укажите место работы": "Enter the workplace",
   "Год окончания раньше года начала": "The end year is before the start year",
+  "Медленно": "Slow",
+  "Обычно": "Normal",
+  "Быстрее": "Faster",
+  "Скорость": "Speed",
+  "Удостоверение личности или паспорт": "ID card or passport",
+  "Документы для проверки": "Documents for verification",
+  "Нужны диплом или сертификат и копия удостоверения личности или паспорта.": "We need a diploma or certificate and a copy of your ID card or passport.",
+  "Загрузите копию удостоверения личности или паспорта": "Upload a copy of your ID card or passport",
+  "Нажми сюда!": "Click here!",
 };
