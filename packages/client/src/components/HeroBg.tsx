@@ -124,3 +124,10 @@ export function CountryGallery({ course, title }: { course: Course; title: strin
     </section>
   );
 }
+
+/** Looping video behind the header of lessons about nature. */
+const NATURE: HeroMedia = { video: '/video/nature-river.mp4', image: '/video/nature-river.jpg', pos: 'center 45%' };
+
+export function lessonBg(title: string): HeroMedia | undefined {
+  return /природ/i.test(title) ? NATURE : undefined;
+}

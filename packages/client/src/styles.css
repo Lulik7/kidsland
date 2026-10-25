@@ -2476,3 +2476,5 @@ textarea,
 .cg-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
 .cg-row img { flex: none; height: 190px; width: 250px; object-fit: cover; border-radius: 22px; box-shadow: var(--shadow); scroll-snap-align: start; }
 @media (max-width: 600px) { .cg-row img { height: 150px; width: 190px; } }
+.lesson-top.lt-bg { min-height: 0; padding: 22px 26px 16px; border-radius: 28px; background: var(--card); box-shadow: var(--shadow); }
+@media (min-width: 761px) { .lesson-top.lt-bg .hero-bg img, .lesson-top.lt-bg .hero-bg video { width: 75%; } }

@@ -21,7 +21,7 @@ import { musicDiagrams, musicSectionPicture } from '../components/music';
 import { useLocal, useTc } from '../content';
 import { CHESS_DIAGRAMS } from '../content/chess';
 import { cardPic, lessonPic, Pic } from '../pics';
-import { lessonPhoto } from '../components/HeroBg';
+import { HeroBg, lessonBg, lessonPhoto } from '../components/HeroBg';
 
 type Tab = 'theory' | LessonPart | 'homework';
 
@@ -227,7 +227,8 @@ export function LessonPage() {
       <Link to={`${base}/${course.id}`} className="back-link">
         ← {shown.course.title}
       </Link>
-      <header className="lesson-top">
+      <header className={`lesson-top${lessonBg(lesson.title) ? ' has-bg lt-bg' : ''}`}>
+        <HeroBg media={lessonBg(lesson.title)} />
         <span className="lt-step">
           {t('Урок {i} из {n} · {m} мин', { i: index + 1, n: course.lessons.length, m: lesson.minutes })}
         </span>
