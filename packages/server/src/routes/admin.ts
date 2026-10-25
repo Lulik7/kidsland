@@ -128,6 +128,15 @@ export function adminRouter(db: Db) {
     });
   });
 
+  // Removes a test payment from the list, together with its admin notification. Lessons already bought stay.
+  r.delete('/payments/:id', async (req, res) => {
+    if (!isUuid(req.params.id)) throw new HttpError(404, 'Оплата не найдена');
+    const { rowCount } = await db.query('DELETE FROM payments WHERE id = $1', [req.params.id]);
+    if (!rowCount) throw new HttpError(404, 'Оплата не найдена');
+    await db.query('DELETE FROM admin_notifications WHERE link = $1', [`/billing/receipt/${req.params.id}`]);
+    res.json({ ok: true });
+  });
+
   // The site's share of every payment; the rest goes to the tutor.
   r.put('/commission', async (req, res) => {
     const { percent } = z.object({ percent: z.number().int().min(0).max(60) }).parse(req.body);

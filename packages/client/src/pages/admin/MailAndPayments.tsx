@@ -194,6 +194,7 @@ export function AdminPayments() {
                 <th>Сумма</th>
                 <th>Ваша доля</th>
                 <th>Квитанция</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -208,6 +209,18 @@ export function AdminPayments() {
                   </td>
                   <td>{shekels(p.commission ?? 0)}</td>
                   <td>{p.receiptNo ? <Link to={`/billing/receipt/${p.id}`}>№ {p.receiptNo}</Link> : '—'}</td>
+                  <td>
+                    <button
+                      className="btn btn-light btn-small"
+                      onClick={async () => {
+                        if (!window.confirm(`Удалить оплату «${p.title}» из списка?`)) return;
+                        await api.deletePayment(p.id);
+                        load();
+                      }}
+                    >
+                      Удалить
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
