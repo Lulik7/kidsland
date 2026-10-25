@@ -2,6 +2,10 @@
 import { genderOf, isRecorded, recordingUrl } from './voices';
 
 let current: HTMLAudioElement | null = null;
+let currentPace = 1;
+
+/** Recordings that came out a little slow are played this much faster at «normal» speed. */
+const RECORDED_PACE: Record<string, number> = { el: 1.12 };
 
 /** Reading speed the child picked: slower, normal or faster. Remembered on this computer. */
 export const SPEEDS = [0.7, 1, 1.25] as const;
@@ -20,7 +24,7 @@ export function setSpeed(s: number) {
   } catch {
     /* storage blocked */
   }
-  if (current) current.playbackRate = s;
+  if (current) current.playbackRate = s * currentPace;
   speedListeners.forEach((f) => f(s));
 }
 export function onSpeed(f: (s: number) => void) {
@@ -38,7 +42,8 @@ function playRecording(text: string, lang: string, speaker: string | undefined):
     current = a;
     // Recordings already have a natural pace: only the child's speed choice changes it, keeping the pitch.
     a.preservesPitch = true;
-    a.playbackRate = speed;
+    currentPace = RECORDED_PACE[base] ?? 1;
+    a.playbackRate = speed * currentPace;
     a.onended = () => resolve(true);
     a.onerror = () => resolve(false);
     a.play().catch(() => resolve(false));
