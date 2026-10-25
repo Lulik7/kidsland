@@ -100,7 +100,7 @@ const WHITE_NAMES = ['До', 'Ре', 'Ми', 'Фа', 'Соль', 'Ля', 'Си']
  * `blackMarks` are black keys by the white key on their left, `fingers` puts finger numbers above white keys,
  * `names` writes note names on white keys. Keys sound when pressed; `lit` (MIDI numbers) glows during playback.
  */
-export function Keyboard({ x = 10, y = 20, octaves = 2, keyW = 28, marks = [], blackMarks = [], fingers = {}, names = true, lit = [], tc }: {
+export function Keyboard({ x = 10, y = 20, octaves = 2, keyW = 28, marks = [], blackMarks = [], fingers = {}, names = true, lit = [], onPress, tc }: {
   x?: number;
   y?: number;
   octaves?: number;
@@ -110,6 +110,7 @@ export function Keyboard({ x = 10, y = 20, octaves = 2, keyW = 28, marks = [], b
   fingers?: Record<number, number>;
   names?: boolean;
   lit?: number[];
+  onPress?: (midi: number) => void;
   tc: Tc;
 }) {
   const [down, setDown] = useState<number | null>(null);
@@ -120,6 +121,7 @@ export function Keyboard({ x = 10, y = 20, octaves = 2, keyW = 28, marks = [], b
   const press = (midi: number) => {
     setDown(midi);
     playNote(midi, 0.7);
+    onPress?.(midi);
   };
   const on = (midi: number) => down === midi || lit.includes(midi);
   const keyProps = (midi: number) => ({

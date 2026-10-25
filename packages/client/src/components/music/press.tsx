@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ListenButton, usePlayer, type Step } from './player';
 import { playDrum, playNote, strum, whiteMidi } from './sound';
 import { Callout, Figure, INK, Keyboard, MINT, PEACH, Staff, type Tc } from './parts';
@@ -13,9 +13,13 @@ const tap = (fn: () => void) => ({
 });
 
 /** A play button for a row of single notes. */
-function NotesButton({ tc, midis, label, bpm = 100, onStep }: { tc: Tc; midis: number[]; label: string; bpm?: number; onStep?: (i: number) => void }) {
+function NotesButton({ tc, midis, label, bpm = 100, onStep, onNote }: { tc: Tc; midis: number[]; label: string; bpm?: number; onStep?: (i: number) => void; onNote?: (midi: number | null) => void }) {
   const player = usePlayer();
-  onStep?.(player.step);
+  useEffect(() => {
+    onStep?.(player.step);
+    onNote?.(player.step >= 0 ? midis[player.step] : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player.step]);
   return (
     <ListenButton
       tc={tc}
@@ -27,16 +31,51 @@ function NotesButton({ tc, midis, label, bpm = 100, onStep }: { tc: Tc; midis: n
   );
 }
 
+const GLOW = '#f4a259';
+
+const NOTE_NAMES = ['До', 'До♯', 'Ре', 'Ре♯', 'Ми', 'Фа', 'Фа♯', 'Соль', 'Соль♯', 'Ля', 'Ля♯', 'Си'];
+
+/** Which note sounds now: set while «Listen» plays and for a moment after a tap. */
+function useSounding() {
+  const [cur, setCur] = useState<number | null>(null);
+  const timer = useRef(0);
+  const show = (midi: number) => {
+    setCur(midi);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setCur(null), 900);
+  };
+  const hit = (midi: number) => {
+    playNote(midi, 0.9);
+    show(midi);
+  };
+  return { cur, setCur, show, hit };
+}
+
+/** A big line under the picture: the name of the note that sounds now. */
+function NowPlaying({ tc, cur }: { tc: Tc; cur: number | null }) {
+  return (
+    <div className="md-now" aria-live="polite">
+      {cur === null ? <span>{tc('Нажми, чтобы услышать ноту')}</span> : <>{tc('Звучит')}: <b key={cur}>{tc(NOTE_NAMES[cur % 12])}</b></>}
+    </div>
+  );
+}
+
 /** Piano: where to put the right hand for the first melody, fingers 1–5 on До–Соль. */
 export function PianoPress({ tc }: { tc: Tc }) {
+  const { cur, setCur, show } = useSounding();
   return (
     <Figure
       title={tc('Нажми на любую клавишу')}
       h={220}
       notes={[tc('Большой палец (1) на До, мизинец (5) на Соль.'), tc('До всегда слева от двух чёрных клавиш.'), tc('Нажимай на клавиши: каждая звучит.')]}
-      extra={<NotesButton tc={tc} midis={[60, 62, 64, 65, 67, 65, 64, 62, 60]} label="Послушать: До, Ре, Ми, Фа, Соль" />}
+      extra={
+        <>
+          <NowPlaying tc={tc} cur={cur} />
+          <NotesButton tc={tc} midis={[60, 62, 64, 65, 67, 65, 64, 62, 60]} label="Послушать: До, Ре, Ми, Фа, Соль" onNote={setCur} />
+        </>
+      }
     >
-      <Keyboard x={20} y={50} octaves={2} keyW={28} marks={[0, 1, 2, 3, 4]} fingers={{ 0: 1, 1: 2, 2: 3, 3: 4, 4: 5 }} tc={tc} />
+      <Keyboard x={20} y={50} octaves={2} keyW={28} marks={[0, 1, 2, 3, 4]} fingers={{ 0: 1, 1: 2, 2: 3, 3: 4, 4: 5 }} lit={cur === null ? [] : [cur]} onPress={show} tc={tc} />
     </Figure>
   );
 }
@@ -52,12 +91,18 @@ export function GuitarPress({ tc }: { tc: Tc }) {
   const fx = (f: number) => (f === 0 ? 70 : 90 + (f - 0.5) * 80);
   // Real pitch of each dot: open strings Ми 64, Си 59, Соль 55 plus the fret.
   const midiOf = (st: number, f: number) => [64, 59, 55][st] + [0, 1, 2, 3][f] + (st === 0 && f === 3 ? 0 : 0);
+  const { cur, setCur, hit } = useSounding();
   return (
     <Figure
       title={tc('Куда нажимать: первые ноты на гитаре')}
       h={250}
       notes={[tc('Цифра лада = номер пальца левой руки.'), tc('Прижимай струну рядом с металлическим порожком.'), tc('Нажми на кружок, чтобы услышать ноту.')]}
-      extra={<NotesButton tc={tc} midis={[55, 57, 59, 60, 62, 64, 65, 67]} label="Послушать все ноты" />}
+      extra={
+        <>
+          <NowPlaying tc={tc} cur={cur} />
+          <NotesButton tc={tc} midis={[55, 57, 59, 60, 62, 64, 65, 67]} label="Послушать все ноты" onNote={setCur} />
+        </>
+      }
     >
       <rect x="90" y="40" width="340" height="170" fill="#8a5a3c" />
       <rect x="84" y="40" width="8" height="170" fill="#f0e2c8" />
@@ -78,8 +123,9 @@ export function GuitarPress({ tc }: { tc: Tc }) {
         </g>
       ))}
       {dots.map(([s, f, name]) => (
-        <g key={`${s}-${f}`} {...tap(() => playNote(midiOf(s, f), 0.9))}>
-          <circle cx={fx(f)} cy={54 + s * 28} r="12" fill={f === 0 ? '#fff' : MINT} stroke={f === 0 ? MINT : '#fff'} strokeWidth="2" />
+        <g key={`${s}-${f}`} {...tap(() => hit(midiOf(s, f)))}>
+          {cur === midiOf(s, f) && <circle cx={fx(f)} cy={54 + s * 28} r="19" fill={GLOW} opacity="0.55" className="md-ring" />}
+          <circle cx={fx(f)} cy={54 + s * 28} r="12" fill={cur === midiOf(s, f) ? GLOW : f === 0 ? '#fff' : MINT} stroke={f === 0 ? MINT : '#fff'} strokeWidth="2" />
           <text x={fx(f)} y={58 + s * 28} textAnchor="middle" fontSize="9" fontWeight="800" fill={f === 0 ? INK : '#fff'}>
             {tc(name)}
           </text>
@@ -137,12 +183,18 @@ export function BowedPress({ tc, cello = false }: { tc: Tc; cello?: boolean }) {
         { string: 'Ля', notes: ['Ля', 'Си', 'До♯', 'Ре'], midi: [69, 71, 73, 74] },
         { string: 'Ми', notes: ['Ми', 'Фа♯', 'Соль♯', 'Ля'], midi: [76, 78, 80, 81] },
       ];
+  const { cur, setCur, hit } = useSounding();
   return (
     <Figure
       title={tc(cello ? 'Куда нажимать: пальцы на струнах Ре и Ля' : 'Куда нажимать: пальцы на струнах Ля и Ми')}
       h={210}
       notes={[tc('0 значит открытая струна, без пальца.'), tc(cello ? 'На виолончели между 1 и 3 пальцем остаётся место для 2.' : 'Наклей полоски на гриф, чтобы видеть места пальцев.'), tc('Нажми на кружок, чтобы услышать ноту.')]}
-      extra={<NotesButton tc={tc} midis={rows.flatMap((r) => r.midi.filter(Boolean))} label="Послушать все ноты" />}
+      extra={
+        <>
+          <NowPlaying tc={tc} cur={cur} />
+          <NotesButton tc={tc} midis={rows.flatMap((r) => r.midi.filter(Boolean))} label="Послушать все ноты" bpm={80} onNote={setCur} />
+        </>
+      }
     >
       <rect x="40" y="40" width="390" height="120" rx="10" fill="#2f2a2a" />
       {rows.map((r, i) => (
@@ -153,12 +205,13 @@ export function BowedPress({ tc, cello = false }: { tc: Tc; cello?: boolean }) {
           </text>
           {r.notes.map((n, f) =>
             n ? (
-              <g key={f} {...tap(() => playNote(r.midi[f], 0.9))}>
-                <circle cx={70 + f * 80} cy={75 + i * 50} r="16" fill={f === 0 ? '#fff' : MINT} />
-                <text x={70 + f * 80} y={71 + i * 50} textAnchor="middle" fontSize="9" fontWeight="800" fill={f === 0 ? INK : '#fff'}>
+              <g key={f} {...tap(() => hit(r.midi[f]))}>
+                {cur === r.midi[f] && <circle cx={70 + f * 80} cy={75 + i * 50} r="24" fill={GLOW} opacity="0.55" className="md-ring" />}
+                <circle cx={70 + f * 80} cy={75 + i * 50} r="16" fill={cur === r.midi[f] ? GLOW : f === 0 ? '#fff' : MINT} />
+                <text x={70 + f * 80} y={71 + i * 50} textAnchor="middle" fontSize="9" fontWeight="800" fill={f === 0 && cur !== r.midi[f] ? INK : '#fff'}>
                   {f}
                 </text>
-                <text x={70 + f * 80} y={83 + i * 50} textAnchor="middle" fontSize="9" fontWeight="700" fill={f === 0 ? INK : '#fff'}>
+                <text x={70 + f * 80} y={83 + i * 50} textAnchor="middle" fontSize="9" fontWeight="700" fill={f === 0 && cur !== r.midi[f] ? INK : '#fff'}>
                   {tc(n)}
                 </text>
               </g>
@@ -177,17 +230,23 @@ export function WindPress({ tc, sax = false }: { tc: Tc; sax?: boolean }) {
     { name: 'Ля', closed: 2, midi: sax ? 57 : 69 },
     { name: 'Соль', closed: 3, midi: sax ? 55 : 67 },
   ];
+  const { cur, setCur, hit } = useSounding();
   return (
     <Figure
       title={tc(sax ? 'Куда нажимать: первые ноты на саксофоне' : 'Куда нажимать: первые ноты на флейте')}
       h={250}
       notes={[tc('Закрашенный кружок значит, что клапан закрыт пальцем левой руки.'), tc(sax ? 'Левая рука сверху, правая снизу.' : 'Большой палец левой руки держит клапан сзади.'), tc('Нажми на ноту, чтобы услышать её.')]}
-      extra={<NotesButton tc={tc} midis={notes.map((n) => n.midi)} label="Послушать: Си, Ля, Соль" />}
+      extra={
+        <>
+          <NowPlaying tc={tc} cur={cur} />
+          <NotesButton tc={tc} midis={notes.map((n) => n.midi)} label="Послушать: Си, Ля, Соль" bpm={70} onNote={setCur} />
+        </>
+      }
     >
       {notes.map((n, k) => (
-        <g key={n.name} transform={`translate(${60 + k * 130} 20)`} {...tap(() => playNote(n.midi, 0.9))}>
-          <rect x="0" y="0" width="80" height="225" fill="transparent" />
-          <text x="30" y="16" textAnchor="middle" fontSize="18" fontWeight="800" fill={INK}>
+        <g key={n.name} transform={`translate(${60 + k * 130} 20)`} {...tap(() => hit(n.midi))}>
+          <rect x="-10" y="-4" width="80" height="229" rx="12" fill={cur === n.midi ? '#fff1e0' : 'transparent'} stroke={cur === n.midi ? GLOW : 'none'} strokeWidth="2" />
+          <text x="30" y="16" textAnchor="middle" fontSize="18" fontWeight="800" fill={cur === n.midi ? '#e07a3f' : INK}>
             {tc(n.name)}
           </text>
           <rect x="18" y="28" width="24" height="190" rx="12" fill="#e6ebf0" stroke="#8a94a3" />
@@ -297,18 +356,26 @@ export function AccordionPress({ tc }: { tc: Tc }) {
 /** Voice: the warm-up «ladder» do-re-mi-fa-sol and back. */
 export function VoiceLadder({ tc }: { tc: Tc }) {
   const steps = ['До', 'Ре', 'Ми', 'Фа', 'Соль'];
+  const ladder = [60, 62, 64, 65, 67, 65, 64, 62, 60];
+  const [at, setAt] = useState(-1);
+  const { cur, setCur, hit } = useSounding();
   return (
     <Figure
       title={tc('Распевка «Лесенка»')}
       h={230}
       notes={[tc('Пой по ступенькам вверх и обратно вниз на звук «ма».'), tc('Перед каждой фразой спокойно вдохни животом.'), tc('Нажми на ступеньку, чтобы услышать ноту, и спой её.')]}
-      extra={<NotesButton tc={tc} midis={[60, 62, 64, 65, 67, 65, 64, 62, 60]} label="Послушать лесенку" bpm={90} />}
+      extra={
+        <>
+          <NowPlaying tc={tc} cur={cur} />
+          <NotesButton tc={tc} midis={ladder} label="Послушать лесенку" bpm={90} onStep={setAt} onNote={setCur} />
+        </>
+      }
     >
       {[...steps, ...steps.slice(0, -1).reverse()].map((s, i) => {
         const h = i < 5 ? i : 8 - i;
         return (
-          <g key={i} {...tap(() => playNote([60, 62, 64, 65, 67][h], 0.8))}>
-            <rect x={20 + i * 48} y={180 - h * 32} width="44" height={20 + h * 32} rx="8" fill={i % 2 ? '#bfe6d4' : '#fde3d6'} />
+          <g key={i} {...tap(() => (setAt(i), hit(ladder[i])))}>
+            <rect x={20 + i * 48} y={180 - h * 32} width="44" height={20 + h * 32} rx="8" fill={at === i && cur !== null ? GLOW : i % 2 ? '#bfe6d4' : '#fde3d6'} />
             <text x={42 + i * 48} y={198 - h * 32 - 4} textAnchor="middle" fontSize="12" fontWeight="800" fill={INK}>
               {tc(s)}
             </text>
@@ -378,7 +445,7 @@ export function StaffNotes({ tc }: { tc: Tc }) {
       title={tc('Ноты на нотном стане')}
       h={170}
       notes={[tc('Ноты пишут на линейках и между ними: чем выше нота, тем выше звук.'), tc('Нажми на ноту, чтобы услышать её.')]}
-      extra={<NotesButton tc={tc} midis={midis} label="Послушать: До, Ре, Ми, Фа, Соль, Ля, Си, До" onStep={(i) => i !== on && setTimeout(() => setOn(i))} />}
+      extra={<NotesButton tc={tc} midis={midis} label="Послушать: До, Ре, Ми, Фа, Соль, Ля, Си, До" onStep={setOn} />}
     >
       <Staff x={20} y={40} w={420} gap={gap} />
       {names.map((n, i) => {
