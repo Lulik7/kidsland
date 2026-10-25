@@ -8,10 +8,12 @@ const STATUS = { pending: 'ждёт отправки', sent: 'отправлен
 /** Every letter the site sent or is about to send: receipts, lesson reminders, copies for the admin. */
 export function AdminMail() {
   const [filter, setFilter] = useState<'' | 'pending' | 'sent' | 'failed'>('');
-  const [data, setData] = useState<{ letters: AdminLetter[]; counts: Partial<Record<string, number>>; mailReady: boolean; envFiles?: string[] } | null>(null);
+  const [data, setData] = useState<{ letters: AdminLetter[]; counts: Partial<Record<string, number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number } | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const load = () => api.adminMail(filter || undefined).then(setData).catch(() => {});
   useEffect(() => {
-    api.adminMail(filter || undefined).then(setData).catch(() => {});
+    load();
   }, [filter]);
   if (!data) return <div className="card muted">Загружаем письма…</div>;
   return (
@@ -25,6 +27,32 @@ export function AdminMail() {
             ? `Сервер нашёл файл настроек: ${data.envFiles.join(', ')}, но строки SMTP_URL в нём нет. Проверьте, что строка начинается с SMTP_URL= и файл сохранён, затем перезапустите сервер.`
             : 'Сервер не нашёл файл настроек .env ни в папке packages\\server, ни в корне проекта. Возможно, файл сохранился как .env.example или в другой папке.'}
         </p>
+      )}
+      {data.mailReady && (
+        <p className="muted small">
+          Почта подключена. Вход в почтовый ящик: <b>{data.mailLogin || 'не указан'}</b>, длина пароля приложения: {data.mailPassLength ?? 0} знаков
+          {data.mailPassLength !== 16 && ' (у пароля приложения Google должно быть ровно 16 букв)'}.
+        </p>
+      )}
+      {data.mailReady && !!data.counts.failed && (
+        <div className="mail-retry">
+          <p className="muted small">
+            Ошибка «Username and Password not accepted» значит, что Google не принял логин или пароль. Проверьте, что в SMTP_URL стоит полный адрес той же почты, для
+            которой создан пароль приложения, и что этот пароль не удалён. После исправления перезапустите сервер и нажмите кнопку.
+          </p>
+          <button
+            className="btn btn-light btn-small"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              await api.retryMail().catch(() => {});
+              await load();
+              setBusy(false);
+            }}
+          >
+            {busy ? 'Отправляем…' : 'Отправить письма с ошибкой ещё раз'}
+          </button>
+        </div>
       )}
       <div className="tabs small-tabs">
         {(['', 'pending', 'sent', 'failed'] as const).map((s) => (

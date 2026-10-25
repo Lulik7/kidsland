@@ -5,6 +5,7 @@ import { requireAuth, requireRole } from '../auth';
 import { config } from '../config';
 import { envFilesFound } from '../envFiles';
 import type { Db } from '../db/pool';
+import { deliverMail, smtpSettings } from '../mail';
 import { HttpError } from '../errors';
 import { isUuid, type TutorRow } from '../tutors';
 import { documentsOf, publicApplication, sendDocument } from './tutorCabinet';
@@ -76,7 +77,16 @@ export function adminRouter(db: Db) {
       counts: Object.fromEntries(counts.rows.map((c) => [c.status, c.n])),
       mailReady: !!config.smtpUrl,
       envFiles: envFilesFound,
+      mailLogin: smtpSettings()?.user ?? '',
+      mailPassLength: smtpSettings()?.pass.length ?? 0,
     });
+  });
+
+  // Letters that failed (e.g. before the mail password was fixed) go back to the queue.
+  r.post('/mail/retry', async (_req, res) => {
+    const { rowCount } = await db.query("UPDATE email_outbox SET status = 'pending', error = NULL WHERE status = 'failed'");
+    await deliverMail(db);
+    res.json({ requeued: rowCount ?? 0 });
   });
 
   // ---- Payments and receipts ----

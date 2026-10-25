@@ -116,6 +116,7 @@ export function BeAdminPage() {
                     {p.authorName} · {fmtDateTime(p.createdAt)}
                   </span>
                   {user?.role === 'admin' && (
+                    <div className="post-admin-row">
                     <button
                       className="btn btn-danger btn-small"
                       onClick={async () => {
@@ -126,6 +127,7 @@ export function BeAdminPage() {
                     >
                       Удалить
                     </button>
+                    </div>
                   )}
                 </article>
               ))}

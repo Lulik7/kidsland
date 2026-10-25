@@ -1308,6 +1308,8 @@ h1, h2 { color: #34404f; }
 .btn-primary { --b: var(--primary); --b-dark: var(--primary-dark); --b-ink: #fff; }
 .btn-light { --b: #fff; --b-ink: var(--ink); box-shadow: 0 0 0 2px var(--line), 0 10px 24px rgba(52, 64, 79, 0.08); }
 .btn-danger { --b: #fff; --b-ink: #c0392b; box-shadow: 0 0 0 2px #f3c4bd, 0 10px 24px rgba(52, 64, 79, 0.08); }
+.post-admin-row { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #f3d3c4; display: flex; justify-content: flex-end; }
+.mail-retry { margin: 10px 0 16px; padding: 12px 14px; border-radius: 14px; background: #fff6f2; }
 .pill, .pill-dark { background: #fdeee6; color: #d9785a; border: 1.5px dashed #f2b8a2; }
 .feature, .course-card, .tutor-card, .subject-card, .card, .theory-card, .question, .read-card {
   box-shadow: 0 8px 26px rgba(52, 64, 79, 0.06);
