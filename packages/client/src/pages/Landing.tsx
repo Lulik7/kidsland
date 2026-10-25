@@ -199,6 +199,7 @@ export function Landing() {
                 <span>{t('Пройдено 6 из 10 уровней')}</span>
               </div>
             </div>
+            <div className="pc-bars">
             {[
               [t('Последовательности'), 100, '#4c97ff'],
               [t('Циклы'), 70, '#40bf4a'],
@@ -209,6 +210,7 @@ export function Landing() {
                 <div><i style={{ width: `${v}%`, background: c as string }} /></div>
               </div>
             ))}
+            </div>
             <div className="pc-nudge">
               <Sprite svg={COIN} size={26} />{' '}{t('Базовые уровни пройдены! Запишитесь на пробный урок.')}
             </div>
