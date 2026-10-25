@@ -1,3 +1,4 @@
+import './envFiles';
 import { fileURLToPath } from 'node:url';
 
 function required(name: string, fallback?: string): string {

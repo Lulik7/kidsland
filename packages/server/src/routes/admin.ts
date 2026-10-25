@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import { config } from '../config';
+import { envFilesFound } from '../envFiles';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
 import { isUuid, type TutorRow } from '../tutors';
@@ -74,6 +75,7 @@ export function adminRouter(db: Db) {
       letters: rows.map((m) => ({ id: m.id, to: m.to_email, subject: m.subject, body: m.body, status: m.status, error: m.error, createdAt: m.created_at, sentAt: m.sent_at })),
       counts: Object.fromEntries(counts.rows.map((c) => [c.status, c.n])),
       mailReady: !!config.smtpUrl,
+      envFiles: envFilesFound,
     });
   });
 
