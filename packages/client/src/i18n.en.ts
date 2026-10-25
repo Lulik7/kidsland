@@ -1068,4 +1068,7 @@ export const EN: Record<string, string> = {
   "Урок {who} начнётся через {m} мин": "Lesson {who} starts in {m} min",
   "Сегодня урок {who} в {time}": "Lesson {who} today at {time}",
   "Урок {who} уже идёт": "Lesson {who} is on now",
+  "Мир животных": "Animal world",
+  "Послушать звуки": "Listen to the sounds",
+  "Стоп": "Stop",
 };

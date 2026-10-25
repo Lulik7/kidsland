@@ -71,6 +71,7 @@ const COURSE_BG: Record<string, HeroMedia> = {
   'leisure-start': { image: '/img/hobby/craft-twine.jpg', pos: 'center 50%' },
   'leisure-mid': { image: '/img/hobby/knit.jpg', pos: 'center 35%' },
   'leisure-pro': { image: '/img/hobby/craft-embroidery.jpg', pos: 'center 50%' },
+  'animals-pro': { image: '/img/bg/animals-bird.jpg', pos: '68% 45%' },
 };
 
 function countryBg(course: Course): HeroMedia | undefined {
@@ -110,7 +111,11 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   'lang-el': { image: '/img/country/el-flag.jpg', pos: '35% 40%' },
   dogs: { image: '/img/bg/animals-dog.jpg', pos: 'center 25%' },
   birds: { image: '/img/bg/animals-bird.jpg', pos: '68% 45%' },
-  pets: { image: '/img/bg/animals-pony.jpg', pos: 'center 25%' },
+  pets: { image: '/img/bg/animals-boy-dog.jpg', pos: 'center 30%' },
+  fish: { image: '/img/bg/animals-fish.jpg', pos: 'center 45%' },
+  horses: { image: '/img/bg/animals-pony.jpg', pos: 'center 25%' },
+  wild: { image: '/img/bg/animals-tiger.jpg', pos: 'center 30%' },
+  insects: { image: '/img/bg/animals-butterfly.jpg' },
   yoga: { image: '/img/bg/spirit-yoga.jpg', pos: '20% 50%' },
   food: { image: '/img/bg/leisure-food.jpg' },
   experiments: { image: '/img/bg/science-lab.jpg', pos: '70% 30%' },
@@ -134,7 +139,11 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
 /** Photos that replace the 3D picture at the top of a lesson, by subject and lesson title. */
 const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
   ['animals', /птиц|попуга|канар/i, TOPIC_PHOTO.birds],
-  ['animals', /лошад|пони/i, TOPIC_PHOTO.pets],
+  ['animals', /лошад|пони/i, TOPIC_PHOTO.horses],
+  ['animals', /рыб|аквариум/i, TOPIC_PHOTO.fish],
+  ['animals', /тигр|хищник|диких|дикие|зоопарк|джунгл/i, TOPIC_PHOTO.wild],
+  ['animals', /бабоч|насеком|жук|пчел/i, TOPIC_PHOTO.insects],
+  ['animals', /собак|щен/i, TOPIC_PHOTO.dogs],
   ['science', /фокус/i, TOPIC_PHOTO.magicCards],
   ['leisure', /вышивк/i, TOPIC_PHOTO.embroidery],
   ['leisure', /ярмарк|выставк/i, TOPIC_PHOTO.market],
@@ -158,10 +167,13 @@ const ART_PHOTOS = [...hobby(['art-easel', 'art-paints', 'art-watercolor-table',
 const CRAFT_PHOTOS = hobby(['knit', 'craft-embroidery-bunny', 'craft-twine', 'craft-embroidery', 'craft-market']);
 
 /** A strip of photos under a course banner: the language's country, or the DJ studio. */
+const ANIMAL_PHOTOS = ['tiger', 'boy-dog', 'fish', 'butterfly', 'bird', 'dog', 'pony'].map((n) => `/img/bg/animals-${n}.jpg`);
+
 export function courseGallery(course: Course): { title: string; photos: string[] } | undefined {
   if (course.topic === 'dj') return { title: 'Студия диджея', photos: DJ_PHOTOS };
   if (course.subject === 'art') return { title: 'Мастерская художника', photos: ART_PHOTOS };
   if (course.subject === 'leisure' && course.topic !== 'cooking') return { title: 'Мастерская рукоделия', photos: CRAFT_PHOTOS };
+  if (course.subject === 'animals') return { title: 'Мир животных', photos: ANIMAL_PHOTOS };
   if (course.topic === 'composition') return { title: 'Как пишут музыку', photos: COMPOSE_PHOTOS };
   const list = course.topic ? COUNTRY_PHOTOS[course.topic] : undefined;
   return list && { title: 'Страна языка', photos: list.map(countryPhoto) };
