@@ -228,6 +228,10 @@ function beepBoop(): number {
 /** Splits narration into short phrases, so each one gets its own funny intonation and a beep. */
 const phrases = (text: string) => text.match(/[^.!?…:]+[.!?…:]*/g)?.map((p) => p.trim()).filter(Boolean) ?? [text];
 
+/** Words speech engines stress wrongly in Russian, with the stress mark (U+0301) put where it belongs. */
+const STRESS: [RegExp, string][] = [[/уроку/g, 'уро\u0301ку']];
+const forSpeech = (text: string, lang: string) => (lang.startsWith('ru') ? STRESS.reduce((s, [re, to]) => s.replace(re, to), text) : text);
+
 /**
  * Speaks text in a funny robot voice: very high and quick, with the pitch hopping from phrase to phrase
  * and a beep-boop in front of each phrase. Returns a function that stops it.
@@ -241,11 +245,19 @@ function robotSay(text: string, { voice, pitch }: { voice: SpeechSynthesisVoice;
     if (i >= list.length) return onEnd();
     wait = window.setTimeout(() => {
       if (stopped) return;
-      const u = new SpeechSynthesisUtterance(list[i]);
+      const u = new SpeechSynthesisUtterance(forSpeech(list[i], voice.lang));
       u.voice = voice;
       u.lang = voice.lang;
-      u.pitch = pitch + Math.random() * 0.25;
-      u.rate = 1.12 + Math.random() * 0.15;
+      if (voice.lang.toLowerCase().startsWith('ru')) {
+        // Russian sounds merrier: same voice and base pitch, but quicker, with a bouncier tune that
+        // swings up and down from phrase to phrase and lifts on exclamations.
+        const swing = i % 2 ? -0.15 : 0.2;
+        u.pitch = Math.min(2, pitch + swing + Math.random() * 0.2 + (/!/.test(list[i]) ? 0.15 : 0));
+        u.rate = 1.25 + Math.random() * 0.15;
+      } else {
+        u.pitch = pitch + Math.random() * 0.25;
+        u.rate = 1.12 + Math.random() * 0.15;
+      }
       u.onend = () => step(i + 1);
       u.onerror = () => step(i + 1);
       window.speechSynthesis.speak(u);
