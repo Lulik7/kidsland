@@ -116,6 +116,9 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   horses: { image: '/img/bg/animals-pony.jpg', pos: 'center 25%' },
   wild: { image: '/img/bg/animals-tiger.jpg', pos: 'center 30%' },
   insects: { image: '/img/bg/animals-butterfly.jpg' },
+  cats: { image: '/img/bg/animals-cat.jpg', pos: 'center 35%' },
+  turtles: { image: '/img/bg/animals-turtle.jpg', pos: 'center 55%' },
+  winter: { image: '/img/bg/nature-winter.jpg', pos: 'center 40%' },
   yoga: { image: '/img/bg/spirit-yoga.jpg', pos: '20% 50%' },
   food: { image: '/img/bg/leisure-food.jpg' },
   experiments: { image: '/img/bg/science-lab.jpg', pos: '70% 30%' },
@@ -144,6 +147,9 @@ const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
   ['animals', /тигр|хищник|диких|дикие|зоопарк|джунгл/i, TOPIC_PHOTO.wild],
   ['animals', /бабоч|насеком|жук|пчел/i, TOPIC_PHOTO.insects],
   ['animals', /собак|щен/i, TOPIC_PHOTO.dogs],
+  ['animals', /кош|кот[аеуы]?\b|котён|котен/i, TOPIC_PHOTO.cats],
+  ['animals', /черепах/i, TOPIC_PHOTO.turtles],
+  ['*', /зим/i, TOPIC_PHOTO.winter],
   ['science', /фокус/i, TOPIC_PHOTO.magicCards],
   ['leisure', /вышивк/i, TOPIC_PHOTO.embroidery],
   ['leisure', /ярмарк|выставк/i, TOPIC_PHOTO.market],
@@ -154,7 +160,7 @@ const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
 ];
 
 export function lessonPhoto(course: Course, title: string): HeroMedia | undefined {
-  return LESSON_PHOTO.find(([subject, re]) => subject === course.subject && re.test(title))?.[2];
+  return LESSON_PHOTO.find(([subject, re]) => (subject === '*' || subject === course.subject) && re.test(title))?.[2];
 }
 
 /** Photos of the DJ studio, shown in a strip on DJ course pages. */
@@ -167,7 +173,7 @@ const ART_PHOTOS = [...hobby(['art-easel', 'art-paints', 'art-watercolor-table',
 const CRAFT_PHOTOS = hobby(['knit', 'craft-embroidery-bunny', 'craft-twine', 'craft-embroidery', 'craft-market']);
 
 /** A strip of photos under a course banner: the language's country, or the DJ studio. */
-const ANIMAL_PHOTOS = ['tiger', 'boy-dog', 'fish', 'butterfly', 'bird', 'dog', 'pony'].map((n) => `/img/bg/animals-${n}.jpg`);
+const ANIMAL_PHOTOS = ['tiger', 'cat', 'boy-dog', 'turtle', 'fish', 'butterfly', 'bird', 'dog', 'pony'].map((n) => `/img/bg/animals-${n}.jpg`);
 
 export function courseGallery(course: Course): { title: string; photos: string[] } | undefined {
   if (course.topic === 'dj') return { title: 'Студия диджея', photos: DJ_PHOTOS };
