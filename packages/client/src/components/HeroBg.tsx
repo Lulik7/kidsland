@@ -31,7 +31,7 @@ const MUSIC: Record<string, HeroMedia> = {
 /** Background media of course pages: by topic first, then by subject. */
 const TOPIC_BG: Record<string, HeroMedia> = {
   ...MUSIC,
-  piano: { image: '/img/bg/music-piano-old.jpg', pos: 'center 60%' },
+  piano: { image: '/img/bg/music-piano-pink.jpg', pos: 'center 65%' },
   'dog-training': { image: '/img/bg/animals-dog.jpg', pos: 'center 22%' },
   cooking: { image: '/img/bg/leisure-cake.jpg', pos: 'center 40%' },
 };
