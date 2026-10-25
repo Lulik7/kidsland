@@ -191,7 +191,8 @@ function voiceFor(lang: string): { voice: SpeechSynthesisVoice; pitch: number } 
   return { voice, pitch: want === 'm' && gender(voice) === 'f' ? 1.05 : 1.75 };
 }
 
-// Recorded narration for languages that computers often have no voice for (Chrome on Windows has no Greek).
+// Recorded narration (Piper, voice rapunzelina, CC0) for languages computers often speak badly or not at all.
+// The files are numbered by scene: re-record them when the Greek scene texts change.
 const RECORDED = new Set(['el']);
 
 let audio: AudioContext | null = null;
@@ -249,11 +250,11 @@ function robotSay(text: string, { voice, pitch }: { voice: SpeechSynthesisVoice;
       u.voice = voice;
       u.lang = voice.lang;
       if (voice.lang.toLowerCase().startsWith('ru')) {
-        // Russian sounds merrier: same voice and base pitch, but quicker, with a bouncier tune that
-        // swings up and down from phrase to phrase and lifts on exclamations.
-        const swing = i % 2 ? -0.15 : 0.2;
-        u.pitch = Math.min(2, pitch + swing + Math.random() * 0.2 + (/!/.test(list[i]) ? 0.15 : 0));
-        u.rate = 1.25 + Math.random() * 0.15;
+        // Russian sounds cheerful: a high, bright voice (never the lowered one, which sounded sad),
+        // a lively tempo and a tune that bounces from phrase to phrase and lifts on exclamations.
+        const swing = i % 2 ? -0.1 : 0.15;
+        u.pitch = Math.min(2, 1.55 + swing + Math.random() * 0.15 + (/[!?]/.test(list[i]) ? 0.2 : 0));
+        u.rate = 1.12 + Math.random() * 0.1;
       } else {
         u.pitch = pitch + Math.random() * 0.25;
         u.rate = 1.12 + Math.random() * 0.15;
@@ -335,8 +336,9 @@ export function RobotGuide() {
         setProgress(1);
       }
     };
-    const voice = canSpeak && sound ? voiceFor(lang) : null;
-    const recorded = sound && !voice && RECORDED.has(lang);
+    // A recorded narration (Greek) is clearer than any browser voice, so it is used whenever there is one.
+    const recorded = sound && RECORDED.has(lang);
+    const voice = canSpeak && sound && !recorded ? voiceFor(lang) : null;
     const onEnd = () => window.setTimeout(next, 500);
     const stop = voice ? robotSay(s.text, voice, onEnd) : recorded ? playRecorded(`/voice/${lang}/${scene}.mp3`, onEnd) : undefined;
     timer.current = window.setInterval(() => {

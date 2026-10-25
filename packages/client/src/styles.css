@@ -1627,7 +1627,6 @@ h1, h2 { color: #34404f; }
 .speed-switch button.on { background: var(--primary, #79c7a6); color: #fff; }
 
 /* "Click here!" hint on the robot guide poster */
-.rg-poster { position: relative; }
 .rg-click { display: inline-flex; align-items: center; gap: 8px; font-family: var(--hand); font-size: 1.9rem; font-weight: 700; color: var(--orange, #e07a3f); animation: rg-click-pulse 1.4s ease-in-out infinite; }
 .rg-arrow { display: inline-block; transform: rotate(-90deg); animation: rg-arrow-bounce 0.9s ease-in-out infinite; }
 @keyframes rg-arrow-bounce { 0%, 100% { transform: rotate(-90deg) translateX(0); } 50% { transform: rotate(-90deg) translateX(10px); } }
