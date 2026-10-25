@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { personName } from '../format';
 
 const GRADIENTS = [
   ['#ff9a3d', '#ff6b3d'],
@@ -15,7 +16,7 @@ const GRADIENTS = [
  */
 export function TutorAvatar({ name, size = 64, photo }: { name: string; size?: number; photo?: string | null }) {
   const [broken, setBroken] = useState(false);
-  const initials = name
+  const initials = personName(name)
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)

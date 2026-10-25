@@ -339,11 +339,11 @@ function Reviews({ tutorId, reviews, canWrite, onAdded }: { tutorId: string; rev
       {reviews.map((r) => (
         <div key={r.id} className="review">
           <div className="review-head">
-            <b>{r.author}</b>
+            <b>{t(r.author)}</b>
             <span className="review-stars">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
             <span className="muted small">{new Date(r.createdAt).toLocaleDateString()}</span>
           </div>
-          <p>{r.body}</p>
+          <p>{t(r.body)}</p>
         </div>
       ))}
       {canWrite ? (

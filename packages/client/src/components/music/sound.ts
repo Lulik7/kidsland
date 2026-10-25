@@ -10,6 +10,43 @@ export function audio(): AudioContext | null {
   return ctx;
 }
 
+let bus: GainNode | null = null;
+
+/** Where the sounds of the current example go; cut() silences them all at once, even notes scheduled ahead. */
+export function outNode(): AudioNode {
+  const a = audio()!;
+  if (!bus) {
+    bus = a.createGain();
+    bus.connect(a.destination);
+  }
+  return bus;
+}
+
+/** Silences everything the previous example scheduled. */
+export function cut() {
+  const a = audio();
+  if (!a || !bus) return;
+  const old = bus;
+  bus = null;
+  old.gain.setTargetAtTime(0, a.currentTime, 0.015);
+  window.setTimeout(() => old.disconnect(), 200);
+}
+
+let current: (() => void) | null = null;
+
+/** Only one example plays at a time: starting one stops the one before. */
+export function claim(stop: () => void) {
+  const prev = current;
+  current = stop;
+  if (prev && prev !== stop) prev();
+  cut();
+}
+
+/** Forgets the stopper once its example has stopped by itself or by the user. */
+export function release(stop: () => void) {
+  if (current === stop) current = null;
+}
+
 const freq = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
 
 /** A soft piano-like note. `at` is AudioContext time; 0 means now. */
@@ -22,7 +59,7 @@ export function playNote(midi: number, dur = 0.6, at = 0, volume = 0.35, out?: A
   gain.gain.exponentialRampToValueAtTime(volume, t + 0.01);
   gain.gain.exponentialRampToValueAtTime(volume * 0.4, t + 0.25);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(dur, 0.2) + 0.35);
-  gain.connect(out ?? a.destination);
+  gain.connect(out ?? outNode());
   for (const [type, mult, vol] of [
     ['triangle', 1, 1],
     ['sine', 2, 0.35],
@@ -51,7 +88,7 @@ export function playClick(at = 0, strong = false, soft = false) {
   const v = soft ? 0.06 : strong ? 0.3 : 0.18;
   g.gain.setValueAtTime(v, t);
   g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-  o.connect(g).connect(a.destination);
+  o.connect(g).connect(outNode());
   o.start(t);
   o.stop(t + 0.06);
 }
@@ -73,7 +110,7 @@ export function playClap(at = 0, volume = 0.6) {
   f.Q.value = 0.8;
   const g = a.createGain();
   g.gain.value = volume;
-  src.connect(f).connect(g).connect(a.destination);
+  src.connect(f).connect(g).connect(outNode());
   src.start(t);
 }
 
@@ -88,18 +125,22 @@ export function playSteps(steps: { beats: number; play: (at: number) => void }[]
   const a = audio();
   if (!a) return () => {};
   const beat = 60 / bpm;
-  let t = a.currentTime + 0.1;
   const timers: number[] = [];
+  const stop = () => {
+    timers.forEach(clearTimeout);
+    release(stop);
+    cut();
+    onStep(-1);
+  };
+  claim(stop);
+  let t = a.currentTime + 0.1;
   steps.forEach((s, i) => {
     s.play(t);
     timers.push(window.setTimeout(() => onStep(i), (t - a.currentTime) * 1000));
     t += s.beats * beat;
   });
-  timers.push(window.setTimeout(() => onStep(-1), (t - a.currentTime) * 1000));
-  return () => {
-    timers.forEach(clearTimeout);
-    onStep(-1);
-  };
+  timers.push(window.setTimeout(() => (release(stop), onStep(-1)), (t - a.currentTime) * 1000));
+  return stop;
 }
 
 /** Simple synthesized drums for the rock beat. */
@@ -107,7 +148,7 @@ export function playDrum(kind: 'kick' | 'snare' | 'hat', at = 0, out?: AudioNode
   const a = audio();
   if (!a) return;
   const t = Math.max(at, a.currentTime);
-  const dest = out ?? a.destination;
+  const dest = out ?? outNode();
   if (kind === 'kick') {
     const o = a.createOscillator();
     const g = a.createGain();
@@ -178,7 +219,7 @@ export function playVoice(voice: Voice, midi: number, dur = 0.3, at = 0, volume 
     g.connect(f);
     last = f;
   }
-  last.connect(out ?? a.destination);
+  last.connect(out ?? outNode());
   const parts: [OscillatorType, number, number][] =
     voice === 'bells' ? [['sine', 1, 1], ['sine', 4, 0.25], ['sine', 2.76, 0.15]] : voice === 'bass' ? [['sawtooth', 1, 1], ['square', 0.5, 0.5]] : [['sawtooth', 1, 0.6], ['sawtooth', 1.006, 0.6]];
   for (const [type, mult, vol] of parts) {
@@ -212,6 +253,6 @@ export function playNoise(at: number, dur: number, from: number, to: number, vol
   const g = a.createGain();
   g.gain.setValueAtTime(volume, t);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  src.connect(f).connect(g).connect(out ?? a.destination);
+  src.connect(f).connect(g).connect(out ?? outNode());
   src.start(t);
 }

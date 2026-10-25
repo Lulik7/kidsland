@@ -651,3 +651,50 @@ export function Accompaniment({ tc }: { tc: Tc }) {
     </Figure>
   );
 }
+
+// ---------------- Song hints for intervals ----------------
+
+/** The start of a well-known song for each interval: [midi, beats] notes; the first two notes make the interval. */
+const SONG_HINTS: { interval: string; song: string; notes: [number, number][] }[] = [
+  { interval: 'Прима', song: 'Jingle Bells', notes: [[64, 1], [64, 1], [64, 2], [64, 1], [64, 1], [64, 2]] },
+  { interval: 'Секунда', song: 'С днём рождения тебя', notes: [[67, 0.75], [67, 0.25], [69, 1], [67, 1], [72, 1], [71, 2]] },
+  { interval: 'Терция', song: 'Чижик-пыжик', notes: [[64, 0.5], [60, 0.5], [64, 0.5], [60, 0.5], [65, 0.5], [64, 0.5], [62, 1]] },
+  { interval: 'Кварта', song: 'Свадебный марш (Вагнер)', notes: [[67, 1], [72, 0.75], [72, 0.25], [72, 2]] },
+  { interval: 'Квинта', song: 'Мерцай, мерцай, звёздочка', notes: [[60, 1], [60, 1], [67, 1], [67, 1], [69, 1], [69, 1], [67, 2]] },
+  { interval: 'Секста', song: 'В лесу родилась ёлочка', notes: [[60, 1], [69, 1], [69, 1], [67, 1], [69, 1], [65, 1], [60, 1], [60, 1]] },
+  { interval: 'Октава', song: 'Over the Rainbow', notes: [[60, 2], [72, 2], [71, 1], [67, 0.5], [69, 0.5], [71, 1], [72, 1]] },
+];
+
+/** Buttons that play the start of a song for each interval, so the interval is easy to remember by ear. */
+export function SongHints({ tc }: { tc: Tc }) {
+  const player = usePlayer();
+  const [which, setWhich] = useState(-1);
+  const play = (i: number) => {
+    if (player.playing && which === i) return player.stop();
+    setWhich(i);
+    player.play(SONG_HINTS[i].notes.map(([m, b], k) => ({ beats: b, play: (at: number) => playNote(m, b * 0.5 * 0.95, at, k < 2 ? 0.42 : 0.3) })), 120);
+  };
+  return (
+    <figure className="music-diagram song-hints">
+      <figcaption className="md-title">{tc('Песенки-подсказки')}</figcaption>
+      <ul className="sh-list">
+        {SONG_HINTS.map((h, i) => {
+          const on = player.playing && which === i;
+          return (
+            <li key={h.interval} className={on ? 'on' : ''}>
+              <button type="button" className={on ? 'btn btn-light md-play' : 'btn btn-go md-play'} onClick={() => play(i)} aria-label={tc('Послушать')}>
+                {on ? '■' : '▶'}
+              </button>
+              <b>{tc(h.interval)}</b>
+              <span className="muted">{tc(h.song)}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <ol className="md-notes">
+        <li>{tc('Первые две ноты песни и есть интервал. Послушай и пропой их.')}</li>
+        <li>{tc('Септиму запомнить по песне трудно: она звучит как октава, до которой не хватило одного шага.')}</li>
+      </ol>
+    </figure>
+  );
+}

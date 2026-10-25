@@ -8,9 +8,12 @@ const loading = new Map<Lang, Promise<ContentDict>>();
 function load(lang: Lang): Promise<ContentDict> {
   let p = loading.get(lang);
   if (!p) {
-    p = fetch(`/content/${lang}.json`)
+    const own = fetch(`/content/${lang}.json`)
       .then((r) => (r.ok ? (r.json() as Promise<ContentDict>) : {}))
-      .catch(() => ({}))
+      .catch(() => ({}));
+    // A text without a translation into this language is shown in English rather than in Russian.
+    p = Promise.all([own, lang === 'en' ? Promise.resolve({}) : load('en')])
+      .then(([mine, en]) => ({ ...en, ...mine }))
       .then((d) => {
         loaded.set(lang, d);
         return d;

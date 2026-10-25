@@ -177,7 +177,7 @@ export function CoursesPage() {
 
           {topicTiles.length > 1 && (
             <div className="topic-tracks">
-            {[...topicTiles.filter((tp) => !topic || tp.id === topic), { id: '', name: 'Для всех' }].map((tp) => {
+            {[...topicTiles.filter((tp) => !topic || tp.id === topic), ...(topic ? [] : [{ id: '', name: 'Для всех' }])].map((tp) => {
               const list = sectionCourses.filter((c) => (tp.id ? c.topic === tp.id : !topicTiles.some((x) => x.id === c.topic)) && (!level || c.level === level));
               if (!list.length) return null;
               return (

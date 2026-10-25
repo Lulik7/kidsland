@@ -2,7 +2,7 @@ import type { Course } from '@kidsland/shared';
 import type { ReactNode } from 'react';
 import { AccordionParts, DrumParts, FluteParts, GuitarParts, PianoParts, SaxParts, ViolinParts, VoiceParts } from './instruments';
 import type { Tc } from './parts';
-import { Accidentals, Accompaniment, BluesScale, ClapRhythm, Dynamics, IntervalHouse, MajorMinorChords, Metronome, Rests, RhythmExample, ToneExample } from './live';
+import { Accidentals, Accompaniment, BluesScale, ClapRhythm, Dynamics, IntervalHouse, MajorMinorChords, SongHints, Metronome, Rests, RhythmExample, ToneExample } from './live';
 import { Posture } from './posture';
 import { Composer } from './compose';
 import { DjMixer } from './dj';
@@ -152,6 +152,8 @@ export function musicSectionPicture(course: Course, sectionTitle: string | undef
       return <Accidentals tc={tc} />;
     case 'Расстояние':
       return <IntervalHouse tc={tc} />;
+    case 'Песенки-подсказки':
+      return <SongHints tc={tc} />;
     case 'Мажорное и минорное':
       return <MajorMinorChords tc={tc} />;
     case 'Аккомпанемент':

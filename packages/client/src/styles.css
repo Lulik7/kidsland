@@ -1609,6 +1609,10 @@ h1, h2 { color: #34404f; }
 .clap-controls .metro-slider { width: 100%; }
 .ih-house { display: grid; width: min(100%, 420px); background: #fff7ef; border: 3px solid #e9b99a; border-top: 0; border-radius: 0 0 18px 18px; position: relative; margin-top: 70px; }
 .ih-roof { position: absolute; left: -24px; right: -24px; top: -70px; height: 72px; background: #f08c6c; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.song-hints .sh-list { list-style: none; margin: 8px auto 0; padding: 0; max-width: 520px; display: grid; gap: 8px; }
+.song-hints .sh-list li { display: grid; grid-template-columns: 44px minmax(90px, auto) minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 12px; border: 2px dashed #ebcdb8; border-radius: 16px; background: #fffaf5; text-align: start; }
+.song-hints .sh-list li.on { border-color: var(--primary); background: #eefaf4; }
+.song-hints .sh-list .md-play { width: 44px; height: 44px; padding: 0; border-radius: 50%; margin: 0; }
 .ih-floor { display: grid; grid-template-columns: 26px 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; border-top: 2px dashed #ebcdb8; }
 .ih-num { width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 0.85rem; }
 .ih-name { display: grid; line-height: 1.2; }

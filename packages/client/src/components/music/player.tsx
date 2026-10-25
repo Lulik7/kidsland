@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { audio, playSteps } from './sound';
+import { audio, claim, playSteps, release } from './sound';
 import type { Tc } from './parts';
 
 export type Step = { beats: number; play: (at: number) => void };
@@ -46,7 +46,10 @@ export function useLoop(bpm: number, onStep: (i: number, at: number) => boolean)
   cb.current = onStep;
   const timer = useRef(0);
   const shows = useRef<number[]>([]);
+  const stopNow = useRef(() => {});
+  const handle = useRef(() => stopNow.current()).current;
   const stop = () => {
+    release(handle);
     window.clearInterval(timer.current);
     timer.current = 0;
     shows.current.forEach(clearTimeout);
@@ -54,10 +57,12 @@ export function useLoop(bpm: number, onStep: (i: number, at: number) => boolean)
     setStep(-1);
     setRunning(false);
   };
+  stopNow.current = stop;
   const start = () => {
     stop();
     const a = audio();
     if (!a) return;
+    claim(handle);
     setRunning(true);
     let next = a.currentTime + 0.08;
     let i = 0;
