@@ -28,9 +28,10 @@ import { LANGUAGE_COURSES } from './languages';
 import { SOLFEGGIO_COURSES } from './solfeggio';
 import { DJ_COMPOSE_COURSES } from './djCompose';
 import { ANIMALS_EXTRA } from './animalsExtra';
+import { CODING_LEVELS } from './codingLevels';
 
 /** Extra lessons for the short intro courses, keyed by course id. */
-const MORE_LESSONS: Record<string, Lesson[]> = { 'python-pro': PYTHON_PRO_MORE, ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE, ...ANIMALS_MORE };
+const MORE_LESSONS: Record<string, Lesson[]> = { ...CODING_LEVELS, 'python-pro': [...PYTHON_PRO_MORE, ...(CODING_LEVELS['python-pro'] ?? [])], ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE, ...ANIMALS_MORE };
 const EXTRA_COURSES: Course[] = [...SCIENCE_COURSES, ...CHESS_COURSES, ...ART_COURSES, ...LEISURE_COURSES, ...ANIMALS_COURSES, ...MUSIC_LEVEL_COURSES, ...SOLFEGGIO_COURSES, ...DJ_COMPOSE_COURSES, ...LANGUAGE_COURSES];
 
 export * from './types';

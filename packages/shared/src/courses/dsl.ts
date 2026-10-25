@@ -7,6 +7,7 @@ import type { Lesson, LessonSection, Question } from './types';
  *   Section title :: section text
  *   ! tip for the section above
  *   ? Question | right answer | wrong | wrong
+ *   > a line of code for the section above (indentation after «> » is kept)
  *
  * Every lesson needs at least three sections; questions become the lesson quiz.
  */
@@ -23,7 +24,12 @@ export function lessonsFromText(prefix: string, firstNumber: number, text: strin
       continue;
     }
     if (!cur) throw new Error(`Text before the first lesson in ${prefix}: ${line}`);
-    if (line.startsWith('! ')) {
+    if (line.startsWith('> ') || line === '>') {
+      const last = cur.sections[cur.sections.length - 1];
+      if (!last) throw new Error(`Code without a section in ${cur.id}`);
+      const code = raw.slice(raw.indexOf('>') + 2).replace(/\s+$/, '');
+      last.code = last.code === undefined ? code : `${last.code}\n${code}`;
+    } else if (line.startsWith('! ')) {
       const last = cur.sections[cur.sections.length - 1];
       if (!last) throw new Error(`Tip without a section in ${cur.id}`);
       last.tip = line.slice(2).trim();
