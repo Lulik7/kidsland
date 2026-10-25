@@ -2,7 +2,7 @@ import { WatercolorDefs } from './components/Watercolor';
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
-import type { User } from './api';
+import { api, type User } from './api';
 import { homeFor, useAuth } from './auth';
 import { HeaderTools } from './components/HeaderTools';
 import { Sprite } from './components/Sprite';
@@ -22,6 +22,7 @@ import { Landing } from './pages/Landing';
 import { LessonRoom } from './pages/LessonRoom';
 import { LevelMap } from './pages/LevelMap';
 import { ParentDashboard } from './pages/ParentDashboard';
+import { BillingPage } from './pages/BillingPage';
 import { TutorCabinet } from './pages/TutorCabinet';
 import { TutorPage } from './pages/TutorPage';
 import { TutorsPage } from './pages/TutorsPage';
@@ -56,7 +57,7 @@ function menuFor(user: User | null): MenuItem[] {
   if (!user) return [home, sections, { to: '/register', label: 'Играть' }, courses, tutors, beAdmin, support];
   if (user.role === 'tutor') return [home, sections, { to: '/tutor', label: 'Кабинет' }, courses, tutors, beAdmin, support];
   if (user.role === 'admin') return [home, sections, { to: '/admin', label: 'Админ' }, courses, tutors, beAdmin, support];
-  return [home, sections, { to: '/kids', label: 'Играть' }, courses, tutors, beAdmin, { to: '/parent', label: 'Кабинет' }, support];
+  return [home, sections, { to: '/kids', label: 'Играть' }, courses, tutors, beAdmin, { to: '/billing', label: 'Оплата' }, { to: '/parent', label: 'Кабинет' }, support];
 }
 
 function Header() {
@@ -130,6 +131,19 @@ function ScrollToTop() {
   return null;
 }
 
+/** While a tutor has the site open, their card shows "online". */
+function TutorPresence() {
+  const { user } = useAuth();
+  useEffect(() => {
+    if (user?.role !== 'tutor') return;
+    const ping = () => void api.tutorPing().catch(() => undefined);
+    ping();
+    const id = setInterval(ping, 60_000);
+    return () => clearInterval(id);
+  }, [user]);
+  return null;
+}
+
 export function App() {
   const t = useT();
   // Redraw every page when the admin's content arrives or changes.
@@ -137,6 +151,7 @@ export function App() {
   return (
     <>
       <WatercolorDefs />
+      <TutorPresence />
       <ScrollToTop />
       <Header />
       <Routes key={contentVersion}>
@@ -179,6 +194,7 @@ export function App() {
           }
         />
         <Route path="/parent" element={<RequireAuth role="parent"><ParentDashboard /></RequireAuth>} />
+        <Route path="/billing" element={<RequireAuth role="parent"><BillingPage /></RequireAuth>} />
         <Route path="/tutor" element={<RequireAuth role="tutor"><TutorCabinet /></RequireAuth>} />
         <Route path="/lessons/:id" element={<RequireAuth><LessonRoom /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />

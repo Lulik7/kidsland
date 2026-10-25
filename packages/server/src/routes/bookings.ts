@@ -9,6 +9,7 @@ import { HttpError } from '../errors';
 import { flagUnsafe } from './lessonRoom';
 import { getChildForUser } from '../levels';
 import { isUuid } from '../tutors';
+import { returnLesson, takeLesson } from './billing';
 
 const createSchema = z.object({
   slotId: z.string().refine(isUuid, 'Некорректный слот'),
@@ -68,7 +69,7 @@ export function bookingsRouter(db: Db) {
     res.json({ booking: publicBooking(rows[0]) });
   });
 
-  /** Books a free slot for one of the parent's children. The family's first lesson is a free trial. */
+  /** Books a free slot for one of the parent's children, paid from the family's balance (the trial lesson first). */
   r.post('/', requireRole('parent'), async (req, res) => {
     const body = createSchema.parse(req.body);
     const child = await getChildForUser(db, body.childId, req.user!.id);
@@ -90,15 +91,12 @@ export function bookingsRouter(db: Db) {
         [slot.id],
       );
       if (taken[0]) throw new HttpError(409, 'Это время уже заняли. Выберите другое');
-      const { rows: trials } = await client.query(
-        "SELECT 1 FROM bookings WHERE parent_id = $1 AND is_trial AND status <> 'cancelled'",
-        [req.user!.id],
-      );
-      const isTrial = !trials[0];
+      const paid = await takeLesson(client, req.user!.id, slot.tutor_id);
+      if (!paid) throw new HttpError(402, 'Нет оплаченных уроков. Купите пробный урок или пакет в разделе «Подписка и оплата»');
       const id = randomUUID();
       const { rows } = await client.query(
-        `INSERT INTO bookings (id, parent_id, child_id, tutor_id, slot_id, slot_time, is_trial, price, meeting_link)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+        `INSERT INTO bookings (id, parent_id, child_id, tutor_id, slot_id, slot_time, is_trial, price, meeting_link, package_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
         [
           id,
           req.user!.id,
@@ -106,9 +104,10 @@ export function bookingsRouter(db: Db) {
           slot.tutor_id,
           slot.id,
           slot.starts_at,
-          isTrial,
-          isTrial ? 0 : slot.hourly_rate,
+          paid.isTrial,
+          paid.price,
           `https://${config.jitsiDomain}/kidsland-${id.replaceAll('-', '')}`,
+          paid.id,
         ],
       );
       await client.query('COMMIT');
@@ -140,10 +139,12 @@ export function bookingsRouter(db: Db) {
          FROM tutor_profiles t
         WHERE b.id = $1 AND t.id = b.tutor_id AND (b.parent_id = $2 OR t.user_id = $2)
           AND b.status = 'scheduled' AND b.slot_time > now()
-        RETURNING b.id`,
+        RETURNING b.id, b.package_id`,
       [req.params.id, req.user!.id, reason, note],
     );
     if (!rows[0]) throw new HttpError(400, 'Этот урок нельзя отменить');
+    // The paid lesson goes back to the family's balance.
+    await returnLesson(db, rows[0].package_id);
     const { rows: full } = await db.query(`${BOOKING_SELECT} WHERE b.id = $1`, [rows[0].id]);
     res.json({ booking: publicBooking(full[0]) });
   });

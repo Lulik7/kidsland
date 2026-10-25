@@ -7,6 +7,7 @@ import { errorHandler, HttpError } from './errors';
 import { levelsForChild, publicLevel } from './levels';
 import { adminRouter, loadContentOverrides } from './routes/admin';
 import { authRouter } from './routes/auth';
+import { billingRouter } from './routes/billing';
 import { bookingsRouter } from './routes/bookings';
 import { childrenRouter } from './routes/children';
 import { lessonRoomRouter } from './routes/lessonRoom';
@@ -36,6 +37,7 @@ export function createApp(db: Db) {
   app.use('/api/tutors', tutorsRouter(db));
   app.use('/api/bookings', lessonRoomRouter(db));
   app.use('/api/bookings', bookingsRouter(db));
+  app.use('/api/billing', billingRouter(db));
   app.use('/api/support', supportRouter(db));
   app.use('/api/posts', postsRouter(db));
   app.use('/api/tutor', tutorCabinetRouter(db));

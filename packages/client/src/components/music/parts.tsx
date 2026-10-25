@@ -129,7 +129,7 @@ export function Keyboard({ x = 10, y = 20, octaves = 2, keyW = 28, marks = [], b
     },
     onPointerUp: () => setDown(null),
     onPointerLeave: () => setDown((d) => (d === midi ? null : d)),
-    style: { cursor: 'pointer' },
+    style: { cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" },
     role: 'button',
     'aria-label': String(midi),
   });

@@ -1,3 +1,4 @@
+import { tutorPrice } from '@kidsland/shared';
 import type { Db } from './db/pool';
 
 export interface TutorRow {
@@ -37,7 +38,17 @@ export interface ExperienceItem {
   yearTo: number | null;
 }
 
-export const publicTutor = (t: TutorRow & { next_slot?: Date | null; free_slots?: number }) => ({
+/**
+ * Extra columns for a tutor row `t`: pupils (demo base + children who booked), whether the tutor is online
+ * (seen in the last 5 minutes; demo tutors take turns by the hour).
+ */
+export const TUTOR_EXTRA_SQL = `
+  t.students_base + (SELECT count(DISTINCT b.child_id) FROM bookings b WHERE b.tutor_id = t.id AND b.status <> 'cancelled')::int AS students,
+  (t.last_seen_at > now() - interval '5 minutes'
+    OR ((SELECT password_hash FROM users WHERE id = t.user_id) = '!demo'
+        AND (abs(hashtext(t.id::text)) + extract(hour from now())::int) % 3 = 0)) AS online`;
+
+export const publicTutor = (t: TutorRow & { next_slot?: Date | null; free_slots?: number; students?: number; online?: boolean }) => ({
   id: t.id,
   displayName: t.display_name,
   headline: t.headline,
@@ -48,7 +59,10 @@ export const publicTutor = (t: TutorRow & { next_slot?: Date | null; free_slots?
   languages: t.languages,
   ageMin: t.age_min,
   ageMax: t.age_max,
-  hourlyRate: t.hourly_rate,
+  students: t.students ?? 0,
+  price: tutorPrice(t.students ?? 0),
+  online: !!t.online,
+  isNew: t.reviews_count < 10,
   rating: Number(t.rating),
   reviewsCount: t.reviews_count,
   isPublished: t.is_published,
@@ -60,6 +74,12 @@ export const publicTutor = (t: TutorRow & { next_slot?: Date | null; free_slots?
 export const FREE_SLOT_SQL = `
   s.starts_at > now()
   AND NOT EXISTS (SELECT 1 FROM bookings b WHERE b.slot_id = s.id AND b.status <> 'cancelled')`;
+
+/** The tutor's lesson price now, from the number of pupils. */
+export async function priceOfTutor(db: { query: Db['query'] }, tutorId: string): Promise<{ price: number; name: string } | null> {
+  const { rows } = await db.query(`SELECT t.display_name, ${TUTOR_EXTRA_SQL} FROM tutor_profiles t WHERE t.id = $1 AND t.is_published`, [tutorId]);
+  return rows[0] ? { price: tutorPrice(rows[0].students), name: rows[0].display_name } : null;
+}
 
 export async function tutorForUser(db: Db, userId: string): Promise<TutorRow | null> {
   const { rows } = await db.query<TutorRow>('SELECT * FROM tutor_profiles WHERE user_id = $1', [userId]);

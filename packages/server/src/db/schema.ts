@@ -250,4 +250,56 @@ CREATE TABLE IF NOT EXISTS cms_lessons (
   sections   jsonb NOT NULL DEFAULT '[]',
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Paid lessons: packs and subscription lessons on the family's balance, optionally tied to a tutor.
+CREATE TABLE IF NOT EXISTS lesson_packages (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_id     uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  tutor_id      uuid REFERENCES tutor_profiles(id) ON DELETE SET NULL,
+  plan          text NOT NULL,
+  source        text NOT NULL CHECK (source IN ('pack', 'subscription', 'transfer')),
+  lessons_total integer NOT NULL,
+  lessons_left  integer NOT NULL CHECK (lessons_left >= 0),
+  per_lesson    integer NOT NULL,
+  discount      integer NOT NULL DEFAULT 0,
+  is_trial      boolean NOT NULL DEFAULT false,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS lesson_packages_parent_idx ON lesson_packages(parent_id);
+CREATE TABLE IF NOT EXISTS payments (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_id  uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind       text NOT NULL CHECK (kind IN ('pack', 'subscription', 'transfer')),
+  title      text NOT NULL,
+  amount     integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS payments_parent_idx ON payments(parent_id, created_at);
+CREATE TABLE IF NOT EXISTS subscriptions (
+  parent_id         uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  lessons_per_month integer NOT NULL,
+  next_lessons      integer,
+  tutor_id          uuid REFERENCES tutor_profiles(id) ON DELETE SET NULL,
+  status            text NOT NULL CHECK (status IN ('active', 'cancelled', 'ended')),
+  period_end        timestamptz NOT NULL,
+  created_at        timestamptz NOT NULL DEFAULT now()
+);
+-- Money left after moving lessons to a cheaper or dearer tutor; used up by the next purchase.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet integer NOT NULL DEFAULT 0;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS package_id uuid REFERENCES lesson_packages(id) ON DELETE SET NULL;
+
+-- Tutor card: online status, pupils and reviews.
+ALTER TABLE tutor_profiles ADD COLUMN IF NOT EXISTS last_seen_at timestamptz;
+ALTER TABLE tutor_profiles ADD COLUMN IF NOT EXISTS students_base integer NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS tutor_reviews (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tutor_id    uuid NOT NULL REFERENCES tutor_profiles(id) ON DELETE CASCADE,
+  parent_id   uuid REFERENCES users(id) ON DELETE CASCADE,
+  author_name text NOT NULL,
+  rating      integer NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  body        text NOT NULL,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS tutor_reviews_one_per_parent ON tutor_reviews(tutor_id, parent_id) WHERE parent_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS tutor_reviews_tutor_idx ON tutor_reviews(tutor_id, created_at);
 `;

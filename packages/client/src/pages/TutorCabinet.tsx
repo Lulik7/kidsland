@@ -374,10 +374,7 @@ function ProfileForm({ tutor, onSaved, onApplication }: { tutor: Tutor; onSaved:
           {t('до')}
           <input type="number" min={4} max={18} value={p.ageMax} onChange={(e) => set('ageMax', Number(e.target.value))} />
         </label>
-        <label>
-          {t('Цена урока, ₽')}
-          <input type="number" min={0} max={50000} step={100} value={p.hourlyRate} onChange={(e) => set('hourlyRate', Number(e.target.value))} />
-        </label>
+        <p className="small muted price-note">{t('Цена урока назначается автоматически: у нового наставника 40 ₪, и она растёт вместе с числом учеников.')}</p>
       </div>
       {msg && <div className={msg.ok ? 'success' : 'error'}>{msg.text}</div>}
       <div className="form-actions">

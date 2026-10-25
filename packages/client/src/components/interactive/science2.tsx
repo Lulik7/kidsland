@@ -41,7 +41,7 @@ export function SolarSystem({ tc }: { tc: Tc }) {
         return (
           <g key={p.name}>
             <ellipse cx="230" cy="150" rx={R} ry={R * 0.55} fill="none" stroke="#2f3a5a" />
-            <g transform={`translate(${230 + Math.cos(a) * R} ${150 + Math.sin(a) * R * 0.55})`} onClick={() => setPick(i)} style={{ cursor: 'pointer' }}>
+            <g transform={`translate(${230 + Math.cos(a) * R} ${150 + Math.sin(a) * R * 0.55})`} onClick={() => setPick(i)} style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}>
               <circle r={p.r + 6} fill="transparent" />
               <circle r={p.r} fill={p.color} stroke={pick === i ? '#fff' : 'none'} strokeWidth="2" />
               {i === 5 && <ellipse rx={p.r + 7} ry="3" fill="none" stroke="#e9cf8f" strokeWidth="2" />}
@@ -137,7 +137,7 @@ export function Constellation({ tc }: { tc: Tc }) {
       {n >= stars.length && <line x1="330" y1="110" x2="380" y2="20" stroke="#9fdde8" strokeDasharray="4 4" />}
       {n >= stars.length && <circle cx="380" cy="20" r="6" fill="#9fdde8" />}
       {stars.map(([x, y], i) => (
-        <g key={i} onClick={() => i === n && setN(n + 1)} style={{ cursor: 'pointer' }}>
+        <g key={i} onClick={() => i === n && setN(n + 1)} style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}>
           <circle cx={x} cy={y} r="14" fill="transparent" />
           <circle cx={x} cy={y} r={i < n ? 6 : 4} fill={i < n ? '#ffd23f' : '#fff'} />
           {i >= n && (
@@ -260,7 +260,7 @@ export function BodyOrgans({ tc }: { tc: Tc }) {
       <rect x="150" y="80" width="25" height="90" rx="12" fill="#f7d7bf" />
       <rect x="285" y="80" width="25" height="90" rx="12" fill="#f7d7bf" />
       {organs.map((o, i) => (
-        <g key={o.id} onClick={() => setP(i)} style={{ cursor: 'pointer' }}>
+        <g key={o.id} onClick={() => setP(i)} style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}>
           <circle cx={o.x} cy={o.y} r={o.r} fill={o.color} stroke={p === i ? INK : '#fff'} strokeWidth="2">
             {o.id === 'heart' && <animate attributeName="r" values={`${o.r};${o.r + 2};${o.r}`} dur="0.75s" repeatCount="indefinite" />}
           </circle>
@@ -356,7 +356,7 @@ export function EarthLayers({ tc }: { tc: Tc }) {
   return (
     <Scene title={tc('Земля изнутри')} h={230} notes={[tc('Нажимай на слои.')]} controls={<Say><b>{tc(layers[p][0])}</b>: {tc(layers[p][1])}</Say>}>
       {layers.map(([name, , color, r], i) => (
-        <circle key={name} cx="230" cy="115" r={r} fill={color} stroke={p === i ? '#fff' : 'none'} strokeWidth="3" onClick={() => setP(i)} style={{ cursor: 'pointer' }} />
+        <circle key={name} cx="230" cy="115" r={r} fill={color} stroke={p === i ? '#fff' : 'none'} strokeWidth="3" onClick={() => setP(i)} style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }} />
       ))}
     </Scene>
   );
@@ -368,7 +368,7 @@ export function FireTriangle({ tc }: { tc: Tc }) {
   const burning = have.heat && have.fuel && have.air;
   const toggle = (k: keyof typeof have) => setHave({ ...have, [k]: !have[k] });
   const side = (k: keyof typeof have, d: string, label: string, lx: number, ly: number) => (
-    <g onClick={() => toggle(k)} style={{ cursor: 'pointer' }}>
+    <g onClick={() => toggle(k)} style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}>
       <path d={d} stroke={have[k] ? ORANGE : '#d5dbe3'} strokeWidth="10" strokeLinecap="round" />
       <text x={lx} y={ly} textAnchor="middle" fontSize="13" fontWeight="800" fill={have[k] ? INK : '#9aa7b5'}>
         {tc(label)}
@@ -479,7 +479,7 @@ export function CellParts({ tc }: { tc: Tc }) {
     ['Цитоплазма', 'Жидкость внутри, в ней плавают все части.'],
   ];
   const [p, setP] = useState(1);
-  const pick = (i: number) => ({ onClick: () => setP(i), style: { cursor: 'pointer' } });
+  const pick = (i: number) => ({ onClick: () => setP(i), style: { cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" } });
   return (
     <Scene title={tc('Растительная клетка')} h={220} notes={[tc('Нажимай на части клетки.')]} controls={<Say><b>{tc(parts[p][0])}</b>: {tc(parts[p][1])}</Say>}>
       <rect x="90" y="20" width="280" height="180" rx="30" fill="#c8e6c9" stroke={p === 0 ? INK : '#66bb6a'} strokeWidth="8" {...pick(0)} />

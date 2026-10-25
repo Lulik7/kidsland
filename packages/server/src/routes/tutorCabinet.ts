@@ -127,6 +127,12 @@ export function tutorCabinetRouter(db: Db) {
     res.json({ tutor: publicTutor(await myTutor(req.user!.id)) });
   });
 
+  /** The tutor's page is open: shown as online on the tutor card for 5 minutes. */
+  r.post('/ping', async (req, res) => {
+    await db.query('UPDATE tutor_profiles SET last_seen_at = now() WHERE user_id = $1', [req.user!.id]);
+    res.status(204).end();
+  });
+
   r.put('/profile', async (req, res) => {
     const p = profileSchema.parse(req.body);
     const t = await myTutor(req.user!.id);

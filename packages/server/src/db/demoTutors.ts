@@ -90,7 +90,7 @@ export const DEMO_TUTORS: DemoTutor[] = [
     ageMax: 12,
     hourlyRate: 2200,
     rating: 4.9,
-    reviews: 19,
+    reviews: 4,
     hours: [13, 17],
   },
   {
@@ -255,7 +255,7 @@ export const DEMO_TUTORS: DemoTutor[] = [
     ageMax: 14,
     hourlyRate: 1600,
     rating: 4.7,
-    reviews: 22,
+    reviews: 6,
     hours: [11, 18],
   },
   {
@@ -405,13 +405,23 @@ export const DEMO_TUTORS: DemoTutor[] = [
     ageMax: 9,
     hourlyRate: 1200,
     rating: 5.0,
-    reviews: 28,
+    reviews: 2,
     hours: [10, 14, 17],
   },
 ];
 
 const MOSCOW_OFFSET_H = 3;
 const DAYS_AHEAD = 14;
+
+const SAMPLE_REVIEWS = [
+  { author: 'Мама Сони', rating: 5, body: 'Дочка ждёт каждого урока! Объясняет спокойно и с юмором, после занятия сама садится повторять.' },
+  { author: 'Папа Миши', rating: 5, body: 'За месяц сын заметно продвинулся. Нравится, что после урока приходит короткий отчёт.' },
+  { author: 'Мама Артёма', rating: 4, body: 'Хороший педагог, уроки интересные. Иногда хотелось бы чуть больше домашних заданий.' },
+  { author: 'Мама Лизы', rating: 5, body: 'Очень терпеливый наставник, нашёл подход к стеснительному ребёнку. Рекомендуем!' },
+  { author: 'Бабушка Вани', rating: 5, body: 'Внук занимается с удовольствием, а я вижу, что он понимает, а не просто повторяет.' },
+  { author: 'Папа Алисы', rating: 5, body: 'Пунктуальный, всегда на связи через платформу, уроки начинаются вовремя.' },
+  { author: 'Мама Тимура', rating: 4, body: 'Ребёнку нравится, особенно игровые задания. Будем продолжать.' },
+];
 
 /**
  * Demo tutors so the marketplace is not empty in development. Their accounts cannot log in
@@ -426,15 +436,28 @@ export async function seedDemoTutors(db: Db, now = new Date()): Promise<void> {
     );
     const { rows: profiles } = await db.query(
       `INSERT INTO tutor_profiles
-         (user_id, display_name, headline, bio, avatar, subjects, languages, age_min, age_max, hourly_rate, rating, reviews_count, is_published, verification)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true, 'approved')
+         (user_id, display_name, headline, bio, avatar, subjects, languages, age_min, age_max, hourly_rate, rating, reviews_count, is_published, verification, students_base)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true, 'approved', $13)
        ON CONFLICT (user_id) DO UPDATE SET
          display_name = EXCLUDED.display_name, headline = EXCLUDED.headline, bio = EXCLUDED.bio, avatar = EXCLUDED.avatar,
          subjects = EXCLUDED.subjects, languages = EXCLUDED.languages, age_min = EXCLUDED.age_min, age_max = EXCLUDED.age_max,
-         hourly_rate = EXCLUDED.hourly_rate, rating = EXCLUDED.rating, reviews_count = EXCLUDED.reviews_count
+         hourly_rate = EXCLUDED.hourly_rate, rating = EXCLUDED.rating, reviews_count = EXCLUDED.reviews_count,
+         students_base = EXCLUDED.students_base
        RETURNING id`,
-      [users[0].id, t.displayName, t.headline, t.bio, t.avatar, t.subjects, t.languages, t.ageMin, t.ageMax, t.hourlyRate, t.rating, t.reviews],
+      [users[0].id, t.displayName, t.headline, t.bio, t.avatar, t.subjects, t.languages, t.ageMin, t.ageMax, t.hourlyRate, t.rating, t.reviews, Math.round(t.reviews * 1.6) + 3],
     );
+    // A few sample reviews, so the tutor page shows what families write.
+    const { rows: had } = await db.query('SELECT 1 FROM tutor_reviews WHERE tutor_id = $1 LIMIT 1', [profiles[0].id]);
+    if (!had[0]) {
+      const n = Math.min(3, t.reviews);
+      for (let i = 0; i < n; i++) {
+        const r = SAMPLE_REVIEWS[(t.email.length + i * 3) % SAMPLE_REVIEWS.length];
+        await db.query(
+          "INSERT INTO tutor_reviews (tutor_id, author_name, rating, body, created_at) VALUES ($1, $2, $3, $4, now() - ($5 || ' days')::interval)",
+          [profiles[0].id, r.author, r.rating, r.body, String(3 + i * 9)],
+        );
+      }
+    }
     const times: Date[] = [];
     for (let d = 1; d <= DAYS_AHEAD; d++) {
       for (const h of t.hours) {

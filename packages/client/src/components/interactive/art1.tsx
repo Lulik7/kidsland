@@ -341,7 +341,7 @@ export function ColorMixer({ tc }: { tc: Tc }) {
       }
     >
       {(Object.keys(BASE) as Base[]).map((b, i) => (
-        <g key={b} transform={`translate(${50 + i * 46} 50)`} onClick={() => add(b)} style={{ cursor: 'pointer' }}>
+        <g key={b} transform={`translate(${50 + i * 46} 50)`} onClick={() => add(b)} style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}>
           <rect x="-17" y="-22" width="34" height="44" rx="8" fill="#fff" stroke={INK} strokeWidth="1.5" />
           <rect x="-14" y="-6" width="28" height="25" rx="5" fill={BASE[b].c} stroke={b === 'white' ? '#ccc' : 'none'} />
           <rect x="-19" y="-28" width="38" height="9" rx="3" fill="#cfd6df" stroke={INK} strokeWidth="1" />
@@ -417,7 +417,7 @@ export function ColorWheel({ tc, mode: startMode = 'pair' }: { tc: Tc; mode?: 'p
           strokeWidth={i === sel || (mode === 'pair' && i === opp) ? 4 : 1.5}
           opacity={mode === 'warm' ? 1 : i === sel || i === opp ? 1 : 0.45}
           onClick={() => setSel(i)}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}
         />
       ))}
       {mode === 'warm' && (
@@ -1141,7 +1141,7 @@ export function PixelArt({ tc }: { tc: Tc }) {
             }}
             onPointerEnter={() => down.current && paint(i)}
             onPointerUp={() => (down.current = false)}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}
           />
         ))}
       </g>
@@ -1283,16 +1283,16 @@ export function Layers({ tc }: { tc: Tc }) {
           return (
             <g key={l} transform={`translate(0 ${ri * 42})`}>
               <rect width="145" height="36" rx="8" fill={off ? '#f2f2f2' : '#fff'} stroke="#d9d2ec" />
-              <text x="10" y="23" fontSize="15" style={{ cursor: 'pointer' }} onClick={() => setHidden((h) => (off ? h.filter((x) => x !== l) : [...h, l]))}>
+              <text x="10" y="23" fontSize="15" style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }} onClick={() => setHidden((h) => (off ? h.filter((x) => x !== l) : [...h, l]))}>
                 {off ? '🚫' : '👁'}
               </text>
               <text x="36" y="23" fontSize="13" fontWeight="700" fill={INK}>
                 {tc(ALL[l])}
               </text>
-              <text x="112" y="16" fontSize="12" style={{ cursor: 'pointer' }} onClick={() => move(i, 1)}>
+              <text x="112" y="16" fontSize="12" style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }} onClick={() => move(i, 1)}>
                 ▲
               </text>
-              <text x="112" y="31" fontSize="12" style={{ cursor: 'pointer' }} onClick={() => move(i, -1)}>
+              <text x="112" y="31" fontSize="12" style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }} onClick={() => move(i, -1)}>
                 ▼
               </text>
             </g>

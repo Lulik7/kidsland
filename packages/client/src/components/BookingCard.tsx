@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { api, type Booking } from '../api';
 import { avatarSvg } from '../game/sprites';
-import { fmtDateTime, personName, rub } from '../format';
+import { fmtDateTime, personName, money } from '../format';
 import { useT } from '../i18n';
 import { Sprite } from './Sprite';
 import { TutorAvatar } from './TutorAvatar';
@@ -31,7 +31,7 @@ export function BookingCard({ booking: b, viewer, onChange }: { booking: Booking
           {viewer === 'parent' ? `${who} · ${t('ученик')}: ${b.child.nickname}` : `${t('Ученик')}: ${who}`} · {b.durationMin} {t('мин')}
         </span>
         <span className="chips">
-          {b.isTrial ? <span className="chip chip-free">{t('Бесплатный пробный')}</span> : <span className="chip chip-star">{rub(b.price)}</span>}
+          {b.isTrial ? <span className="chip chip-free">{t('Пробный урок')}</span> : <span className="chip chip-star">{money(b.price)}</span>}
           {b.status === 'cancelled' && <span className="chip chip-muted">{t('Отменён')}</span>}
         </span>
         {c && (

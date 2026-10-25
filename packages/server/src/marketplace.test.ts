@@ -64,17 +64,27 @@ describe.skipIf(!url)('marketplace', () => {
     expect(all.body.tutors.some((t: { displayName: string }) => t.displayName === 'Тест Наставник')).toBe(false);
   });
 
-  it('books a free trial, then a paid lesson, and blocks double booking', async () => {
+  it('books a paid trial, then a lesson from a pack, and blocks double booking', async () => {
     const list = await request(app!).get('/api/tutors?sort=soonest');
     const tutorId = list.body.tutors[0].id;
+    const price = list.body.tutors[0].price;
+    expect(price).toBeGreaterThanOrEqual(40);
     const detail = await request(app!).get(`/api/tutors/${tutorId}`);
     const [s1, s2] = detail.body.slots;
     expect(s1).toBeDefined();
 
+    // Nothing paid yet: booking asks to pay first.
+    expect((await request(app!).post('/api/bookings').set(auth(parent)).send({ slotId: s1.id, childId })).status).toBe(402);
+    const trial = await request(app!).post('/api/billing/buy').set(auth(parent)).send({ plan: 'trial', tutorId });
+    expect(trial.status).toBe(201);
+    expect(trial.body.lessonsLeft).toBe(1);
+    expect((await request(app!).post('/api/billing/buy').set(auth(parent)).send({ plan: 'trial', tutorId })).status).toBe(400);
+    await request(app!).post('/api/billing/buy').set(auth(parent)).send({ plan: 'p4', tutorId });
+
     const first = await request(app!).post('/api/bookings').set(auth(parent)).send({ slotId: s1.id, childId });
     expect(first.status).toBe(201);
     expect(first.body.booking.isTrial).toBe(true);
-    expect(first.body.booking.price).toBe(0);
+    expect(first.body.booking.price).toBe(Math.round(price / 2));
     expect(first.body.booking.meetingLink).toMatch(/^https:\/\/.+\/kidsland-/);
 
     const clash = await request(app!).post('/api/bookings').set(auth(other)).send({ slotId: s1.id, childId: otherChildId });
@@ -82,7 +92,8 @@ describe.skipIf(!url)('marketplace', () => {
 
     const second = await request(app!).post('/api/bookings').set(auth(parent)).send({ slotId: s2.id, childId });
     expect(second.body.booking.isTrial).toBe(false);
-    expect(second.body.booking.price).toBeGreaterThan(0);
+    expect(second.body.booking.price).toBe(price);
+    expect((await request(app!).get('/api/billing').set(auth(parent))).body.lessonsLeft).toBe(3);
 
     const after = await request(app!).get(`/api/tutors/${tutorId}`);
     expect(after.body.slots.map((s: { id: string }) => s.id)).not.toContain(s1.id);
@@ -105,6 +116,17 @@ describe.skipIf(!url)('marketplace', () => {
       .send({ reason: 'sick', note: 'Давайте перенесём на четверг' });
     expect(cancel.body.booking.status).toBe('cancelled');
     expect(cancel.body.booking.cancellation).toEqual({ by: 'parent', reason: 'sick', label: 'Ребёнок заболел', note: 'Давайте перенесём на четверг' });
+    // The cancelled lesson is back on the balance, and lessons can be moved to another tutor.
+    const bill = await request(app!).get('/api/billing').set(auth(parent));
+    expect(bill.body.lessonsLeft).toBe(4);
+    const pack = bill.body.packages.find((p: { isTrial: boolean }) => !p.isTrial);
+    const toTutor = list.body.tutors.find((t: { id: string }) => t.id !== tutorId);
+    const moved = await request(app!).post('/api/billing/transfer').set(auth(parent)).send({ packageId: pack.id, toTutorId: toTutor.id, lessons: 2 });
+    expect(moved.status).toBe(200);
+    const value = 2 * price;
+    const got = moved.body.packages.find((p: { tutor: { id: string } }) => p.tutor.id === toTutor.id);
+    expect(got.lessonsLeft).toBe(Math.floor(value / toTutor.price));
+    expect(moved.body.wallet).toBe(value - got.lessonsLeft * toTutor.price);
     const freed = await request(app!).get(`/api/tutors/${tutorId}`);
     expect(freed.body.slots.map((s: { id: string }) => s.id)).toContain(s2.id);
   });
@@ -152,6 +174,7 @@ describe.skipIf(!url)('marketplace', () => {
     expect(me.freeSlots).toBe(1);
 
     // Booked slots cannot be deleted; the tutor sees the booking.
+    await request(app!).post('/api/billing/buy').set(auth(other)).send({ plan: 'p4', tutorId: me.id });
     const booking = await request(app!).post('/api/bookings').set(auth(other)).send({ slotId: slots.body.slots[0].id, childId: otherChildId });
     expect(booking.status).toBe(201);
     expect((await request(app!).delete(`/api/tutor/slots/${slots.body.slots[0].id}`).set(auth(tutor))).status).toBe(400);

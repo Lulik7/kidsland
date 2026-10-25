@@ -26,7 +26,8 @@ export const personName = (name: string) =>
         return ch === ch.toLowerCase() ? lat : lat.charAt(0).toUpperCase() + lat.slice(1);
       });
 
-export const rub = (n: number) => `${n.toLocaleString(locale)} ₽`;
+/** Money on the site is in shekels. */
+export const money = (n: number) => `${n.toLocaleString(locale)} ₪`;
 
 export const fmtDay = (d: Date | string) =>
   new Date(d).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'long' });

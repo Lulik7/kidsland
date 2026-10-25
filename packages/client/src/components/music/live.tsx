@@ -484,7 +484,7 @@ export function Accidentals({ tc }: { tc: Tc }) {
         return (
           <g
             key={s.name}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}
             role="button"
             onClick={() => player.play(s.midi.map((m) => ({ beats: 1, play: (at: number) => playNote(m, 0.7, at) })), 90)}
           >

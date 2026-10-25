@@ -8,7 +8,7 @@ const tap = (fn: () => void) => ({
     e.preventDefault();
     fn();
   },
-  style: { cursor: 'pointer' },
+  style: { cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" },
   role: 'button',
 });
 

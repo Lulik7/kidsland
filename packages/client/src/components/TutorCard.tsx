@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Tutor } from '../api';
-import { fmtDateTime, languageName, personName, rub, subjectName } from '../format';
+import { fmtDateTime, languageName, personName, subjectName } from '../format';
+import { plural } from '../plural';
 import { StarIcon } from './Icons';
 import { TutorAvatar } from './TutorAvatar';
 import { useT } from '../i18n';
@@ -11,9 +12,16 @@ export function TutorCard({ tutor: tu, childId }: { tutor: Tutor; childId?: stri
   return (
     <Link to={link} className="tutor-card">
       <div className="tc-top">
-        <TutorAvatar name={tu.displayName} size={68} />
+        <span className="tc-ava">
+          <TutorAvatar name={tu.displayName} size={68} />
+          {tu.online && <i className="online-dot" title={t('В сети')} />}
+        </span>
         <div className="tc-who">
           <h3>{personName(tu.displayName)}</h3>
+          <div className="tc-badges">
+            {tu.online && <span className="badge-online">● {t('В сети')}</span>}
+            {tu.isNew && <span className="badge-new">✨ {t('Новый наставник')}</span>}
+          </div>
           <span className="tc-rating">
             <StarIcon on size={16} /> <b>{tu.rating.toFixed(1)}</b> <span className="muted">· {tu.reviewsCount}{' '}{t('отзывов')}</span>
           </span>
@@ -32,11 +40,12 @@ export function TutorCard({ tutor: tu, childId }: { tutor: Tutor; childId?: stri
           {tu.ageMin}–{tu.ageMax}{' '}{t('лет')}
         </span>
         <span>{tu.languages.map((l) => t(languageName(l))).join(', ')}</span>
+        <span>
+          👧 {tu.students}{' '}{plural(tu.students, [t('ученик'), t('ученика'), t('учеников')])}
+        </span>
       </div>
       <div className="tc-foot">
         <div>
-          <b className="tc-price">{rub(tu.hourlyRate)}</b>
-          <span className="muted small">{' '}{t('/ урок')}</span>
           <div className="small tc-next">{tu.nextSlot ? `${t('Ближайшее')}: ${fmtDateTime(tu.nextSlot)}` : t('Нет свободного времени')}</div>
         </div>
         <span className="btn btn-primary">{t('Выбрать время')}</span>

@@ -7,3 +7,4 @@ export * from './safety';
 export * from './sections';
 export * from './articles';
 export * from './content';
+export * from './billing';

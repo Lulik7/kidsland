@@ -21,7 +21,7 @@ import { useT } from '../i18n';
 const FEATURES = [
   { to: '/kids', title: 'Игры', text: '3 мира и 10 уровней: собирай программу из блоков и веди героя к цели.', icon: '🎮', color: '#4c97ff' },
   { to: '/courses', title: 'Курсы', text: 'Программирование, наука, шахматы, музыка, языки и ещё 5 разделов: теория, задания и викторины.', icon: '📚', color: '#2fc46b' },
-  { to: '/tutors', title: 'Наставники', text: 'Живые уроки с видео, общей доской и чатом. Первый урок бесплатно.', icon: '👩‍🏫', color: '#ff6b3d' },
+  { to: '/tutors', title: 'Наставники', text: 'Живые уроки с видео, общей доской и чатом. Пробный урок со скидкой 50%.', icon: '👩‍🏫', color: '#ff6b3d' },
   { to: '/parent', title: 'Кабинет родителя', text: 'Прогресс по темам, пройденные уроки и запись на занятия.', icon: '📈', color: '#9966ff' },
 ];
 
@@ -188,7 +188,7 @@ export function Landing() {
             <span className="pill pill-dark">{t('Для родителей')}</span>
             <h2>{t('Видно, чему ребёнок уже научился')}</h2>
             <p>
-              {t('В кабинете родителя видно пройденные уровни и освоенные темы. Когда базовый курс пройден, можно записаться на бесплатный урок с наставником.')}
+              {t('В кабинете родителя видно пройденные уровни и освоенные темы. Когда базовый курс пройден, можно записаться на пробный урок с наставником со скидкой.')}
             </p>
           </div>
           <div className="parents-card">
@@ -210,7 +210,7 @@ export function Landing() {
               </div>
             ))}
             <div className="pc-nudge">
-              <Sprite svg={COIN} size={26} />{' '}{t('Базовые уровни пройдены! Запишитесь на бесплатный урок.')}
+              <Sprite svg={COIN} size={26} />{' '}{t('Базовые уровни пройдены! Запишитесь на пробный урок.')}
             </div>
           </div>
         </div>
@@ -219,7 +219,7 @@ export function Landing() {
       {tutors.length > 0 && (
         <section className="wrap">
           <h2 className="section-title">{t('Наставники для живых уроков')}</h2>
-          <p className="section-sub">{t('Когда игра пройдена, наставник поможет перейти к Scratch, Python или созданию сайтов. Первый урок бесплатно.')}</p>
+          <p className="section-sub">{t('Когда игра пройдена, наставник поможет перейти к Scratch, Python или созданию сайтов. Пробный урок со скидкой 50%.')}</p>
           <div className="tutor-grid">
             {tutors.map((tu) => (
               <TutorCard key={tu.id} tutor={tu} />
@@ -262,7 +262,6 @@ export function Landing() {
           <WcFlowers className="cta-flowers" size={240} />
           <WcBlob className="cta-blob" />
           <div className="cta-text">
-            <p className="cta-kicker">{t('Регистрация бесплатная, банковская карта не нужна.')}</p>
             <h2>{t('Первый уровень проходится за 2 минуты')}</h2>
           </div>
           <Link to={playLink} className="btn btn-primary btn-xl">

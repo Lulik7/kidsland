@@ -59,12 +59,47 @@ export interface Tutor {
   ageMin: number;
   ageMax: number;
   hourlyRate: number;
+  /** Lesson price in shekels, from the number of pupils. */
+  price: number;
+  students: number;
+  online: boolean;
+  isNew: boolean;
   rating: number;
   reviewsCount: number;
   isPublished: boolean;
   verification?: VerificationStatus;
   nextSlot?: string | null;
   freeSlots?: number;
+}
+
+export interface TutorReview {
+  id: string;
+  author: string;
+  rating: number;
+  body: string;
+  createdAt: string;
+}
+
+export interface LessonPackage {
+  id: string;
+  plan: string;
+  source: 'pack' | 'subscription' | 'transfer';
+  isTrial: boolean;
+  lessonsTotal: number;
+  lessonsLeft: number;
+  perLesson: number;
+  discount: number;
+  tutor: { id: string; displayName: string } | null;
+  createdAt: string;
+}
+
+export interface Billing {
+  lessonsLeft: number;
+  wallet: number;
+  trialAvailable: boolean;
+  packages: LessonPackage[];
+  subscription: { lessonsPerMonth: number; nextLessons: number | null; status: 'active' | 'cancelled'; periodEnd: string; tutor: { id: string; displayName: string } | null } | null;
+  payments: { id: string; kind: 'pack' | 'subscription' | 'transfer'; title: string; amount: number; createdAt: string }[];
 }
 
 export interface Slot {
@@ -382,6 +417,17 @@ export const api = {
   booking: (id: string) => request<{ booking: Booking }>(`/bookings/${id}`),
   book: (slotId: string, childId: string) =>
     request<{ booking: Booking }>('/bookings', { method: 'POST', body: { slotId, childId } }),
+  billing: () => request<Billing>('/billing'),
+  buyPack: (plan: string, tutorId: string) => request<Billing>('/billing/buy', { method: 'POST', body: { plan, tutorId } }),
+  subscribe: (lessonsPerMonth: number, tutorId: string) => request<Billing>('/billing/subscription', { method: 'POST', body: { lessonsPerMonth, tutorId } }),
+  cancelSubscription: () => request<Billing>('/billing/subscription/cancel', { method: 'POST' }),
+  resumeSubscription: () => request<Billing>('/billing/subscription/resume', { method: 'POST' }),
+  moveSubscription: (tutorId: string) => request<Billing>('/billing/subscription/tutor', { method: 'POST', body: { tutorId } }),
+  transferLessons: (packageId: string, toTutorId: string, lessons: number) =>
+    request<Billing>('/billing/transfer', { method: 'POST', body: { packageId, toTutorId, lessons } }),
+  tutorReviews: (id: string) => request<{ reviews: TutorReview[] }>(`/tutors/${id}/reviews`),
+  addReview: (id: string, r: { rating: number; body: string; author: string }) => request<{ ok: true }>(`/tutors/${id}/reviews`, { method: 'POST', body: r }),
+  tutorPing: () => request<void>('/tutor/ping', { method: 'POST' }),
   cancelBooking: (id: string, reason: string, note: string) =>
     request<{ booking: Booking }>(`/bookings/${id}/cancel`, { method: 'POST', body: { reason, note } }),
 

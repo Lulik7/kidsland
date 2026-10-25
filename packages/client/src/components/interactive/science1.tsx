@@ -225,7 +225,7 @@ export function MagnetPoles({ tc }: { tc: Tc }) {
           N
         </text>
       </g>
-      <g transform={`translate(${pull ? 250 : 300} 60)`} onClick={() => setFlip(!flip)} style={{ cursor: 'pointer', transition: 'transform 0.4s' }}>
+      <g transform={`translate(${pull ? 250 : 300} 60)`} onClick={() => setFlip(!flip)} style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer", transition: 'transform 0.4s' }}>
         <rect width="70" height="40" fill={flip ? '#4a90e2' : '#e5534b'} />
         <rect x="70" width="70" height="40" fill={flip ? '#e5534b' : '#4a90e2'} />
         <text x="35" y="26" textAnchor="middle" fill="#fff" fontWeight="800">
@@ -477,7 +477,7 @@ export function CircuitPlay({ tc }: { tc: Tc }) {
         <circle r="22" fill={lit ? '#ffe56b' : '#f3f5f8'} stroke={INK} strokeWidth="2" />
         {lit && <circle r="34" fill="#ffe56b" opacity="0.35" />}
       </g>
-      <g onClick={() => setOn(!on)} style={{ cursor: 'pointer' }}>
+      <g onClick={() => setOn(!on)} style={{ cursor: "url('/img/cursor-bird-hover.svg') 1 10, pointer" }}>
         <rect x="355" y="100" width="50" height="50" fill="transparent" />
         <line x1="380" y1="150" x2={on ? 380 : 400} y2={on ? 100 : 110} stroke={INK} strokeWidth="5" strokeLinecap="round" />
         <circle cx="380" cy="150" r="5" fill={INK} />

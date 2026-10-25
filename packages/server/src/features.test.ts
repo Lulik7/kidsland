@@ -48,6 +48,8 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
     at.setUTCMinutes(0, 0, 0);
     await request(app!).post('/api/tutor/slots').set(auth(tutor)).send({ startsAt: [at.toISOString()] });
     const slots = await request(app!).get('/api/tutor/slots').set(auth(tutor));
+    const { rows: tp } = await db!.query('SELECT t.id FROM tutor_profiles t JOIN users u ON u.id = t.user_id WHERE u.email = $1', [tutorEmail]);
+    await request(app!).post('/api/billing/buy').set(auth(parent)).send({ plan: 'trial', tutorId: tp[0].id });
     bookingId = (await request(app!).post('/api/bookings').set(auth(parent)).send({ slotId: slots.body.slots[0].id, childId })).body
       .booking.id;
   });
