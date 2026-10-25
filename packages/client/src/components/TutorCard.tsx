@@ -13,7 +13,7 @@ export function TutorCard({ tutor: tu, childId }: { tutor: Tutor; childId?: stri
     <Link to={link} className="tutor-card">
       <div className="tc-top">
         <span className="tc-ava">
-          <TutorAvatar name={tu.displayName} size={68} />
+          <TutorAvatar name={tu.displayName} photo={tu.avatar} size={68} />
           {tu.online && <i className="online-dot" title={t('В сети')} />}
         </span>
         <div className="tc-who">

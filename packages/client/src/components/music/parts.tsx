@@ -12,13 +12,13 @@ export const METAL = '#b8c2cc';
 export const MINT = '#79c7a6';
 export const PEACH = '#f4b391';
 
-/** A label with a thin leader line from the text to the point it names. */
+/** A label with a thin leader line from the text to the point it names; a white outline keeps it readable on dark parts. */
 export function Callout({ x, y, tx, ty, text, anchor = 'start' }: { x: number; y: number; tx: number; ty: number; text: string; anchor?: 'start' | 'end' | 'middle' }) {
   return (
     <g>
       <line x1={x} y1={y} x2={tx} y2={ty} stroke="#8a94a3" strokeWidth="1.2" strokeDasharray="3 3" />
       <circle cx={x} cy={y} r="3.2" fill={PEACH} stroke="#fff" strokeWidth="1" />
-      <text x={tx + (anchor === 'start' ? 4 : anchor === 'end' ? -4 : 0)} y={ty + 4} textAnchor={anchor} fontSize="13" fontWeight="700" fill={INK}>
+      <text x={tx + (anchor === 'start' ? 4 : anchor === 'end' ? -4 : 0)} y={ty + 4} textAnchor={anchor} fontSize="13" fontWeight="700" fill={INK} stroke="#fff" strokeWidth="5" strokeLinejoin="round" paintOrder="stroke">
         {text}
       </text>
     </g>

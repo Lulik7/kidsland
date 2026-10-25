@@ -46,7 +46,7 @@ export function TutorCabinet() {
     <main className="page cabinet">
       <div className="dash-head">
         <div className="cab-who">
-          <TutorAvatar name={tutor.displayName} size={64} />
+          <TutorAvatar name={tutor.displayName} photo={tutor.avatar} size={64} />
           <div>
             <h1 className="page-title left">{t('Кабинет наставника')}</h1>
             <span className={`chip ${tutor.isPublished ? 'chip-free' : 'chip-muted'}`}>

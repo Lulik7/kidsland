@@ -109,7 +109,7 @@ export function LessonRoom() {
   return (
     <main className="page lesson">
       <div className="lesson-head card">
-        <TutorAvatar name={booking.tutor.displayName} size={56} />
+        <TutorAvatar name={booking.tutor.displayName} photo={booking.tutor.avatar} size={56} />
         <div className="lesson-info">
           <h1>{t('Урок с наставником')} {personName(booking.tutor.displayName)}</h1>
           <span className="muted">

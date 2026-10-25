@@ -1,6 +1,7 @@
 """Records lesson lines with Piper neural voices (https://github.com/rhasspy/piper).
 
 Usage: python3 scripts/record_voices.py <lang> <lines.json> <female.onnx> <male.onnx|-> [male pitch factor]
+LENGTH_SCALE (env, default 1.08) sets the speaking pace: smaller is quicker.
 Writes packages/client/public/voice/<lang>/lines/<hash>-<f|m>.mp3 and skips files that already exist.
 With "-" for the male model, the female voice is pitched down for male speakers.
 A model written as "espeak:<voice>" (e.g. espeak:ka+f3) records with espeak-ng, for languages Piper lacks.
@@ -28,7 +29,7 @@ for item in json.load(open(lines_file)):
         rate = 22050
     else:
         with wave.open(wav, 'wb') as w:
-            v.synthesize_wav(item['text'], w, syn_config=SynthesisConfig(length_scale=1.08))
+            v.synthesize_wav(item['text'], w, syn_config=SynthesisConfig(length_scale=float(os.environ.get('LENGTH_SCALE', '1.08'))))
         rate = v.config.sample_rate
     if item['g'] == 'm' and male_model == '-':
         af = f'asetrate={rate}*{factor},aresample=22050,atempo={1 / factor:.4f}'

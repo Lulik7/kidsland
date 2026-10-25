@@ -130,7 +130,7 @@ export function TutorPage() {
         <section className="card tutor-profile">
           <div className="tp-head">
             <span className="tc-ava">
-              <TutorAvatar name={tutor.displayName} size={96} />
+              <TutorAvatar name={tutor.displayName} photo={tutor.avatar} size={96} />
               {tutor.online && <i className="online-dot" />}
             </span>
             <div>
@@ -279,7 +279,7 @@ export function TutorPage() {
         <div className="modal-bg" onClick={() => setBooked(null)}>
           <Confetti />
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <TutorAvatar name={tutor.displayName} size={84} />
+            <TutorAvatar name={tutor.displayName} photo={tutor.avatar} size={84} />
             <h2>{t('Вы записаны!')}</h2>
             <p>
               {fmtDateTime(booked.startsAt)}{t(', урок с наставником')}{' '}{personName(tutor.displayName)}{t('. Ученик:')}{' '}{booked.child.nickname}.

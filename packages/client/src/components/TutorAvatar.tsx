@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const GRADIENTS = [
   ['#ff9a3d', '#ff6b3d'],
   ['#7b5cff', '#4c2fd6'],
@@ -7,8 +9,12 @@ const GRADIENTS = [
   ['#ffc93c', '#e09b00'],
 ];
 
-/** Initials on a colour picked from the name, so each tutor keeps the same colour everywhere. */
-export function TutorAvatar({ name, size = 64 }: { name: string; size?: number }) {
+/**
+ * The tutor's photo; without one (or if it does not load), initials on a colour picked from the name,
+ * so each tutor keeps the same colour everywhere.
+ */
+export function TutorAvatar({ name, size = 64, photo }: { name: string; size?: number; photo?: string | null }) {
+  const [broken, setBroken] = useState(false);
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -18,6 +24,8 @@ export function TutorAvatar({ name, size = 64 }: { name: string; size?: number }
   let h = 0;
   for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const [a, b] = GRADIENTS[h % GRADIENTS.length];
+  if (photo && /^(https?:)?\//.test(photo) && !broken)
+    return <img className="tutor-avatar tutor-photo" src={photo} alt="" width={size} height={size} style={{ width: size, height: size }} onError={() => setBroken(true)} />;
   return (
     <span
       className="tutor-avatar"

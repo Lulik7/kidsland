@@ -2,6 +2,7 @@
 // for scripts/record_voices.py. Usage: npx tsx scripts/voice-lines.mts fr > /tmp/fr-lines.json
 import { COURSES } from '../packages/shared/src/index.ts';
 import { GEORGIAN } from '../packages/client/src/components/interactive/geoData.ts';
+import { GREEK } from '../packages/client/src/components/interactive/greekData.ts';
 import { genderOf, textHash } from '../packages/client/src/voices.ts';
 
 const lang = process.argv[2];
@@ -27,4 +28,5 @@ for (const c of COURSES.filter((c) => c.id.startsWith(`lang-${lang}-`)))
   }
 // The copybook reads each Georgian letter and its word.
 if (lang === 'ka') for (const g of GEORGIAN) for (const t of [g.ch, g.word]) add(t);
+if (lang === 'el') for (const g of GREEK) for (const t of [g.name, g.word]) add(t);
 console.log(JSON.stringify([...out.values()]));

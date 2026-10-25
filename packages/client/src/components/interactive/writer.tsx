@@ -10,6 +10,8 @@ export interface CopyLetter {
   pic?: string;
   word?: string;
   wordTr?: string;
+  /** What to say for the letter when it is not the sign itself (Greek letters are read by name: «άλφα»). */
+  say?: string;
 }
 
 type Strokes = Record<string, string[]>;
@@ -102,7 +104,7 @@ export function Copybook({ letters, file, lang, ruling, tc, title }: { letters: 
     reset('watch');
   };
   const listen = async () => {
-    await say(letter.ch, lang, 0, 0.75);
+    await say(letter.say ?? letter.ch, lang, 0, 0.75);
     if (letter.word && dictation === null) await say(letter.word, lang, 0, 0.8);
   };
 
@@ -241,7 +243,7 @@ export function Copybook({ letters, file, lang, ruling, tc, title }: { letters: 
             const i = Math.floor(Math.random() * letters.length);
             setDictation(i);
             reset('write');
-            say(letters[i].ch, lang, 0, 0.75);
+            say(letters[i].say ?? letters[i].ch, lang, 0, 0.75);
           }}
         >
           🎧 {tc('Диктант')}

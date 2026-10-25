@@ -24,7 +24,7 @@ export function BookingCard({ booking: b, viewer, onChange }: { booking: Booking
   const c = b.cancellation;
   return (
     <div className={`booking${b.status === 'cancelled' ? ' cancelled' : ''}`}>
-      {viewer === 'parent' ? <TutorAvatar name={who} size={52} /> : <Sprite svg={avatarSvg(b.child.avatarUrl)} size={52} />}
+      {viewer === 'parent' ? <TutorAvatar name={who} photo={b.tutor.avatar} size={52} /> : <Sprite svg={avatarSvg(b.child.avatarUrl)} size={52} />}
       <div className="booking-main">
         <b>{fmtDateTime(b.startsAt)}</b>
         <span>

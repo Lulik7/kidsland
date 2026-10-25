@@ -3,7 +3,9 @@ import type { ReactNode } from 'react';
 import { CharacterMaker, ColorMixer, ColorWheel, ComicPanel, Easel, FaceBuilder, FigurePose, Flipbook, FolkPattern, Hatching, LandscapePlanes, Layers, LightShadow, MoodPalette, Perspective, PainterStyles, PencilPressure, PixelArt, ShapeBuilder, ThirdsGrid, WatercolorWash, WaterReflect } from './art1';
 import { BinaryBits, BinarySearch, ChoiceTree, DebugSteps, GraphBfs, IfElseFlow, LogicGates, LoopPattern, RobotProgram, SortBars, WaveMaze } from './algo';
 import { GEORGIAN } from './geoData';
+import { GREEK } from './greekData';
 import { CodeTrace, TurtleLoop } from './pytrace';
+import { FlexPlay, LiveHtml, ScratchRepeat, ScratchXY } from './webscratch';
 import { HIRAGANA, KATAKANA, type Kana } from './kanaData';
 import type { Tc } from './kit';
 import { Copybook } from './writer';
@@ -42,6 +44,17 @@ const SCENES: Record<string, Make> = {
   'python-mid-2|return: функция возвращает ответ': (tc) => <CodeTrace tc={tc} id="func" />,
   'python-pro-1|Цикл while и случайности': (tc) => <CodeTrace tc={tc} id="whileloop" />,
   'python-pro-2|Узоры из циклов': (tc) => <TurtleLoop tc={tc} />,
+  // Сайты: пишешь код и сразу видишь страницу
+  'web-1|Теги': (tc) => <LiveHtml tc={tc} sample="tags" />,
+  'web-2|Правила CSS': (tc) => <LiveHtml tc={tc} sample="css" />,
+  'web-2|Разберём пример: карточка': (tc) => <LiveHtml tc={tc} sample="card" />,
+  'web-3|Кнопка с JavaScript': (tc) => <LiveHtml tc={tc} sample="button" />,
+  'web-mid-2|display: flex': (tc) => <FlexPlay tc={tc} />,
+  'web-pro-2|Реагируем на клик': (tc) => <LiveHtml tc={tc} sample="clicker" />,
+  // Scratch: блоки выполняются, а спрайт двигается
+  'scratch-2|Координаты x и y': (tc) => <ScratchXY tc={tc} />,
+  'scratch-3|Блок «повторить»': (tc) => <ScratchRepeat tc={tc} />,
+  'scratch-3|Разберём пример: звезда': (tc) => <ScratchRepeat tc={tc} star />,
   // Логика и алгоритмы: каждый алгоритм работает по шагам
   'logic-1|Что такое алгоритм': (tc) => <RobotProgram tc={tc} />,
   'logic-2|Ищем повторения': (tc) => <LoopPattern tc={tc} />,
@@ -215,6 +228,27 @@ export function lessonCopybook(course: Course, index: number, tc: Tc): ReactNode
         ruling="lines"
         tc={tc}
         title={tc('Прописи: повторяем буквы')}
+      />
+    );
+  }
+  if (course.id === 'lang-el-1' || course.id === 'lang-el-2') {
+    // Level 1: two letters a lesson, capital and small. Level 2: small letters again, for joined handwriting.
+    const letters = slice(GREEK, index, 2);
+    if (!letters.length) return null;
+    const one = (g: (typeof GREEK)[number], ch: string) => ({ ch, sound: g.ru, hint: g.name, say: g.name, pic: g.pic, word: g.word, wordTr: g.wordRu });
+    const list =
+      course.id === 'lang-el-1'
+        ? letters.flatMap((g) => [one(g, g.cap), one(g, g.ch)])
+        : letters.flatMap((g) => (g.ch === 'σ' ? [one(g, 'σ'), one(g, 'ς')] : [one(g, g.ch)]));
+    return (
+      <Copybook
+        key={course.id + index}
+        letters={list}
+        file="el-strokes.json"
+        lang="el-GR"
+        ruling="lines"
+        tc={tc}
+        title={course.id === 'lang-el-1' ? tc('Прописи: греческие буквы') : tc('Прописи: повторяем буквы')}
       />
     );
   }
