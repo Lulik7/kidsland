@@ -8,6 +8,7 @@ import { HttpError } from '../errors';
 import { config } from '../config';
 import { queueMail } from '../mail';
 import { notifyAdmins } from '../notify';
+import { commissionPercent } from './admin';
 import { isUuid, priceOfTutor } from '../tutors';
 
 type Q = Db | PoolClient;
@@ -55,7 +56,9 @@ async function charge(db: Q, parentId: string, kind: 'pack' | 'subscription', ti
     'Kidsland',
   ].join('\n');
   await queueMail(db, user.email, `Kidsland: оплата получена, квитанция № ${pay[0].receipt_no}`, body);
-  await notifyAdmins(db, 'payment', `Оплата ${sum}: ${title}`, `${user.email}, квитанция № ${pay[0].receipt_no}`, `/billing/receipt/${pay[0].id}`);
+  const percent = await commissionPercent(db);
+  const share = formatMoney(Math.round((paid * percent) / 100), currency);
+  await notifyAdmins(db, 'payment', `Оплата ${sum}: ${title}`, `Ваша доля ${percent}%: ${share}. ${user.email}, квитанция № ${pay[0].receipt_no}`, `/billing/receipt/${pay[0].id}`);
 }
 
 const addMonth = (d: Date) => {

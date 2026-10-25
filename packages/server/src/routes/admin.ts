@@ -4,11 +4,12 @@ import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import { config } from '../config';
 import { envFilesFound, smtpUrlFiles, smtpUrlFromSystem } from '../envFiles';
+import type { PoolClient } from 'pg';
 import type { Db } from '../db/pool';
 import { checkMail, deliverMail, smtpSettings } from '../mail';
 
 /** Percent of each payment the site keeps; 20 until the admin sets it on the payments tab. */
-async function commissionPercent(db: Db) {
+export async function commissionPercent(db: Db | PoolClient) {
   const { rows } = await db.query("SELECT value FROM app_settings WHERE key = 'commission_percent'");
   const n = Number(rows[0]?.value);
   return rows.length && Number.isFinite(n) ? n : 20;
