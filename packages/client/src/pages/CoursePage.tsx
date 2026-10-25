@@ -2,7 +2,7 @@ import { coursesBySubject, getCourse, SUBJECTS } from '@kidsland/shared';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { LevelBadge } from '../components/CourseCard';
 import { Faq } from '../components/Faq';
-import { CountryGallery, courseBg, HeroBg } from '../components/HeroBg';
+import { courseBg, courseGallery, HeroBg, PhotoGallery } from '../components/HeroBg';
 import { LockIcon } from '../components/Icons';
 import { KidHud } from '../components/KidHud';
 import { coursePic, Pic } from '../pics';
@@ -69,7 +69,7 @@ export function CoursePage() {
         </div>
       </section>
 
-      <CountryGallery course={course} title={t('Страна языка')} />
+      {courseGallery(course) && <PhotoGallery title={t(courseGallery(course)!.title)} photos={courseGallery(course)!.photos} />}
 
       <div className="course-layout">
         <section>

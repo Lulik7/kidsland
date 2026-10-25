@@ -1059,4 +1059,6 @@ export const EN: Record<string, string> = {
   "Аудио (mp3)": "Audio (mp3)",
   "Текст": "Text",
   "Страна языка": "The country of the language",
+  "Студия диджея": "The DJ studio",
+  "Как пишут музыку": "How music is written",
 };

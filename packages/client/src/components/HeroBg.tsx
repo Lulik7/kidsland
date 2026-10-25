@@ -24,8 +24,8 @@ const MUSIC: Record<string, HeroMedia> = {
   cello: p('cello', 'center 40%'),
   vocal: p('vocal', '30% 30%'),
   solfeggio: { image: '/img/bg/music-sheet.jpg', pos: 'center 30%' },
-  dj: { image: '/img/bg/dj-headphones.jpg', pos: 'center 70%' },
-  composition: { image: '/img/bg/music-band.jpg', pos: 'center 40%' },
+  dj: { image: '/img/bg/dj-synth.jpg', pos: 'center 40%' },
+  composition: { image: '/img/bg/compose-pen.jpg' },
 };
 
 /** Background media of course pages: by topic first, then by subject. */
@@ -59,6 +59,9 @@ const COURSE_BG: Record<string, HeroMedia> = {
   'dj-1': { image: '/img/bg/dj-headphones.jpg', pos: 'center 70%' },
   'dj-2': { image: '/img/bg/dj-cables.jpg', pos: 'center 40%' },
   'dj-3': { image: '/img/bg/dj-roland.jpg', pos: 'center 60%' },
+  'compose-1': { image: '/img/bg/compose-pencil.jpg' },
+  'compose-2': { image: '/img/bg/compose-pen.jpg' },
+  'compose-3': { image: '/img/bg/compose-piano.jpg' },
 };
 
 function countryBg(course: Course): HeroMedia | undefined {
@@ -116,16 +119,26 @@ export function lessonPhoto(course: Course, title: string): HeroMedia | undefine
   return LESSON_PHOTO.find(([subject, re]) => subject === course.subject && re.test(title))?.[2];
 }
 
-/** A strip of photos of the language's country, shown on a language course page. */
-export function CountryGallery({ course, title }: { course: Course; title: string }) {
+/** Photos of the DJ studio, shown in a strip on DJ course pages. */
+const DJ_PHOTOS = ['dj-synth', 'dj-headphones', 'dj-cables', 'dj-knobs', 'dj-roland', 'dj-panel'].map((n) => `/img/bg/${n}.jpg`);
+
+const COMPOSE_PHOTOS = ['compose-pencil', 'compose-pen', 'compose-notes', 'compose-piano', 'music-band'].map((n) => `/img/bg/${n}.jpg`);
+
+/** A strip of photos under a course banner: the language's country, or the DJ studio. */
+export function courseGallery(course: Course): { title: string; photos: string[] } | undefined {
+  if (course.topic === 'dj') return { title: 'Студия диджея', photos: DJ_PHOTOS };
+  if (course.topic === 'composition') return { title: 'Как пишут музыку', photos: COMPOSE_PHOTOS };
   const list = course.topic ? COUNTRY_PHOTOS[course.topic] : undefined;
-  if (!list) return null;
+  return list && { title: 'Страна языка', photos: list.map(countryPhoto) };
+}
+
+export function PhotoGallery({ title, photos }: { title: string; photos: string[] }) {
   return (
     <section className="country-gallery">
       <h2 className="track-title">{title}</h2>
       <div className="cg-row">
-        {list.map((n) => (
-          <img key={n} src={countryPhoto(n)} alt="" loading="lazy" />
+        {photos.map((src) => (
+          <img key={src} src={src} alt="" loading="lazy" />
         ))}
       </div>
     </section>
