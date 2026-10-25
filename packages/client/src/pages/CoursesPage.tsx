@@ -8,7 +8,7 @@ import { SubjectIcon } from '../components/SubjectIcon';
 import { coursesBase } from '../courses/meta';
 import { useCourseProgress } from '../courses/useChild';
 import { useT } from '../i18n';
-import { Pic, sectionPic, TOPIC_PIC } from '../pics';
+import { Pic, sectionPic } from '../pics';
 import { plural } from '../plural';
 
 export function CoursesPage() {
@@ -44,10 +44,6 @@ export function CoursesPage() {
   const sectionCourses = COURSES.filter((c) => sectionSubjects.some((s) => s.id === c.subject));
   const topicTiles =
     section && (section.id === 'music' || section.id === 'languages') ? section.topics.filter((tp) => sectionCourses.some((c) => c.topic === tp.id)) : [];
-  const pickTopic = (id: string) => {
-    setTopic(id);
-    setTimeout(() => document.getElementById('course-filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
-  };
 
   return (
     <main className="page courses-page">
@@ -114,23 +110,6 @@ export function CoursesPage() {
                       );
                     }}
                   />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {topicTiles.length > 1 && !topic && (
-            <section className="courses-directions">
-              <div className="big-sections topic-tiles">
-                {topicTiles.map((tp) => (
-                  <button key={tp.id} className="big-section" style={{ ['--c' as string]: section.color }} onClick={() => pickTopic(tp.id)}>
-                    {TOPIC_PIC[tp.id] && (
-                      <span className="bs-icon">
-                        <Pic code={TOPIC_PIC[tp.id]} size={80} />
-                      </span>
-                    )}
-                    <h3>{t(tp.name)}</h3>
-                  </button>
                 ))}
               </div>
             </section>
