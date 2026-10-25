@@ -1,6 +1,9 @@
 import type { Course } from '@kidsland/shared';
 import type { ReactNode } from 'react';
+import { GEORGIAN } from './geoData';
+import { HIRAGANA, KATAKANA, type Kana } from './kanaData';
 import type { Tc } from './kit';
+import { Copybook } from './writer';
 import { AtomZoom, CircuitPlay, FloatSink, FrictionRamp, LeverPlay, MagnetPlay, MagnetPoles, MoleculeBuilder, ParticlesHeat, PrismRainbow, ShadowLamp, SoundWave } from './science1';
 import {
   BodyOrgans,
@@ -87,4 +90,54 @@ export function lessonScene(course: Course, lessonId: string, sectionTitle: stri
   if (!sectionTitle) return null;
   const make = SCENES[`${lessonId}|${sectionTitle}`];
   return make ? make(tc) : null;
+}
+
+/** Letters a lesson teaches to write: `per` letters for each lesson in order, nothing once they run out. */
+const slice = <T,>(list: T[], index: number, per: number) => list.slice(index * per, index * per + per);
+
+/** The copybook for a lesson of a language with its own alphabet (Japanese kana, Georgian). */
+export function lessonCopybook(course: Course, index: number, tc: Tc): ReactNode {
+  const kana = (k: Kana) => ({ ch: k.ch, sound: k.ru, hint: k.hint, pic: k.pic });
+  if (course.id === 'lang-ja-1' || course.id === 'lang-ja-2') {
+    const list = course.id === 'lang-ja-1' ? HIRAGANA : KATAKANA;
+    const letters = slice(list, index, 3);
+    if (!letters.length) return null;
+    return <Copybook key={course.id + index} letters={letters.map(kana)} file="kana-strokes.json" lang="ja-JP" ruling="grid" tc={tc} title={tc(course.id === 'lang-ja-1' ? 'Прописи: хирагана' : 'Прописи: катакана')} />;
+  }
+  if (course.id === 'lang-ja-3') {
+    const letters = slice([...HIRAGANA, ...KATAKANA], index, 5);
+    if (!letters.length) return null;
+    return <Copybook key={course.id + index} letters={letters.map(kana)} file="kana-strokes.json" lang="ja-JP" ruling="grid" tc={tc} title={tc('Прописи: повторяем азбуки')} />;
+  }
+  if (course.id === 'lang-ka-1') {
+    const letters = slice(GEORGIAN, index, 2);
+    if (!letters.length) return null;
+    return (
+      <Copybook
+        key={course.id + index}
+        letters={letters.map((g) => ({ ch: g.ch, sound: g.ru, pic: g.pic, word: g.word, wordTr: g.wordRu }))}
+        file="ka-strokes.json"
+        lang="ka-GE"
+        ruling="lines"
+        tc={tc}
+        title={tc('Прописи: грузинские буквы')}
+      />
+    );
+  }
+  if (course.id === 'lang-ka-2') {
+    const letters = slice(GEORGIAN, index, 2);
+    if (!letters.length) return null;
+    return (
+      <Copybook
+        key={course.id + index}
+        letters={letters.map((g) => ({ ch: g.ch, sound: g.ru, pic: g.pic, word: g.word, wordTr: g.wordRu }))}
+        file="ka-strokes.json"
+        lang="ka-GE"
+        ruling="lines"
+        tc={tc}
+        title={tc('Прописи: повторяем буквы')}
+      />
+    );
+  }
+  return null;
 }

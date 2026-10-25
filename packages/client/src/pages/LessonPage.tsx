@@ -13,7 +13,7 @@ import { COIN, HERO } from '../game/sprites';
 import { useLang } from '../i18n';
 import { ChessBoard } from '../components/ChessBoard';
 import { Dialog, ReadingText, WordsListen } from '../components/LessonExtras';
-import { lessonScene } from '../components/interactive';
+import { lessonCopybook, lessonScene } from '../components/interactive';
 import { musicDiagrams, musicSectionPicture } from '../components/music';
 import { useLocal, useTc } from '../content';
 import { CHESS_DIAGRAMS } from '../content/chess';
@@ -293,6 +293,10 @@ export function LessonPage() {
             </article>
             );
           })}
+          {(() => {
+            const book = lessonCopybook(course, index, tc);
+            return book && <article className="theory-card">{book}</article>;
+          })()}
           <a
             className="video-card"
             href={`https://www.youtube.com/results?${new URLSearchParams({ search_query: `${shown.lesson.title} ${shown.course.title} ${t('для детей')}`, hl: lang })}`}
