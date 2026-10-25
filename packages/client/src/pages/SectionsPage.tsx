@@ -1,4 +1,4 @@
-import { WcBranch } from '../components/Watercolor';
+import { WcBranch, WcCloud } from '../components/Watercolor';
 import { articlesOfSection, COURSES, findSection, SECTIONS, SUBJECTS, type Article, type Section } from '@kidsland/shared';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -31,9 +31,14 @@ export function SectionsPage() {
           const lessons = coursesOf(s).reduce((n, c) => n + c.lessons.length, 0);
           return (
             <Link key={s.id} to={`/sections/${s.id}`} className="section-card" style={{ ['--c' as string]: s.color }}>
-              <span className="sec-icon">
-                <Pic code={sectionPic(s.id)} size={52} />
+              <span className="sec-art">
+                <WcCloud className="sec-cloud" size={120} color="#bfe0f0" />
+                <span className="sec-circle">
+                  <Pic code={sectionPic(s.id)} size={70} />
+                </span>
+                <WcBranch className="sec-leaves" size={120} />
               </span>
+              <span className="sec-body">
               <h2>{t(s.name)}</h2>
               <p>{t(s.tagline)}</p>
               <div className="sec-topics">
@@ -47,6 +52,7 @@ export function SectionsPage() {
                   ? `${articlesOfSection(s.id).length} ${plural(articlesOfSection(s.id).length, [t('статья'), t('статьи'), t('статей')])}`
                   : `${lessons} ${plural(lessons, [t('урок'), t('урока'), t('уроков')])}`}
               </b>
+              </span>
             </Link>
           );
         })}

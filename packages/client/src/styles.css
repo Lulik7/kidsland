@@ -1633,3 +1633,13 @@ h1, h2 { color: #34404f; }
 @keyframes rg-arrow-bounce { 0%, 100% { transform: rotate(-90deg) translateX(0); } 50% { transform: rotate(-90deg) translateX(10px); } }
 @keyframes rg-click-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 @media (prefers-reduced-motion: reduce) { .rg-click, .rg-arrow { animation: none; } }
+
+/* Section cards: dashed frame, coloured top with a picture in a circle, watercolour cloud and leaves */
+.section-card { padding: 0; gap: 0; overflow: hidden; border: 2px dashed #f4c9b8; border-top: 2px dashed #f4c9b8; border-radius: 36px; box-shadow: 0 8px 26px rgba(52, 64, 79, 0.06); }
+.section-card .sec-art { position: relative; display: grid; place-items: center; height: 150px; background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.45), transparent 45%), color-mix(in srgb, var(--c) 55%, #fff); }
+.section-card .sec-circle { position: relative; z-index: 1; display: grid; place-items: center; width: 112px; height: 112px; border-radius: 50%; background: #fff; box-shadow: 0 8px 20px rgba(52, 64, 79, 0.12); }
+.section-card .sec-cloud { position: absolute; left: calc(50% - 120px); top: 4px; }
+.section-card .sec-leaves { position: absolute; left: calc(50% + 18px); bottom: -6px; transform: rotate(-12deg); }
+.section-card .sec-body { display: flex; flex-direction: column; gap: 8px; padding: 18px 22px 22px; flex: 1; }
+.section-card .sec-body .sec-count { margin-top: auto; }
+.section-card:hover .sec-circle .pic3d { transform: scale(1.1) rotate(-4deg); transition: transform 0.25s; }
