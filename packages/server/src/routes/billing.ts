@@ -55,7 +55,6 @@ async function charge(db: Q, parentId: string, kind: 'pack' | 'subscription', ti
     'Kidsland',
   ].join('\n');
   await queueMail(db, user.email, `Kidsland: оплата получена, квитанция № ${pay[0].receipt_no}`, body);
-  await queueMail(db, config.notifyEmails, `Kidsland: новая оплата ${sum} от ${user.email}`, body);
   await notifyAdmins(db, 'payment', `Оплата ${sum}: ${title}`, `${user.email}, квитанция № ${pay[0].receipt_no}`, `/billing/receipt/${pay[0].id}`);
 }
 

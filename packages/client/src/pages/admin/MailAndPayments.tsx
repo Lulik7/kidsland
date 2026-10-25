@@ -125,15 +125,62 @@ const shekels = (n: number) => `${n.toLocaleString('ru-RU')} ₪`;
 
 /** Payments with their receipts, newest first. */
 export function AdminPayments() {
-  const [data, setData] = useState<{ payments: AdminPayment[]; month: number } | null>(null);
+  const [data, setData] = useState<{ payments: AdminPayment[]; month: number; monthCommission?: number; commissionPercent?: number } | null>(null);
+  const [percent, setPercent] = useState('');
+  const [saved, setSaved] = useState(false);
+  const load = () =>
+    api
+      .adminPayments()
+      .then((d) => {
+        setData(d);
+        setPercent(String(d.commissionPercent ?? 20));
+      })
+      .catch(() => {});
   useEffect(() => {
-    api.adminPayments().then(setData).catch(() => {});
+    load();
   }, []);
   if (!data) return <div className="card muted">Загружаем оплаты…</div>;
+  const pct = data.commissionPercent ?? 20;
   return (
     <div className="card">
       <h2 className="card-title">Оплаты</h2>
-      <p className="muted">За последние 30 дней: <b>{shekels(data.month)}</b></p>
+      <p className="muted">
+        За последние 30 дней оплачено: <b>{shekels(data.month)}</b>. Ваша доля ({pct}%): <b>{shekels(data.monthCommission ?? 0)}</b>, наставникам:{' '}
+        <b>{shekels(data.month - (data.monthCommission ?? 0))}</b>.
+      </p>
+      <div className="mail-retry">
+        <label className="small">
+          Ваш процент с каждой оплаты:{' '}
+          <input
+            type="number"
+            min={0}
+            max={60}
+            value={percent}
+            onChange={(e) => {
+              setPercent(e.target.value);
+              setSaved(false);
+            }}
+            style={{ width: 70 }}
+          />{' '}
+          %
+        </label>{' '}
+        <button
+          className="btn btn-light btn-small"
+          disabled={!/^\d+$/.test(percent) || Number(percent) > 60 || Number(percent) === pct}
+          onClick={async () => {
+            await api.setCommission(Number(percent));
+            setSaved(true);
+            load();
+          }}
+        >
+          Сохранить
+        </button>
+        {saved && <span className="small" style={{ color: '#2f8a5f' }}> Сохранено</span>}
+        <p className="muted small" style={{ marginTop: 8 }}>
+          Остальное получает наставник, который вёл урок. Пока оплата учебная, это только расчёт: настоящие деньги начнут делиться, когда подключим платёжную
+          компанию.
+        </p>
+      </div>
       {data.payments.length === 0 ? (
         <p className="muted">Оплат пока нет.</p>
       ) : (
@@ -145,6 +192,7 @@ export function AdminPayments() {
                 <th>Кто</th>
                 <th>За что</th>
                 <th>Сумма</th>
+                <th>Ваша доля</th>
                 <th>Квитанция</th>
               </tr>
             </thead>
@@ -158,6 +206,7 @@ export function AdminPayments() {
                     {shekels(p.amount)}
                     {p.currency !== 'ILS' && <span className="muted small"> ({p.amountShown} {p.currency})</span>}
                   </td>
+                  <td>{shekels(p.commission ?? 0)}</td>
                   <td>{p.receiptNo ? <Link to={`/billing/receipt/${p.id}`}>№ {p.receiptNo}</Link> : '—'}</td>
                 </tr>
               ))}

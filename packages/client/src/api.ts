@@ -23,6 +23,7 @@ export interface AdminPayment {
   receiptNo: number | null;
   createdAt: string;
   email: string;
+  commission?: number;
 }
 
 export interface User {
@@ -527,7 +528,9 @@ export const api = {
     request<{ letters: AdminLetter[]; counts: Partial<Record<'pending' | 'sent' | 'failed', number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; mailPassHint?: string; smtpUrlFiles?: string[]; smtpOverridesSystem?: boolean }>(`/admin/mail${status ? `?status=${status}` : ''}`),
   checkMail: () => request<{ ok: boolean; error?: string }>('/admin/mail/check', { method: 'POST' }),
   retryMail: () => request<{ requeued: number }>('/admin/mail/retry', { method: 'POST' }),
-  adminPayments: () => request<{ payments: AdminPayment[]; month: number }>('/admin/payments'),
+  adminPayments: () =>
+    request<{ payments: AdminPayment[]; month: number; monthCommission?: number; commissionPercent?: number }>('/admin/payments'),
+  setCommission: (percent: number) => request<{ commissionPercent: number }>('/admin/commission', { method: 'PUT', body: { percent } }),
   adminNotifications: () => request<{ unread: number; notifications: AdminNotification[] }>('/admin/notifications'),
   readNotifications: (ids?: string[]) => request<{ ok: true }>('/admin/notifications/read', { method: 'POST', body: { ids } }),
   tutorApplications: (status: VerificationStatus | 'all') =>

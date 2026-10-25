@@ -7,6 +7,13 @@ import { envFilesFound, smtpUrlFiles, smtpUrlFromSystem } from '../envFiles';
 import type { Db } from '../db/pool';
 import { checkMail, deliverMail, smtpSettings } from '../mail';
 
+/** Percent of each payment the site keeps; 20 until the admin sets it on the payments tab. */
+async function commissionPercent(db: Db) {
+  const { rows } = await db.query("SELECT value FROM app_settings WHERE key = 'commission_percent'");
+  const n = Number(rows[0]?.value);
+  return rows.length && Number.isFinite(n) ? n : 20;
+}
+
 /** First and last two letters only, so the admin can compare with the password in Google without showing it. */
 const maskPass = (p: string) => (p.length < 6 ? '' : `${p.slice(0, 2)}${'•'.repeat(p.length - 4)}${p.slice(-2)}`);
 import { HttpError } from '../errors';
@@ -107,13 +114,27 @@ export function adminRouter(db: Db) {
          FROM payments p JOIN users u ON u.id = p.parent_id ORDER BY p.created_at DESC LIMIT 200`,
     );
     const total = await db.query("SELECT COALESCE(sum(amount), 0)::int AS sum FROM payments WHERE created_at > now() - interval '30 days'");
+    const percent = await commissionPercent(db);
+    const share = (amount: number) => Math.round((amount * percent) / 100);
     res.json({
       payments: rows.map((p) => ({
         id: p.id, kind: p.kind, title: p.title, amount: p.amount, amountShown: p.amount_shown, currency: p.currency,
-        method: p.method, receiptNo: p.receipt_no, createdAt: p.created_at, email: p.email,
+        method: p.method, receiptNo: p.receipt_no, createdAt: p.created_at, email: p.email, commission: share(p.amount),
       })),
       month: total.rows[0].sum,
+      monthCommission: share(total.rows[0].sum),
+      commissionPercent: percent,
     });
+  });
+
+  // The site's share of every payment; the rest goes to the tutor.
+  r.put('/commission', async (req, res) => {
+    const { percent } = z.object({ percent: z.number().int().min(0).max(60) }).parse(req.body);
+    await db.query(
+      "INSERT INTO app_settings (key, value) VALUES ('commission_percent', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+      [String(percent)],
+    );
+    res.json({ commissionPercent: percent });
   });
 
   // ---- Notifications ----
