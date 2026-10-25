@@ -10,9 +10,12 @@ export const CURRENCY = '₪';
 export const PRICE_STEPS = [
   { from: 0, price: 40 },
   { from: 10, price: 50 },
-  { from: 30, price: 60 },
-  { from: 60, price: 70 },
-  { from: 100, price: 80 },
+  { from: 25, price: 60 },
+  { from: 50, price: 75 },
+  { from: 80, price: 90 },
+  { from: 120, price: 110 },
+  { from: 170, price: 130 },
+  { from: 230, price: 150 },
 ] as const;
 
 export function tutorPrice(students: number): number {

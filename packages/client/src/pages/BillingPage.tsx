@@ -1,9 +1,9 @@
-import { PACKS, PRICE_STEPS, SUBSCRIPTION_STEPS, withDiscount } from '@kidsland/shared';
+import { BONUS_DISCOUNT, BONUS_FOR_DISCOUNT, BONUS_PER_ANSWER, PACKS, PRICE_STEPS, SUBSCRIPTION_STEPS, withDiscount } from '@kidsland/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, type Billing, type Tutor } from '../api';
 import { WcBranch } from '../components/Watercolor';
-import { fmtDateTime, money, personName } from '../format';
+import { CURRENCIES, fmtDateTime, getCurrency, money, personName, setCurrency, type Currency } from '../format';
 import { useT } from '../i18n';
 
 /** "Subscription and payment": balance, lesson packs, the monthly subscription and moving lessons to another tutor. */
@@ -17,6 +17,7 @@ export function BillingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [cur, setCur] = useState(getCurrency());
   const [move, setMove] = useState<{ packageId: string; to: string; lessons: number } | null>(null);
 
   useEffect(() => {
@@ -71,6 +72,22 @@ export function BillingPage() {
         <p>{t('Оплатите уроки заранее: пакетом или подпиской на месяц. Чем больше уроков, тем дешевле каждый. Неиспользованные уроки можно перенести к другому наставнику.')}</p>
       </section>
 
+      <div className="bill-currency">
+        <span className="muted small">{t('Валюта')}:</span>
+        {(Object.keys(CURRENCIES) as Currency[]).map((c) => (
+          <button
+            key={c}
+            type="button"
+            className={`fchip${cur === c ? ' on' : ''}`}
+            onClick={() => {
+              setCurrency(c);
+              setCur(c);
+            }}
+          >
+            {CURRENCIES[c].sign} {c}
+          </button>
+        ))}
+      </div>
       <div className="demo-pay">💡 {t('Оплата пока учебная: деньги не списываются, уроки сразу появляются на балансе.')}</div>
       {error && <div className="error">{error}</div>}
       {note && <div className="ok-note">✓ {note}</div>}
@@ -93,7 +110,7 @@ export function BillingPage() {
             <div key={p.id} className="bill-pkg">
               <div>
                 <b>
-                  {p.isTrial ? t('Пробный урок') : p.source === 'subscription' ? t('Подписка') : p.source === 'transfer' ? t('Перенесённые уроки') : t('Пакет')}
+                  {p.isTrial ? t('Пробный урок') : p.plan === 'bonus' ? t('Урок за бонусы') : p.source === 'subscription' ? t('Подписка') : p.source === 'transfer' ? t('Перенесённые уроки') : t('Пакет')}
                 </b>{' '}
                 · {p.tutor ? personName(p.tutor.displayName) : '—'}
                 <div className="small muted">
@@ -178,11 +195,50 @@ export function BillingPage() {
             );
           })}
         </div>
+        {cur !== 'ILS' && <p className="small muted">{t('Цены пересчитаны из шекелей по примерному курсу.')}</p>}
         <p className="small muted">
           {t('Цена урока зависит от наставника: у нового')} {money(PRICE_STEPS[0].price)}
           {t(', и она растёт вместе с числом его учеников')} ({PRICE_STEPS.map((s) => `${s.from}+ → ${money(s.price)}`).join(', ')}).
         </p>
       </section>
+
+      {bill.children.length > 0 && (
+        <section className="card bill-bonus">
+          <h2 className="card-title">🎁 {t('Бонусы за домашние задания')}</h2>
+          <p className="muted">
+            {t('После каждого урока у ребёнка есть домашнее задание. За каждый верный ответ +{n} бонусов. {b} бонусов = урок со скидкой {d}% у любого наставника.', {
+              n: BONUS_PER_ANSWER,
+              b: BONUS_FOR_DISCOUNT,
+              d: BONUS_DISCOUNT,
+            })}
+          </p>
+          {bill.children.map((c) => {
+            const ready = c.bonus >= BONUS_FOR_DISCOUNT;
+            return (
+              <div key={c.id} className="bill-pkg">
+                <div>
+                  <b>{c.nickname}</b> · 🎁 {c.bonus}
+                  <span className="hw-bar">
+                    <i style={{ width: `${Math.min(100, (c.bonus / BONUS_FOR_DISCOUNT) * 100)}%` }} />
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-small"
+                  disabled={!ready || !tutor || busy}
+                  onClick={() => run(() => api.bonusLesson(c.id, tutorId), t('Урок со скидкой на балансе!'))}
+                >
+                  {!ready
+                    ? t('ещё {n} до скидки', { n: BONUS_FOR_DISCOUNT - c.bonus })
+                    : tutor
+                      ? `${t('Урок за')} ${money(withDiscount(tutor.price, BONUS_DISCOUNT))}`
+                      : t('Выберите наставника выше')}
+                </button>
+              </div>
+            );
+          })}
+        </section>
+      )}
 
       <section className="card">
         <h2 className="card-title">{t('Подписка на месяц')}</h2>

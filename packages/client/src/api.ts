@@ -13,6 +13,8 @@ export interface Child {
   avatarUrl: string | null;
   coins: number;
   xp: number;
+  /** Homework bonuses; BONUS_FOR_DISCOUNT of them buy a half-price lesson. */
+  bonus: number;
   completedLevels: string[];
 }
 
@@ -97,6 +99,7 @@ export interface Billing {
   lessonsLeft: number;
   wallet: number;
   trialAvailable: boolean;
+  children: { id: string; nickname: string; bonus: number }[];
   packages: LessonPackage[];
   subscription: { lessonsPerMonth: number; nextLessons: number | null; status: 'active' | 'cancelled'; periodEnd: string; tutor: { id: string; displayName: string } | null } | null;
   payments: { id: string; kind: 'pack' | 'subscription' | 'transfer'; title: string; amount: number; createdAt: string }[];
@@ -162,6 +165,15 @@ export interface LessonProgress {
   maxScore: number;
   attempts: number;
   completed: boolean;
+}
+
+export interface HomeworkResult {
+  score: number;
+  max: number;
+  passed: boolean;
+  results: Record<string, boolean>;
+  earned: number;
+  bonus: number;
 }
 
 export interface LessonResult {
@@ -473,6 +485,11 @@ export const api = {
     request<{ progress: LessonProgress[]; courses: CourseSummary[] }>(`/children/${childId}/courses`),
   submitLesson: (childId: string, lessonId: string, answers: Answers, part?: LessonPart) =>
     request<LessonResult>(`/children/${childId}/lessons/${lessonId}/submit`, { method: 'POST', body: { answers, part } }),
+  homework: (childId: string, lessonId: string) =>
+    request<{ results: Record<string, boolean>; attempts: number; earned: number; bonus: number }>(`/children/${childId}/homework/${lessonId}`),
+  submitHomework: (childId: string, lessonId: string, answers: Answers) =>
+    request<HomeworkResult>(`/children/${childId}/homework/${lessonId}`, { method: 'POST', body: { answers } }),
+  bonusLesson: (childId: string, tutorId: string) => request<Billing>('/billing/bonus', { method: 'POST', body: { childId, tutorId } }),
   completeLesson: (childId: string, lessonId: string) =>
     request<{ progress: LessonProgress }>(`/children/${childId}/lessons/${lessonId}/complete`, { method: 'POST', body: {} }),
 

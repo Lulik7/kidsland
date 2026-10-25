@@ -26,7 +26,7 @@ export async function getChildForUser(db: Db, childId: string, userId: string) {
   // Guard the uuid cast so a malformed id is a 404, not a database error.
   if (!/^[0-9a-f-]{36}$/i.test(childId)) throw new HttpError(404, 'Профиль ребёнка не найден');
   const { rows } = await db.query(
-    'SELECT id, parent_id, nickname, avatar_url, coins, xp, created_at FROM child_profiles WHERE id = $1 AND parent_id = $2',
+    'SELECT id, parent_id, nickname, avatar_url, coins, xp, bonus, created_at FROM child_profiles WHERE id = $1 AND parent_id = $2',
     [childId, userId],
   );
   if (!rows[0]) throw new HttpError(404, 'Профиль ребёнка не найден');
@@ -37,6 +37,7 @@ export async function getChildForUser(db: Db, childId: string, userId: string) {
     avatar_url: string | null;
     coins: number;
     xp: number;
+    bonus: number;
     created_at: Date;
   };
 }

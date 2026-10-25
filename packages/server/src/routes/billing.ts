@@ -1,4 +1,4 @@
-import { PACKS, subscriptionStep, SUBSCRIPTION_STEPS, withDiscount, type PackId } from '@kidsland/shared';
+import { BONUS_DISCOUNT, BONUS_FOR_DISCOUNT, PACKS, subscriptionStep, SUBSCRIPTION_STEPS, withDiscount, type PackId } from '@kidsland/shared';
 import { Router } from 'express';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
@@ -108,7 +108,7 @@ export function billingRouter(db: Db) {
 
   const overview = async (parentId: string) => {
     await renewSubscription(db, parentId);
-    const [packages, sub, payments, trial, wallet] = await Promise.all([
+    const [packages, sub, payments, trial, wallet, kids] = await Promise.all([
       db.query(
         `SELECT p.*, t.display_name AS tutor_name FROM lesson_packages p LEFT JOIN tutor_profiles t ON t.id = p.tutor_id
           WHERE p.parent_id = $1 AND p.lessons_left > 0 ORDER BY p.created_at`,
@@ -118,12 +118,14 @@ export function billingRouter(db: Db) {
       db.query('SELECT * FROM payments WHERE parent_id = $1 ORDER BY created_at DESC LIMIT 30', [parentId]),
       db.query("SELECT 1 FROM lesson_packages WHERE parent_id = $1 AND is_trial UNION SELECT 1 FROM bookings WHERE parent_id = $1 AND is_trial", [parentId]),
       db.query('SELECT wallet FROM users WHERE id = $1', [parentId]),
+      db.query('SELECT id, nickname, bonus FROM child_profiles WHERE parent_id = $1 ORDER BY created_at', [parentId]),
     ]);
     const s = sub.rows[0];
     return {
       lessonsLeft: packages.rows.reduce((n, p) => n + p.lessons_left, 0),
       wallet: wallet.rows[0]?.wallet ?? 0,
       trialAvailable: trial.rows.length === 0,
+      children: kids.rows.map((c) => ({ id: c.id, nickname: c.nickname, bonus: c.bonus })),
       packages: packages.rows.map((p) => ({
         id: p.id,
         plan: p.plan,
@@ -264,6 +266,36 @@ export function billingRouter(db: Db) {
     if (!rowCount) throw new HttpError(400, 'Подписки пока нет');
     await db.query("INSERT INTO payments (parent_id, kind, title, amount) VALUES ($1, 'transfer', $2, 0)", [parentId, `Подписка перенесена к наставнику ${to.name}`]);
     res.json(await overview(parentId));
+  });
+
+  /** A child's homework bonuses buy one lesson at half price with any tutor. */
+  r.post('/bonus', async (req, res) => {
+    const body = z.object({ childId: z.string().uuid(), tutorId }).parse(req.body);
+    const parentId = req.user!.id;
+    const tutor = await checkTutor(body.tutorId);
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows } = await client.query(
+        'UPDATE child_profiles SET bonus = bonus - $3 WHERE id = $1 AND parent_id = $2 AND bonus >= $3 RETURNING nickname',
+        [body.childId, parentId, BONUS_FOR_DISCOUNT],
+      );
+      if (!rows[0]) throw new HttpError(400, `Нужно ${BONUS_FOR_DISCOUNT} бонусов за домашние задания`);
+      const per = withDiscount(tutor.price, BONUS_DISCOUNT);
+      await client.query(
+        `INSERT INTO lesson_packages (parent_id, tutor_id, plan, source, lessons_total, lessons_left, per_lesson, discount)
+         VALUES ($1, $2, 'bonus', 'pack', 1, 1, $3, $4)`,
+        [parentId, tutor.id, per, BONUS_DISCOUNT],
+      );
+      await charge(client, parentId, 'pack', `Урок за бонусы (${rows[0].nickname}), наставник ${tutor.name}`, per);
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+    res.status(201).json(await overview(parentId));
   });
 
   return r;

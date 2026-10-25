@@ -1761,3 +1761,56 @@ textarea,
 [contenteditable='true'] {
   cursor: text;
 }
+
+/* Homework after a lesson and its bonuses. */
+.homework .hw-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.homework .hw-head h2 {
+  margin: 0 0 4px;
+  font-family: var(--hand);
+  font-size: 2.2rem;
+}
+.hw-bonus {
+  display: grid;
+  gap: 4px;
+  min-width: 190px;
+  padding: 10px 14px;
+  border: 2px dashed #f2b8a2;
+  border-radius: 16px;
+  background: #fff8f1;
+}
+.hw-bonus b {
+  font-size: 1.3rem;
+}
+.hw-bar {
+  display: block;
+  height: 8px;
+  min-width: 120px;
+  margin-top: 4px;
+  border-radius: 99px;
+  background: #f1ece4;
+  overflow: hidden;
+}
+.hw-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #79c7a6, #f2a07b);
+  transition: width 0.6s ease;
+}
+.bill-bonus .bill-pkg > div {
+  flex: 1;
+}
+.bill-currency {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}

@@ -1,4 +1,4 @@
-import { findLesson } from '@kidsland/shared';
+import { findLesson, homeworkFor } from '@kidsland/shared';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from './app';
@@ -103,6 +103,31 @@ describe.skipIf(!url)('courses, support, lesson room, tutor video', () => {
     const report = await request(app!).get(`/api/children/${childId}/report`).set(auth(parent));
     expect(report.body.courses).toEqual([expect.objectContaining({ courseId: 'scratch', completed: 3 })]);
     expect(report.body.child.xp).toBe(30);
+  });
+
+  it('gives homework after a read lesson and bonuses that buy a half-price lesson', async () => {
+    const { course, index } = findLesson('scratch-2')!;
+    const hw = homeworkFor(course, index);
+    expect(hw.length).toBeGreaterThan(1);
+    const right = Object.fromEntries(hw.map((q) => [q.id, q.kind === 'order' ? q.items : q.kind === 'text' ? q.answer[0] : q.answer]));
+    const locked = await request(app!).post(`/api/children/${childId}/homework/scratch-4`).set(auth(parent)).send({ answers: right });
+    expect(locked.status).toBe(403);
+    const [firstId] = Object.keys(right);
+    const once = await request(app!).post(`/api/children/${childId}/homework/scratch-2`).set(auth(parent)).send({ answers: { [firstId]: right[firstId] } });
+    expect(once.body).toMatchObject({ score: 1, earned: 5, bonus: 5 });
+    const all = await request(app!).post(`/api/children/${childId}/homework/scratch-2`).set(auth(parent)).send({ answers: right });
+    expect(all.body.earned).toBe((hw.length - 1) * 5);
+    const again = await request(app!).post(`/api/children/${childId}/homework/scratch-2`).set(auth(parent)).send({ answers: right });
+    expect(again.body.earned).toBe(0);
+
+    const tutorId = (await request(app!).get('/api/tutors')).body.tutors[0].id;
+    expect((await request(app!).post('/api/billing/bonus').set(auth(parent)).send({ childId, tutorId })).status).toBe(400);
+    await db!.query('UPDATE child_profiles SET bonus = 100 WHERE id = $1', [childId]);
+    const before = (await request(app!).get('/api/billing').set(auth(parent))).body.lessonsLeft;
+    const bought = await request(app!).post('/api/billing/bonus').set(auth(parent)).send({ childId, tutorId });
+    expect(bought.status).toBe(201);
+    expect(bought.body.lessonsLeft).toBe(before + 1);
+    expect(bought.body.children[0].bonus).toBe(0);
   });
 
   it('sends "be an admin" posts to a real admin before showing them', async () => {

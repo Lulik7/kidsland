@@ -4,6 +4,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
 import { Confetti } from '../components/Confetti';
+import { Homework } from '../components/Homework';
 import { KidHud } from '../components/KidHud';
 import { QuestionView, shuffled } from '../components/QuestionView';
 import { Sprite } from '../components/Sprite';
@@ -19,7 +20,7 @@ import { useLocal, useTc } from '../content';
 import { CHESS_DIAGRAMS } from '../content/chess';
 import { cardPic, lessonPic, Pic } from '../pics';
 
-type Tab = 'theory' | LessonPart;
+type Tab = 'theory' | LessonPart | 'homework';
 
 const freshAnswers = (questions: Question[]): Answers =>
   Object.fromEntries(questions.filter((q) => q.kind === 'order').map((q) => [q.id, shuffled(q.kind === 'order' ? q.items : [], q.id)]));
@@ -201,6 +202,11 @@ export function LessonPage() {
                   {t('К викторине')}
                 </button>
               )}
+              {outcome.passed && (
+                <button className="btn btn-go" onClick={() => open('homework')}>
+                  📝 {t('Домашнее задание')}
+                </button>
+              )}
               {outcome.passed && nextLink}
             </div>
           </div>
@@ -255,6 +261,11 @@ export function LessonPage() {
           {t('Викторина')} <span className="tab-n">{lesson.quiz.length}</span>
           {outcomes.quiz?.passed && <span className="tab-ok">✓</span>}
         </button>
+        {done && (
+          <button role="tab" aria-selected={tab === 'homework'} className={tab === 'homework' ? 'tab on' : 'tab'} onClick={() => open('homework')}>
+            📝 {t('Домашка')}
+          </button>
+        )}
       </div>
 
       {error && <div className="error">{error}</div>}
@@ -325,6 +336,9 @@ export function LessonPage() {
                   <button className="btn btn-light" onClick={() => open('quiz')}>
                     {t('Викторина')}
                   </button>
+                  <button className="btn btn-go" onClick={() => open('homework')}>
+                    📝 {t('Домашнее задание')}
+                  </button>
                   {nextLink}
                 </div>
               </>
@@ -341,6 +355,8 @@ export function LessonPage() {
             )}
           </div>
         </section>
+      ) : tab === 'homework' ? (
+        <Homework course={course} shownCourse={shown.course} index={index} childId={childId} onBonus={(bonus) => setChild((c) => (c ? { ...c, bonus } : c))} />
       ) : (
         partView(tab)
       )}

@@ -302,4 +302,16 @@ CREATE TABLE IF NOT EXISTS tutor_reviews (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS tutor_reviews_one_per_parent ON tutor_reviews(tutor_id, parent_id) WHERE parent_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS tutor_reviews_tutor_idx ON tutor_reviews(tutor_id, created_at);
+
+-- Homework after lessons: bonuses for right answers; 100 of them buy a lesson at half price.
+ALTER TABLE child_profiles ADD COLUMN IF NOT EXISTS bonus integer NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS homework_progress (
+  child_id   uuid NOT NULL REFERENCES child_profiles(id) ON DELETE CASCADE,
+  lesson_id  text NOT NULL,
+  results    jsonb NOT NULL DEFAULT '{}',
+  attempts   integer NOT NULL DEFAULT 0,
+  earned     integer NOT NULL DEFAULT 0,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (child_id, lesson_id)
+);
 `;

@@ -1,9 +1,12 @@
 import {
+  BONUS_PER_ANSWER,
   COURSES,
   LESSON_REWARD,
   findForbiddenBlock,
   findLesson,
   gradeLesson,
+  gradeQuestions,
+  homeworkFor,
   runProgram,
   validateProgram,
   type Answers,
@@ -84,6 +87,7 @@ const publicChild = (c: Awaited<ReturnType<typeof getChildForUser>>, completedLe
   avatarUrl: c.avatar_url,
   coins: c.coins,
   xp: c.xp,
+  bonus: c.bonus ?? 0,
   completedLevels,
 });
 
@@ -218,6 +222,68 @@ export function childrenRouter(db: Db) {
       );
       await client.query('COMMIT');
       res.json({ ...grade, rewards, progress: publicLessonProgress(rows[0]), child: childRows[0] });
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+  });
+
+  /** Homework of a lesson: what was answered right before and the child's bonuses. */
+  r.get('/:childId/homework/:lessonId', async (req, res) => {
+    const child = await getChildForUser(db, req.params.childId, req.user!.id);
+    const { rows } = await db.query('SELECT results, attempts, earned FROM homework_progress WHERE child_id = $1 AND lesson_id = $2', [
+      child.id,
+      req.params.lessonId,
+    ]);
+    res.json({ results: rows[0]?.results ?? {}, attempts: rows[0]?.attempts ?? 0, earned: rows[0]?.earned ?? 0, bonus: child.bonus });
+  });
+
+  /**
+   * Homework is open after the lesson is read. Each answer that is right for the first time
+   * gives BONUS_PER_ANSWER bonuses, so trying again can only add the ones that were wrong.
+   */
+  r.post('/:childId/homework/:lessonId', async (req, res) => {
+    const body = z.object({ answers: lessonSubmitSchema.shape.answers }).parse(req.body);
+    const child = await getChildForUser(db, req.params.childId, req.user!.id);
+    const found = findLesson(req.params.lessonId);
+    if (!found) throw new HttpError(404, 'Урок не найден');
+    const questions = homeworkFor(found.course, found.index);
+    if (!questions.length) throw new HttpError(404, 'У этого урока нет домашнего задания');
+    const { rows: read } = await db.query(
+      'SELECT 1 FROM course_progress WHERE child_id = $1 AND lesson_id = $2 AND completed_at IS NOT NULL',
+      [child.id, found.lesson.id],
+    );
+    if (!read[0]) throw new HttpError(403, 'Сначала пройди урок');
+    const grade = gradeQuestions(questions, body.answers as Answers);
+
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('INSERT INTO homework_progress (child_id, lesson_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [
+        child.id,
+        found.lesson.id,
+      ]);
+      const { rows: before } = await client.query<{ results: Record<string, boolean> }>(
+        'SELECT results FROM homework_progress WHERE child_id = $1 AND lesson_id = $2 FOR UPDATE',
+        [child.id, found.lesson.id],
+      );
+      const merged = { ...before[0].results };
+      let fresh = 0;
+      for (const [id, ok] of Object.entries(grade.results)) {
+        if (ok && !merged[id]) fresh++;
+        merged[id] = Boolean(merged[id]) || ok;
+      }
+      const earned = fresh * BONUS_PER_ANSWER;
+      await client.query(
+        `UPDATE homework_progress SET results = $3, attempts = attempts + 1, earned = earned + $4, updated_at = now()
+          WHERE child_id = $1 AND lesson_id = $2`,
+        [child.id, found.lesson.id, JSON.stringify(merged), earned],
+      );
+      const { rows } = await client.query('UPDATE child_profiles SET bonus = bonus + $2 WHERE id = $1 RETURNING bonus', [child.id, earned]);
+      await client.query('COMMIT');
+      res.json({ ...grade, earned, bonus: rows[0].bonus });
     } catch (e) {
       await client.query('ROLLBACK');
       throw e;

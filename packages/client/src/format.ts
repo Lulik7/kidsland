@@ -27,7 +27,48 @@ export const personName = (name: string) =>
       });
 
 /** Money on the site is in shekels. */
-export const money = (n: number) => `${n.toLocaleString(locale)} ₪`;
+/**
+ * Prices are kept in shekels. Families in Israel see shekels, in Greece euros, everywhere else dollars.
+ * The country is guessed from the browser's time zone and language; the rates are fixed and approximate,
+ * and the payment itself is counted in shekels.
+ */
+export type Currency = 'ILS' | 'EUR' | 'USD';
+export const CURRENCIES: Record<Currency, { sign: string; perShekel: number }> = {
+  ILS: { sign: '₪', perShekel: 1 },
+  EUR: { sign: '€', perShekel: 0.25 },
+  USD: { sign: '$', perShekel: 0.27 },
+};
+
+function guessCurrency(): Currency {
+  try {
+    const saved = localStorage.getItem('kl-currency');
+    if (saved && saved in CURRENCIES) return saved as Currency;
+  } catch {
+    // no storage: guess below
+  }
+  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
+  const langs = typeof navigator === 'undefined' ? [] : [...(navigator.languages ?? []), navigator.language];
+  if (/Jerusalem|Tel_Aviv/.test(zone) || langs.some((l) => /-IL$/i.test(l))) return 'ILS';
+  if (zone === 'Europe/Athens' || langs.some((l) => /-GR$/i.test(l))) return 'EUR';
+  return 'USD';
+}
+
+let currency: Currency = guessCurrency();
+export const getCurrency = () => currency;
+export function setCurrency(c: Currency) {
+  currency = c;
+  try {
+    localStorage.setItem('kl-currency', c);
+  } catch {
+    // not saved, still used for this visit
+  }
+}
+
+export const money = (shekels: number) => {
+  const c = CURRENCIES[currency];
+  const text = Math.round(shekels * c.perShekel).toLocaleString(locale);
+  return currency === 'ILS' ? `${text} ₪` : `${c.sign}${text}`;
+};
 
 export const fmtDay = (d: Date | string) =>
   new Date(d).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'long' });
