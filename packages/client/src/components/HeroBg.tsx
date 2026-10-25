@@ -162,7 +162,8 @@ const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
   ['leisure', /ярмарк|выставк/i, TOPIC_PHOTO.market],
   ['leisure', /вязан|спиц|крюч|шапк|шарф/i, TOPIC_PHOTO.knitting],
   ['leisure', /рацион|салат|суп|кухни мира|обед/i, TOPIC_PHOTO.food],
-  ['leisure', /кулинар|печенье|выпечк|тесто|блины|праздничный стол|бутерброд|каша/i, TOPIC_PHOTO.cooking],
+  ['leisure', /бутерброд|канапе|закуск|салат/i, { image: '/img/bg/leisure-sandwich.jpg', pos: 'center 55%' }],
+  ['leisure', /кулинар|печенье|выпечк|тесто|блины|праздничный стол|каша/i, TOPIC_PHOTO.cooking],
   ['leisure', /гербарий/i, TOPIC_PHOTO.herbarium],
 ];
 
