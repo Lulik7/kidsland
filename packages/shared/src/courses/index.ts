@@ -75,7 +75,7 @@ export const COURSES: Course[] = [
   .map(withExtraTheory)
   .concat(MUSIC_COURSES, INTRO_COURSES, EXTRA_COURSES)
   .map((c) => (MORE_LESSONS[c.id] ? { ...c, lessons: [...c.lessons, ...MORE_LESSONS[c.id]] } : c))
-  .map((c) => (c.subject === 'animals' ? { ...c, lessons: c.lessons.map((l) => ({ ...l, sections: [...l.sections, ...(ANIMALS_EXTRA[l.id] ?? [])] })) } : c))
+  .map((c) => (c.subject === 'animals' ? { ...c, lessons: c.lessons.map((l) => ({ ...l, sections: deepen(l.sections, ANIMALS_EXTRA[l.id] ?? []) })) } : c))
   .map((c) => ({ ...c, lessons: c.lessons.map((l) => (DEEPER[l.id] ? { ...l, sections: deepen(l.sections, DEEPER[l.id]) } : l)) }));
 
 /** Share of points needed to pass a lesson. */
