@@ -7,10 +7,28 @@ export type HeroMedia = { image?: string; video?: string; pos?: string };
 export const SECTION_BG: Record<string, HeroMedia> = {
   animals: { image: '/img/bg/animals-dog.jpg', pos: 'center 22%' },
   spirit: { image: '/img/bg/spirit-lotus.jpg', pos: 'center 35%' },
+  music: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
+};
+
+const p = (topic: string, pos = 'center 30%'): HeroMedia => ({ image: `/img/posture/${topic}.jpg`, pos });
+/** Music topics: photos of children playing each instrument. */
+const MUSIC: Record<string, HeroMedia> = {
+  guitar: p('guitar'),
+  violin: p('violin', 'center 40%'),
+  drums: p('drums', '70% 40%'),
+  flute: p('flute', 'center 40%'),
+  saxophone: p('saxophone', 'center 25%'),
+  ukulele: p('ukulele', 'center 45%'),
+  cello: p('cello', 'center 40%'),
+  vocal: p('vocal', '30% 30%'),
+  solfeggio: { image: '/img/bg/music-recorder.jpg', pos: 'center 30%' },
+  dj: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
+  composition: { image: '/img/bg/music-band.jpg', pos: 'center 40%' },
 };
 
 /** Background media of course pages: by topic first, then by subject. */
 const TOPIC_BG: Record<string, HeroMedia> = {
+  ...MUSIC,
   'dog-training': { image: '/img/bg/animals-dog.jpg', pos: 'center 22%' },
   'lang-ja': { image: '/img/bg/japan-sakura.jpg' },
   cooking: { image: '/img/bg/leisure-cake.jpg', pos: 'center 40%' },
@@ -41,6 +59,7 @@ export function HeroBg({ media }: { media?: HeroMedia }) {
 
 /** Photos of section topics, shown on the topic chips. */
 export const TOPIC_PHOTO: Record<string, HeroMedia> = {
+  ...MUSIC,
   dogs: { image: '/img/bg/animals-dog.jpg', pos: 'center 25%' },
   birds: { image: '/img/bg/animals-bird.jpg', pos: '68% 45%' },
   pets: { image: '/img/bg/animals-pony.jpg', pos: 'center 25%' },
