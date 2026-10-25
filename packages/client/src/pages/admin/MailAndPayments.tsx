@@ -8,7 +8,7 @@ const STATUS = { pending: 'ждёт отправки', sent: 'отправлен
 /** Every letter the site sent or is about to send: receipts, lesson reminders, copies for the admin. */
 export function AdminMail() {
   const [filter, setFilter] = useState<'' | 'pending' | 'sent' | 'failed'>('');
-  const [data, setData] = useState<{ letters: AdminLetter[]; counts: Partial<Record<string, number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; mailPassHint?: string; smtpUrlFiles?: string[]; smtpOverridesSystem?: boolean } | null>(null);
+  const [data, setData] = useState<{ letters: AdminLetter[]; counts: Partial<Record<string, number>>; mailReady: boolean; hosted?: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; mailPassHint?: string; smtpUrlFiles?: string[]; smtpOverridesSystem?: boolean } | null>(null);
   const [check, setCheck] = useState<{ ok: boolean; error?: string } | 'busy' | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -22,9 +22,11 @@ export function AdminMail() {
       <h2 className="card-title">Письма</h2>
       {!data.mailReady && (
         <p className="error">
-          Почта для отправки ещё не подключена (SMTP_URL в packages/server/.env), поэтому письма пока ждут в очереди и уйдут, как только её подключат.
+          Почта для отправки ещё не подключена, поэтому письма пока ждут в очереди и уйдут, как только её подключат.
           <br />
-          {data.envFiles?.length
+          {data.hosted
+            ? 'Сайт работает на хостинге: добавьте SMTP_URL в настройках хостинга (Render → Environment) и перезапустите сайт.'
+            : data.envFiles?.length
             ? `Сервер нашёл файл настроек: ${data.envFiles.join(', ')}, но строки SMTP_URL в нём нет. Проверьте, что строка начинается с SMTP_URL= и файл сохранён, затем перезапустите сервер.`
             : 'Сервер не нашёл файл настроек .env ни в папке packages\\server, ни в корне проекта. Возможно, файл сохранился как .env.example или в другой папке.'}
         </p>

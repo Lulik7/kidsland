@@ -525,7 +525,7 @@ export const api = {
 
   content: () => request<ContentOverridesDto>('/content'),
   adminMail: (status?: 'pending' | 'sent' | 'failed') =>
-    request<{ letters: AdminLetter[]; counts: Partial<Record<'pending' | 'sent' | 'failed', number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; mailPassHint?: string; smtpUrlFiles?: string[]; smtpOverridesSystem?: boolean }>(`/admin/mail${status ? `?status=${status}` : ''}`),
+    request<{ letters: AdminLetter[]; counts: Partial<Record<'pending' | 'sent' | 'failed', number>>; mailReady: boolean; hosted?: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; mailPassHint?: string; smtpUrlFiles?: string[]; smtpOverridesSystem?: boolean }>(`/admin/mail${status ? `?status=${status}` : ''}`),
   checkMail: () => request<{ ok: boolean; error?: string }>('/admin/mail/check', { method: 'POST' }),
   retryMail: () => request<{ requeued: number }>('/admin/mail/retry', { method: 'POST' }),
   adminPayments: () =>
