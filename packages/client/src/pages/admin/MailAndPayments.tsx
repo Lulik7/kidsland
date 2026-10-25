@@ -8,7 +8,8 @@ const STATUS = { pending: 'ждёт отправки', sent: 'отправлен
 /** Every letter the site sent or is about to send: receipts, lesson reminders, copies for the admin. */
 export function AdminMail() {
   const [filter, setFilter] = useState<'' | 'pending' | 'sent' | 'failed'>('');
-  const [data, setData] = useState<{ letters: AdminLetter[]; counts: Partial<Record<string, number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; smtpUrlFiles?: string[] } | null>(null);
+  const [data, setData] = useState<{ letters: AdminLetter[]; counts: Partial<Record<string, number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; mailPassHint?: string; smtpUrlFiles?: string[]; smtpOverridesSystem?: boolean } | null>(null);
+  const [check, setCheck] = useState<{ ok: boolean; error?: string } | 'busy' | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const load = () => api.adminMail(filter || undefined).then(setData).catch(() => {});
@@ -31,6 +32,7 @@ export function AdminMail() {
       {data.mailReady && (
         <p className="muted small">
           Почта подключена. Вход в почтовый ящик: <b>{data.mailLogin || 'не указан'}</b>, длина пароля приложения: {data.mailPassLength ?? 0} знаков
+          {data.mailPassHint && <> (начинается на «{data.mailPassHint.slice(0, 2)}», кончается на «{data.mailPassHint.slice(-2)}»)</>}
           {data.mailPassLength !== 16 && ' (у пароля приложения Google должно быть ровно 16 букв)'}.
           {!!data.smtpUrlFiles?.length && (
             <>
@@ -40,7 +42,33 @@ export function AdminMail() {
                 ` Внимание: SMTP_URL записан ${data.smtpUrlFiles.length} раза (${data.smtpUrlFiles.join(', ')}). Оставьте только одну строку SMTP_URL с новым паролем, остальные удалите.`}
             </>
           )}
+          {data.smtpOverridesSystem && (
+            <>
+              <br />
+              В настройках Windows тоже записан SMTP_URL, но со старым значением. Сайт берёт строку из файла.
+            </>
+          )}
         </p>
+      )}
+      {data.mailReady && (
+        <div className="mail-retry">
+          <button
+            className="btn btn-light btn-small"
+            disabled={check === 'busy'}
+            onClick={async () => {
+              setCheck('busy');
+              setCheck(await api.checkMail().catch((e) => ({ ok: false, error: String(e.message ?? e) })));
+            }}
+          >
+            {check === 'busy' ? 'Проверяем…' : 'Проверить подключение к почте'}
+          </button>
+          {check && check !== 'busy' &&
+            (check.ok ? (
+              <p className="small" style={{ color: '#2f8a5f', marginTop: 8 }}>Google принял логин и пароль. Теперь нажмите «Отправить письма с ошибкой ещё раз».</p>
+            ) : (
+              <p className="flag-reason" style={{ marginTop: 8 }}>Не получилось: {check.error}</p>
+            ))}
+        </div>
       )}
       {data.mailReady && !!data.counts.failed && (
         <div className="mail-retry">
@@ -80,6 +108,7 @@ export function AdminMail() {
                 <span className={`chip ${m.status === 'failed' ? 'chip-warn' : 'chip-muted'}`}>{STATUS[m.status]}</span>
                 <span className="muted small">
                   кому: {m.to} · {fmtDateTime(m.createdAt)}
+                  {m.status === 'failed' && m.triedAt && ` · последняя попытка ${fmtDateTime(m.triedAt)}`}
                 </span>
               </div>
               {open === m.id && <blockquote style={{ whiteSpace: 'pre-wrap' }}>{m.body}</blockquote>}

@@ -58,7 +58,19 @@ export async function deliverMail(db: Db) {
       await t.sendMail({ from: mailFrom(), to: m.to_email, subject: m.subject, text: m.body });
       await db.query("UPDATE email_outbox SET status = 'sent', sent_at = now() WHERE id = $1", [m.id]);
     } catch (e) {
-      await db.query("UPDATE email_outbox SET status = 'failed', error = $2 WHERE id = $1", [m.id, String(e).slice(0, 500)]);
+      await db.query("UPDATE email_outbox SET status = 'failed', error = $2, tried_at = now() WHERE id = $1", [m.id, String(e).slice(0, 500)]);
     }
+  }
+}
+
+/** Logs in to the mail server without sending anything, so the admin sees at once if the password works. */
+export async function checkMail(): Promise<{ ok: boolean; error?: string }> {
+  const t = getTransport();
+  if (!t) return { ok: false, error: 'SMTP_URL не задан' };
+  try {
+    await t.verify();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e).slice(0, 500) };
   }
 }

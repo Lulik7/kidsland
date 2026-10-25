@@ -15,6 +15,9 @@ const CANDIDATES = [join(serverDir, '.env'), join(serverDir, '.env.txt'), join(r
 export const envFilesFound: string[] = [];
 /** Files that hold an SMTP_URL line, once per line, so a duplicate shows up on the mail page. */
 export const smtpUrlFiles: string[] = [];
+/** SMTP_URL set in Windows itself (setx, system variables) before the files were read; the file now wins over it. */
+export const smtpUrlFromSystem = process.env.SMTP_URL?.replace(/\s+/g, '') ?? '';
+let smtpFromFile = false;
 
 for (const file of CANDIDATES) {
   if (!existsSync(file)) continue;
@@ -31,6 +34,12 @@ for (const file of CANDIDATES) {
     if (key === 'SMTP_URL') {
       value = value.replace(/\s+/g, '');
       smtpUrlFiles.push(file);
+      // The admin edits the file, so its mail line wins over an old one left in Windows settings.
+      if (!smtpFromFile && value) {
+        process.env.SMTP_URL = value;
+        smtpFromFile = true;
+        continue;
+      }
     }
     if (process.env[key] === undefined || process.env[key] === '') process.env[key] = value;
   }

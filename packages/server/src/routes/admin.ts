@@ -3,9 +3,12 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import { config } from '../config';
-import { envFilesFound, smtpUrlFiles } from '../envFiles';
+import { envFilesFound, smtpUrlFiles, smtpUrlFromSystem } from '../envFiles';
 import type { Db } from '../db/pool';
-import { deliverMail, smtpSettings } from '../mail';
+import { checkMail, deliverMail, smtpSettings } from '../mail';
+
+/** First and last two letters only, so the admin can compare with the password in Google without showing it. */
+const maskPass = (p: string) => (p.length < 6 ? '' : `${p.slice(0, 2)}${'•'.repeat(p.length - 4)}${p.slice(-2)}`);
 import { HttpError } from '../errors';
 import { isUuid, type TutorRow } from '../tutors';
 import { documentsOf, publicApplication, sendDocument } from './tutorCabinet';
@@ -67,20 +70,27 @@ export function adminRouter(db: Db) {
   r.get('/mail', async (req, res) => {
     const status = z.enum(['pending', 'sent', 'failed']).optional().parse(req.query.status || undefined);
     const { rows } = await db.query(
-      `SELECT id, to_email, subject, body, status, error, created_at, sent_at FROM email_outbox
+      `SELECT id, to_email, subject, body, status, error, created_at, sent_at, tried_at FROM email_outbox
         WHERE ($1::text IS NULL OR status = $1) ORDER BY created_at DESC LIMIT 200`,
       [status ?? null],
     );
     const counts = await db.query('SELECT status, count(*)::int AS n FROM email_outbox GROUP BY status');
     res.json({
-      letters: rows.map((m) => ({ id: m.id, to: m.to_email, subject: m.subject, body: m.body, status: m.status, error: m.error, createdAt: m.created_at, sentAt: m.sent_at })),
+      letters: rows.map((m) => ({ id: m.id, to: m.to_email, subject: m.subject, body: m.body, status: m.status, error: m.error, createdAt: m.created_at, sentAt: m.sent_at, triedAt: m.tried_at })),
       counts: Object.fromEntries(counts.rows.map((c) => [c.status, c.n])),
       mailReady: !!config.smtpUrl,
       envFiles: envFilesFound,
       mailLogin: smtpSettings()?.user ?? '',
       mailPassLength: smtpSettings()?.pass.length ?? 0,
+      mailPassHint: maskPass(smtpSettings()?.pass ?? ''),
       smtpUrlFiles,
+      smtpOverridesSystem: !!smtpUrlFromSystem && smtpUrlFromSystem !== config.smtpUrl,
     });
+  });
+
+  // Logs in to Gmail without sending a letter.
+  r.post('/mail/check', async (_req, res) => {
+    res.json(await checkMail());
   });
 
   // Letters that failed (e.g. before the mail password was fixed) go back to the queue.

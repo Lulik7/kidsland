@@ -325,6 +325,7 @@ CREATE TABLE IF NOT EXISTS email_outbox (
   created_at timestamptz NOT NULL DEFAULT now(),
   sent_at    timestamptz
 );
+ALTER TABLE email_outbox ADD COLUMN IF NOT EXISTS tried_at timestamptz;
 CREATE INDEX IF NOT EXISTS email_outbox_pending_idx ON email_outbox(created_at) WHERE status = 'pending';
 
 -- Homework after lessons: bonuses for right answers; 100 of them buy a lesson at half price.
