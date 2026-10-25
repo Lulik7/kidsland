@@ -25,7 +25,11 @@ export const config = {
     .filter(Boolean),
   // Demo admin account with a known password, never in production.
   seedDemoAdmin: !isProd && process.env.SEED_DEMO_ADMIN !== 'false',
+  // Sample tutors for showing the site; DEMO_TUTORS=false keeps them out of a new database.
+  seedDemoTutors: process.env.DEMO_TUTORS !== 'false',
   uploadsDir: process.env.UPLOADS_DIR ?? fileURLToPath(new URL('../uploads', import.meta.url)),
+  // Built client (npm run build) served by this server in production; empty locally, where Vite serves it.
+  clientDir: process.env.CLIENT_DIR ?? (isProd ? fileURLToPath(new URL('../../client/dist', import.meta.url)) : ''),
   maxVideoMb: Number(process.env.MAX_VIDEO_MB ?? 100),
   // Tutors' diplomas and certificates. Private: never served statically, only to the tutor and admins.
   documentsDir: process.env.DOCUMENTS_DIR ?? fileURLToPath(new URL('../private-documents', import.meta.url)),

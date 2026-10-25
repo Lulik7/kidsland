@@ -1,0 +1,44 @@
+# Render Blueprint: the whole site (server + built client) in one Docker service, plus a Postgres database.
+# Render dashboard → New → Blueprint → pick this repository. Values marked sync: false are asked on the first deploy.
+services:
+  - type: web
+    name: kidsland
+    runtime: docker
+    region: frankfurt
+    healthCheckPath: /api/health
+    # Tutor videos and private documents live on this disk and survive redeploys.
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 2
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kidsland-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: UPLOADS_DIR
+        value: /data/uploads
+      - key: DOCUMENTS_DIR
+        value: /data/private-documents
+      - key: DEMO_TUTORS
+        value: "true"
+      # Your email: whoever registers with it becomes the admin.
+      - key: ADMIN_EMAILS
+        sync: false
+      # Address of the site, e.g. https://kidsland.onrender.com (later your own domain).
+      - key: APP_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      # Gmail for letters: smtps://you%40gmail.com:APP-PASSWORD@smtp.gmail.com:465
+      - key: SMTP_URL
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+databases:
+  - name: kidsland-db
+    region: frankfurt
+    databaseName: kidsland
+    user: kidsland

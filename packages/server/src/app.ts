@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { config } from './config';
 import type { Db } from './db/pool';
 import { errorHandler, HttpError } from './errors';
@@ -64,6 +64,14 @@ export function createApp(db: Db) {
     if (!level) throw new HttpError(404, 'Уровень не найден');
     res.json({ level: { ...publicLevel(level, true), unlocked: true }, savedProgram: null });
   });
+
+  // On the real server the same process serves the built site; unknown pages get index.html for the React router.
+  if (config.clientDir && existsSync(`${config.clientDir}/index.html`)) {
+    app.use(express.static(config.clientDir, { maxAge: '1h', index: false }));
+    app.get(/^(?!\/api\/).*/, (_req, res) => {
+      res.sendFile(`${config.clientDir}/index.html`);
+    });
+  }
 
   app.use(errorHandler);
   return app;
