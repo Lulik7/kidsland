@@ -191,10 +191,6 @@ export function BillingPage() {
           })}
         </div>
         {bill.settings && getCurrencyCode() !== 'ILS' && <p className="small muted">{t('Цены пересчитаны из шекелей по примерному курсу.')}</p>}
-        <p className="small muted">
-          {t('Цена урока зависит от наставника: у нового')} {money(PRICE_STEPS[0].price)}
-          {t(', и она растёт вместе с числом его учеников')} ({PRICE_STEPS.map((s) => `${s.from}+ → ${money(s.price)}`).join(', ')}).
-        </p>
       </section>
 
       {bill.children.length > 0 && (
@@ -252,7 +248,7 @@ export function BillingPage() {
           <div className="bill-sub-n">
             <b>{subLessons}</b>
             <span>{t('уроков в месяц')}</span>
-            <span className="bill-off">−{subStep.discount}%</span>
+            {subStep.discount > 0 && <span className="bill-off">−{subStep.discount}%</span>}
           </div>
           <button
             type="button"

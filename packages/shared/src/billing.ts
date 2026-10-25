@@ -37,20 +37,20 @@ export interface Pack {
 export const PACKS: Pack[] = [
   { id: 'trial', lessons: 1, discount: 50, name: 'Пробный урок' },
   { id: 'p4', lessons: 4, discount: 0, name: '4 урока' },
-  { id: 'p8', lessons: 8, discount: 5, name: '8 уроков' },
-  { id: 'p16', lessons: 16, discount: 10, name: '16 уроков' },
-  { id: 'p32', lessons: 32, discount: 15, name: '32 урока' },
+  { id: 'p8', lessons: 8, discount: 0, name: '8 уроков' },
+  { id: 'p16', lessons: 16, discount: 0, name: '16 уроков' },
+  { id: 'p32', lessons: 32, discount: 0, name: '32 урока' },
 ];
 
 export const withDiscount = (price: number, discount: number) => Math.round((price * (100 - discount)) / 100);
 
 /** Monthly subscription: lessons per month and the discount. */
 export const SUBSCRIPTION_STEPS = [
-  { lessons: 4, discount: 5 },
-  { lessons: 8, discount: 8 },
-  { lessons: 12, discount: 10 },
-  { lessons: 16, discount: 12 },
-  { lessons: 24, discount: 15 },
+  { lessons: 4, discount: 0 },
+  { lessons: 8, discount: 0 },
+  { lessons: 12, discount: 0 },
+  { lessons: 16, discount: 0 },
+  { lessons: 24, discount: 0 },
 ] as const;
 
 export const subscriptionStep = (lessons: number) => SUBSCRIPTION_STEPS.find((s) => s.lessons === lessons);

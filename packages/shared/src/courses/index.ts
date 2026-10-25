@@ -27,6 +27,7 @@ import { PYTHON_PRO_MORE } from './pythonExtra';
 import { LANGUAGE_COURSES } from './languages';
 import { SOLFEGGIO_COURSES } from './solfeggio';
 import { DJ_COMPOSE_COURSES } from './djCompose';
+import { ANIMALS_EXTRA } from './animalsExtra';
 
 /** Extra lessons for the short intro courses, keyed by course id. */
 const MORE_LESSONS: Record<string, Lesson[]> = { 'python-pro': PYTHON_PRO_MORE, ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE, ...ANIMALS_MORE };
@@ -60,7 +61,8 @@ export const COURSES: Course[] = [
 ]
   .map(withExtraTheory)
   .concat(MUSIC_COURSES, INTRO_COURSES, EXTRA_COURSES)
-  .map((c) => (MORE_LESSONS[c.id] ? { ...c, lessons: [...c.lessons, ...MORE_LESSONS[c.id]] } : c));
+  .map((c) => (MORE_LESSONS[c.id] ? { ...c, lessons: [...c.lessons, ...MORE_LESSONS[c.id]] } : c))
+  .map((c) => (c.subject === 'animals' ? { ...c, lessons: c.lessons.map((l) => ({ ...l, sections: [...l.sections, ...(ANIMALS_EXTRA[l.id] ?? [])] })) } : c));
 
 /** Share of points needed to pass a lesson. */
 export const LESSON_PASS_RATIO = 0.6;
