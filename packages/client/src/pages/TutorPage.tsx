@@ -172,107 +172,117 @@ export function TutorPage() {
               <dd>{money(tutor.price)}{' '}{t('за 45 минут')}</dd>
             </div>
           </dl>
-          {tutor.videoUrl?.startsWith('/api/uploads/') ? (
-            <div className="video">
-              <video src={tutor.videoUrl} controls preload="metadata" playsInline title={`Видео-знакомство: ${tutor.displayName}`} />
-            </div>
-          ) : video ? (
-            <div className="video">
-              <iframe src={video} title={`Видео-знакомство: ${tutor.displayName}`} allow="encrypted-media; picture-in-picture" allowFullScreen />
-            </div>
-          ) : tutor.videoUrl ? (
-            <a href={tutor.videoUrl} target="_blank" rel="noreferrer" className="btn btn-light">
-              {t('Смотреть видео-знакомство')}
-            </a>
-          ) : null}
           <h2 className="card-title">{t('О себе')}</h2>
           <p className="tp-bio">{t(tutor.bio)}</p>
           <Reviews tutorId={tutor.id} reviews={reviews} canWrite={canReview} onAdded={() => { api.tutorReviews(tutor.id).then((r) => setReviews(r.reviews)); void load(); }} />
         </section>
 
-        <aside className="card booking-panel">
-          <h2 className="card-title">{t('Выберите время')}</h2>
-          <p className="muted small">{t('Время указано по вашему часовому поясу. Урок длится 45 минут.')}</p>
-          <div className="day-strip">
-            {days.map((d) => {
-              const n = byDay.get(d.key)?.length ?? 0;
-              return (
-                <button
-                  key={d.key}
-                  className={`day${day === d.key ? ' on' : ''}${n === 0 ? ' empty' : ''}`}
-                  disabled={n === 0}
-                  onClick={() => {
-                    setDay(d.key);
-                    setSlot(null);
-                  }}
-                >
-                  <span>{d.date.toLocaleDateString('ru-RU', { weekday: 'short' })}</span>
-                  <b>{d.date.getDate()}</b>
-                  <small>{n > 0 ? `${n} св.` : '—'}</small>
-                </button>
-              );
-            })}
-          </div>
-          <div className="times">
-            {(day ? byDay.get(day) ?? [] : []).map((s) => (
-              <button key={s.id} className={slot?.id === s.id ? 'time on' : 'time'} onClick={() => setSlot(s)}>
-                {fmtTime(s.startsAt)}
-              </button>
-            ))}
-            {slots.length === 0 && <p className="muted">{t('Свободного времени пока нет.')}</p>}
-          </div>
-
-          {!user ? (
-            <div className="bp-foot">
-              <p className="small muted">{t('Чтобы записаться, войдите или создайте аккаунт родителя. Пробный урок со скидкой 50%.')}</p>
-              <Link to={`/register?next=${encodeURIComponent(location.pathname + location.search)}`} className="btn btn-primary">
-                {t('Создать аккаунт')}
-              </Link>
-            </div>
-          ) : user.role !== 'parent' ? (
-            <p className="small muted">{t('Записываться на уроки могут только родители.')}</p>
-          ) : kids.length === 0 ? (
-            <div className="bp-foot">
-              <p className="small muted">{t('Сначала добавьте профиль ребёнка.')}</p>
-              <Link to="/kids" className="btn btn-light">
-                {t('Добавить ребёнка')}
-              </Link>
-            </div>
-          ) : (
-            <div className="bp-foot">
-              <span className="small muted">{t('Для кого урок')}</span>
-              <div className="kid-pick">
-                {kids.map((k) => (
-                  <button key={k.id} className={childId === k.id ? 'kp on' : 'kp'} onClick={() => setChildId(k.id)}>
-                    <Sprite svg={avatarSvg(k.avatarUrl)} size={28} /> {k.nickname}
-                  </button>
-                ))}
-              </div>
-              <div className="bp-price">
-                <span>{t('Оплачено уроков у этого наставника')}</span>
-                <b className={paidHere ? 'free' : ''}>{paidHere}</b>
-              </div>
-              {error && <div className="error">{error}</div>}
-              {paidHere > 0 ? (
-                <button className="btn btn-primary btn-xl" disabled={!slot || !childId || busy} onClick={book}>
-                  {slot ? `${t('Записаться на')} ${fmtDateTime(slot.startsAt)}` : t('Выберите время')}
-                </button>
+        <div className="tutor-side">
+          <section className="card tutor-video">
+            <h2 className="card-title">🎬 {t('Видео-знакомство')}</h2>
+              {tutor.videoUrl?.startsWith('/api/uploads/') ? (
+                <div className="video">
+                  <video src={tutor.videoUrl} controls preload="metadata" playsInline title={`Видео-знакомство: ${tutor.displayName}`} />
+                </div>
+              ) : video ? (
+                <div className="video">
+                  <iframe src={video} title={`Видео-знакомство: ${tutor.displayName}`} allow="encrypted-media; picture-in-picture" allowFullScreen />
+                </div>
+              ) : tutor.videoUrl ? (
+                <a href={tutor.videoUrl} target="_blank" rel="noreferrer" className="btn btn-light">
+                  {t('Смотреть видео-знакомство')}
+                </a>
               ) : (
-                <div className="bp-buy">
-                  {billing?.trialAvailable && (
-                    <button className="btn btn-go btn-xl" disabled={busy} onClick={buyTrial}>
-                      {t('Пробный урок за')} {money(trialPrice)} <s className="muted">{money(tutor.price)}</s>
-                    </button>
-                  )}
-                  <Link to={`/billing?tutor=${tutor.id}`} className="btn btn-light">
-                    {t('Купить пакет уроков')}
-                  </Link>
+                <div className="video video-empty">
+                  <TutorAvatar name={tutor.displayName} photo={tutor.avatar} size={84} />
+                  <span>{t('Наставник скоро добавит видео, где расскажет о себе.')}</span>
                 </div>
               )}
-              <p className="small muted">{t('Оплата пока учебная: деньги не списываются.')}</p>
+          </section>
+          <aside className="card booking-panel">
+            <h2 className="card-title">{t('Выберите время')}</h2>
+            <p className="muted small">{t('Время указано по вашему часовому поясу. Урок длится 45 минут.')}</p>
+            <div className="day-strip">
+              {days.map((d) => {
+                const n = byDay.get(d.key)?.length ?? 0;
+                return (
+                  <button
+                    key={d.key}
+                    className={`day${day === d.key ? ' on' : ''}${n === 0 ? ' empty' : ''}`}
+                    disabled={n === 0}
+                    onClick={() => {
+                      setDay(d.key);
+                      setSlot(null);
+                    }}
+                  >
+                    <span>{d.date.toLocaleDateString('ru-RU', { weekday: 'short' })}</span>
+                    <b>{d.date.getDate()}</b>
+                    <small>{n > 0 ? `${n} св.` : '—'}</small>
+                  </button>
+                );
+              })}
             </div>
-          )}
-        </aside>
+            <div className="times">
+              {(day ? byDay.get(day) ?? [] : []).map((s) => (
+                <button key={s.id} className={slot?.id === s.id ? 'time on' : 'time'} onClick={() => setSlot(s)}>
+                  {fmtTime(s.startsAt)}
+                </button>
+              ))}
+              {slots.length === 0 && <p className="muted">{t('Свободного времени пока нет.')}</p>}
+            </div>
+
+            {!user ? (
+              <div className="bp-foot">
+                <p className="small muted">{t('Чтобы записаться, войдите или создайте аккаунт родителя. Пробный урок со скидкой 50%.')}</p>
+                <Link to={`/register?next=${encodeURIComponent(location.pathname + location.search)}`} className="btn btn-primary">
+                  {t('Создать аккаунт')}
+                </Link>
+              </div>
+            ) : user.role !== 'parent' ? (
+              <p className="small muted">{t('Записываться на уроки могут только родители.')}</p>
+            ) : kids.length === 0 ? (
+              <div className="bp-foot">
+                <p className="small muted">{t('Сначала добавьте профиль ребёнка.')}</p>
+                <Link to="/kids" className="btn btn-light">
+                  {t('Добавить ребёнка')}
+                </Link>
+              </div>
+            ) : (
+              <div className="bp-foot">
+                <span className="small muted">{t('Для кого урок')}</span>
+                <div className="kid-pick">
+                  {kids.map((k) => (
+                    <button key={k.id} className={childId === k.id ? 'kp on' : 'kp'} onClick={() => setChildId(k.id)}>
+                      <Sprite svg={avatarSvg(k.avatarUrl)} size={28} /> {k.nickname}
+                    </button>
+                  ))}
+                </div>
+                <div className="bp-price">
+                  <span>{t('Оплачено уроков у этого наставника')}</span>
+                  <b className={paidHere ? 'free' : ''}>{paidHere}</b>
+                </div>
+                {error && <div className="error">{error}</div>}
+                {paidHere > 0 ? (
+                  <button className="btn btn-primary btn-xl" disabled={!slot || !childId || busy} onClick={book}>
+                    {slot ? `${t('Записаться на')} ${fmtDateTime(slot.startsAt)}` : t('Выберите время')}
+                  </button>
+                ) : (
+                  <div className="bp-buy">
+                    {billing?.trialAvailable && (
+                      <button className="btn btn-go btn-xl" disabled={busy} onClick={buyTrial}>
+                        {t('Пробный урок за')} {money(trialPrice)} <s className="muted">{money(tutor.price)}</s>
+                      </button>
+                    )}
+                    <Link to={`/billing?tutor=${tutor.id}`} className="btn btn-light">
+                      {t('Купить пакет уроков')}
+                    </Link>
+                  </div>
+                )}
+                <p className="small muted">{t('Оплата пока учебная: деньги не списываются.')}</p>
+              </div>
+            )}
+          </aside>
+        </div>
       </div>
 
       {booked && (

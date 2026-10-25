@@ -1094,4 +1094,5 @@ export const EN: Record<string, string> = {
   "Собираем архив…": "Packing the archive…",
   "Скачать весь курс: текст и аудио": "Download the whole course: text and audio",
   "Скачай слова и диалоги уроков в mp3 и слушай их в дороге, а тексты распечатай для повторения. Весь курс скачивается одним архивом.": "Download the lesson words and dialogues as mp3 to listen on the go, and print the texts for review. The whole course downloads as one archive.",
+  "Наставник скоро добавит видео, где расскажет о себе.": "The tutor will soon add a video introducing themselves.",
 };

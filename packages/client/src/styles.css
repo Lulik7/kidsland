@@ -2501,3 +2501,9 @@ textarea,
 .admin-table th, .admin-table td { text-align: left; padding: 8px 10px; border-bottom: 1px dashed #f3c9b3; vertical-align: top; }
 .admin-table th { font-weight: 700; color: var(--muted, #6b7280); }
 .admin-login-note { font-size: .9rem; }
+
+/* Tutor page: the intro video above the booking panel */
+.tutor-side { display: grid; gap: 20px; align-items: start; }
+.tutor-video .card-title { margin: 0 0 10px; }
+.video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.video-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 16px; text-align: center; color: var(--muted, #6b7280); background: #f6f1ff; }
