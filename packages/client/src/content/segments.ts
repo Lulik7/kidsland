@@ -3,8 +3,8 @@
  * machine-translated line by line into public/content/<lang>.json (see scripts/translate-content).
  */
 
-/** Keys whose values are never translated: ids, code and other data. */
-const SKIP = new Set(['id', 'color', 'code', 'subject', 'topic', 'level', 'section', 'read', 'reading', 'speak']);
+/** Keys whose values are never translated: ids and other data. Code is translated line by line (strings and comments). */
+const SKIP = new Set(['id', 'color', 'subject', 'topic', 'level', 'section', 'read', 'reading', 'speak']);
 const CYRILLIC = /[а-яё]/i;
 /** A word line of a language course: «hola [ола] — привет». The Cyrillic reading only helps Russian readers. */
 const WORD_LINE = /^(.+?) \[[^\]]*\] — (.+)$/;
