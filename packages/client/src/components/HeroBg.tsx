@@ -14,7 +14,7 @@ const p = (topic: string, pos = 'center 30%'): HeroMedia => ({ image: `/img/post
 /** Music topics: photos of children playing each instrument. */
 const MUSIC: Record<string, HeroMedia> = {
   guitar: p('guitar'),
-  piano: p('piano', 'center 40%'),
+  piano: p('piano', 'center 25%'),
   accordion: p('accordion', 'center 55%'),
   violin: p('violin', 'center 40%'),
   drums: p('drums', '70% 40%'),
