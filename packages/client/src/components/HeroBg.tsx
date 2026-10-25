@@ -71,6 +71,7 @@ const COURSE_BG: Record<string, HeroMedia> = {
   'leisure-start': { image: '/img/hobby/craft-twine.jpg', pos: 'center 50%' },
   'leisure-mid': { image: '/img/hobby/knit.jpg', pos: 'center 35%' },
   'leisure-pro': { image: '/img/hobby/craft-embroidery.jpg', pos: 'center 50%' },
+  'science-pro': { image: '/img/bg/space-stars.jpg', pos: 'center 40%' },
   'animals-pro': { image: '/img/bg/animals-bird.jpg', pos: '68% 45%' },
 };
 
@@ -118,6 +119,8 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   insects: { image: '/img/bg/animals-butterfly.jpg' },
   cats: { image: '/img/bg/animals-cat.jpg', pos: 'center 35%' },
   turtles: { image: '/img/bg/animals-turtle.jpg', pos: 'center 55%' },
+  astronomy: { image: '/img/bg/space-stars.jpg', pos: 'center 40%' },
+  moon: { image: '/img/bg/space-moon.jpg', pos: 'center 45%' },
   winter: { image: '/img/bg/nature-winter.jpg', pos: 'center 40%' },
   yoga: { image: '/img/bg/spirit-yoga.jpg', pos: '20% 50%' },
   food: { image: '/img/bg/leisure-food.jpg' },
@@ -149,6 +152,8 @@ const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
   ['animals', /собак|щен/i, TOPIC_PHOTO.dogs],
   ['animals', /кош|кот[аеуы]?\b|котён|котен/i, TOPIC_PHOTO.cats],
   ['animals', /черепах/i, TOPIC_PHOTO.turtles],
+  ['science', /лун/i, TOPIC_PHOTO.moon],
+  ['science', /звёзд|звезд|созвезд/i, TOPIC_PHOTO.astronomy],
   ['*', /зим/i, TOPIC_PHOTO.winter],
   ['science', /фокус/i, TOPIC_PHOTO.magicCards],
   ['leisure', /вышивк/i, TOPIC_PHOTO.embroidery],
