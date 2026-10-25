@@ -2,6 +2,7 @@ import { coursesBySubject, getCourse, SUBJECTS } from '@kidsland/shared';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { LevelBadge } from '../components/CourseCard';
 import { Faq } from '../components/Faq';
+import { courseBg, HeroBg } from '../components/HeroBg';
 import { LockIcon } from '../components/Icons';
 import { KidHud } from '../components/KidHud';
 import { coursePic, Pic } from '../pics';
@@ -39,7 +40,8 @@ export function CoursePage() {
       <Link to={base} className="back-link">
         {t('← Все курсы')}
       </Link>
-      <section className="course-hero" style={{ ['--c' as string]: course.color }}>
+      <section className={`course-hero${courseBg(course) ? ' has-bg' : ''}`} style={{ ['--c' as string]: course.color }}>
+        <HeroBg media={courseBg(course)} />
         <div className="ch-icon">
           <Pic code={coursePic(course)} size={110} />
         </div>

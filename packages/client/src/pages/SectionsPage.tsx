@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
 import { CourseCard } from '../components/CourseCard';
+import { HeroBg, SECTION_BG, TOPIC_PHOTO } from '../components/HeroBg';
 import { TutorCard } from '../components/TutorCard';
 import { useTc } from '../content';
 import { useT } from '../i18n';
@@ -64,8 +65,9 @@ export function SectionsPage() {
 function SectionHero({ section }: { section: Section }) {
   const t = useT();
   return (
-    <section className="section-hero" style={{ ['--c' as string]: section.color }}>
-      <WcBranch className="banner-branch" size={190} />
+    <section className={`section-hero${SECTION_BG[section.id] ? ' has-bg' : ''}`} style={{ ['--c' as string]: section.color }}>
+      <HeroBg media={SECTION_BG[section.id]} />
+      {!SECTION_BG[section.id] && <WcBranch className="banner-branch" size={190} />}
       <span className="sec-icon sec-icon-xl">
         <Pic code={sectionPic(section.id)} size={84} />
       </span>
@@ -142,7 +144,8 @@ export function SectionPage() {
       <h2 className="track-title">{t('Темы')}</h2>
       <div className="topic-chips">
         {section.topics.map((tp) => (
-          <Link key={tp.id} to={`/tutors?subject=${tp.id}`} className="topic-chip" style={{ ['--c' as string]: section.color }}>
+          <Link key={tp.id} to={`/tutors?subject=${tp.id}`} className={`topic-chip${TOPIC_PHOTO[tp.id] ? ' with-photo' : ''}`} style={{ ['--c' as string]: section.color }}>
+            {TOPIC_PHOTO[tp.id] && <img src={TOPIC_PHOTO[tp.id].image} alt="" style={{ objectPosition: TOPIC_PHOTO[tp.id].pos }} />}
             {t(tp.name)}
           </Link>
         ))}

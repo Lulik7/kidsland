@@ -21,6 +21,7 @@ import { musicDiagrams, musicSectionPicture } from '../components/music';
 import { useLocal, useTc } from '../content';
 import { CHESS_DIAGRAMS } from '../content/chess';
 import { cardPic, lessonPic, Pic } from '../pics';
+import { lessonPhoto } from '../components/HeroBg';
 
 type Tab = 'theory' | LessonPart | 'homework';
 
@@ -232,7 +233,11 @@ export function LessonPage() {
         </span>
         <div className="lt-head">
           <h1>{shown.lesson.title}</h1>
-          <Pic code={lessonPic(course, lesson.title)} size={120} className="lt-pic" />
+          {lessonPhoto(course, lesson.title) ? (
+            <img className="lt-photo" src={lessonPhoto(course, lesson.title)!.image} alt="" style={{ objectPosition: lessonPhoto(course, lesson.title)!.pos }} />
+          ) : (
+            <Pic code={lessonPic(course, lesson.title)} size={120} className="lt-pic" />
+          )}
         </div>
         <div className="lt-progress" aria-hidden>
           {course.lessons.map((l, i) => (
