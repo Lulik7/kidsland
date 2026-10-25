@@ -29,4 +29,14 @@ export const config = {
   // Tutors' diplomas and certificates. Private: never served statically, only to the tutor and admins.
   documentsDir: process.env.DOCUMENTS_DIR ?? fileURLToPath(new URL('../private-documents', import.meta.url)),
   maxDocumentMb: 10,
+  // Address of the site, for links in emails.
+  appUrl: process.env.APP_URL ?? process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+  // Outgoing mail, like smtps://user:app-password@smtp.gmail.com:465. Without it letters wait in the outbox.
+  smtpUrl: process.env.SMTP_URL ?? '',
+  mailFrom: process.env.MAIL_FROM ?? 'Kidsland <no-reply@kidsland.local>',
+  // Who gets a copy of every payment confirmation (comma-separated).
+  notifyEmails: (process.env.ADMIN_NOTIFY_EMAILS ?? 'yuliaberner.dev@gmail.com')
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean),
 };

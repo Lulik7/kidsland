@@ -1,25 +1,62 @@
-import { BONUS_DISCOUNT, BONUS_FOR_DISCOUNT, PACKS, subscriptionStep, SUBSCRIPTION_STEPS, withDiscount, type PackId } from '@kidsland/shared';
+import { BONUS_DISCOUNT, BONUS_FOR_DISCOUNT, formatMoney, inCurrency, PACKS, PAY_METHODS, type Currency, subscriptionStep, SUBSCRIPTION_STEPS, withDiscount, type PackId } from '@kidsland/shared';
 import { Router } from 'express';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
+import { config } from '../config';
+import { queueMail } from '../mail';
+import { notifyAdmins } from '../notify';
 import { isUuid, priceOfTutor } from '../tutors';
 
 type Q = Db | PoolClient;
 
-/** Records a (demo) payment; money left on the family's balance is used first. */
+const METHOD_NAME: Record<string, string> = Object.fromEntries(PAY_METHODS.map((m) => [m.id, m.name]));
+
+/**
+ * Records a (demo) payment in the family's currency and with their payment method; money left on the
+ * family's balance is used first. The parent and the site's admins get a confirmation letter with the receipt.
+ */
 async function charge(db: Q, parentId: string, kind: 'pack' | 'subscription', title: string, amount: number) {
-  const { rows } = await db.query('SELECT wallet FROM users WHERE id = $1', [parentId]);
-  const fromWallet = Math.min(rows[0]?.wallet ?? 0, amount);
+  const { rows } = await db.query('SELECT email, wallet, currency, pay_method FROM users WHERE id = $1', [parentId]);
+  const user = rows[0];
+  const fromWallet = Math.min(user?.wallet ?? 0, amount);
   if (fromWallet) await db.query('UPDATE users SET wallet = wallet - $2 WHERE id = $1', [parentId, fromWallet]);
-  await db.query('INSERT INTO payments (parent_id, kind, title, amount) VALUES ($1, $2, $3, $4)', [
-    parentId,
-    kind,
-    fromWallet ? `${title} (${fromWallet} ₪ с баланса)` : title,
-    amount - fromWallet,
-  ]);
+  const currency = (user?.currency ?? 'ILS') as Currency;
+  const paid = amount - fromWallet;
+  const { rows: pay } = await db.query(
+    `INSERT INTO payments (parent_id, kind, title, amount, method, currency, amount_shown, receipt_no)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, nextval('receipt_no_seq')) RETURNING id, receipt_no`,
+    [
+      parentId,
+      kind,
+      fromWallet ? `${title} (${formatMoney(fromWallet, currency)} с баланса)` : title,
+      paid,
+      paid ? user?.pay_method ?? 'card' : null,
+      currency,
+      inCurrency(paid, currency),
+    ],
+  );
+  if (!user) return;
+  const sum = formatMoney(paid, currency);
+  const link = `${config.appUrl}/billing/receipt/${pay[0].id}`;
+  const body = [
+    `Квитанция № ${pay[0].receipt_no}`,
+    `Дата: ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' })}`,
+    `Плательщик: ${user.email}`,
+    `За что: ${title}`,
+    `Сумма: ${sum}${currency === 'ILS' ? '' : ` (${paid} ₪)`}`,
+    `Способ оплаты: ${paid ? METHOD_NAME[user.pay_method] ?? user.pay_method : 'с баланса'}`,
+    '',
+    `Квитанция на сайте: ${link}`,
+    '',
+    'Оплата пока учебная: деньги не списывались.',
+    'Kidsland',
+  ].join('\n');
+  await queueMail(db, user.email, `Kidsland: оплата получена, квитанция № ${pay[0].receipt_no}`, body);
+  await queueMail(db, config.notifyEmails, `Kidsland: новая оплата ${sum} от ${user.email}`, body);
+  await notifyAdmins(db, 'payment', `Оплата ${sum}: ${title}`, `${user.email}, квитанция № ${pay[0].receipt_no}`, `/billing/receipt/${pay[0].id}`);
 }
 
 const addMonth = (d: Date) => {
@@ -94,11 +131,40 @@ export async function returnLesson(db: Q, packageId: string | null) {
 }
 
 const tutorId = z.string({ required_error: 'Выберите наставника' }).refine(isUuid, 'Выберите наставника');
+/** How the parent pays this time; it is remembered for the next payments and the monthly subscription. */
+const pay = z.object({ method: z.enum(['card', 'paypal']), currency: z.enum(['ILS', 'EUR', 'USD']) }).optional();
 
 /** "Subscription and payment": balance, packs, subscription and moving lessons to another tutor. Payment is a demo. */
 export function billingRouter(db: Db) {
   const r = Router();
+  /** A receipt, for the parent who paid and for admins. */
+  r.get('/receipts/:id', requireAuth, async (req, res) => {
+    const id = String(req.params.id);
+    if (!isUuid(id)) throw new HttpError(404, 'Квитанция не найдена');
+    const { rows } = await db.query(
+      'SELECT p.*, u.email FROM payments p JOIN users u ON u.id = p.parent_id WHERE p.id = $1 AND (p.parent_id = $2 OR $3)',
+      [id, req.user!.id, req.user!.role === 'admin'],
+    );
+    const p = rows[0];
+    if (!p) throw new HttpError(404, 'Квитанция не найдена');
+    res.json({
+      id: p.id,
+      receiptNo: p.receipt_no,
+      title: p.title,
+      amount: p.amount,
+      amountShown: p.amount_shown,
+      currency: p.currency,
+      method: p.method,
+      email: p.email,
+      createdAt: p.created_at,
+    });
+  });
+
   r.use(requireAuth, requireRole('parent'));
+
+  const savePay = async (parentId: string, p: z.infer<typeof pay>) => {
+    if (p) await db.query('UPDATE users SET pay_method = $2, currency = $3 WHERE id = $1', [parentId, p.method, p.currency]);
+  };
 
   const checkTutor = async (id: string) => {
     const t = await priceOfTutor(db, id);
@@ -117,13 +183,14 @@ export function billingRouter(db: Db) {
       db.query('SELECT s.*, t.display_name AS tutor_name FROM subscriptions s LEFT JOIN tutor_profiles t ON t.id = s.tutor_id WHERE s.parent_id = $1', [parentId]),
       db.query('SELECT * FROM payments WHERE parent_id = $1 ORDER BY created_at DESC LIMIT 30', [parentId]),
       db.query("SELECT 1 FROM lesson_packages WHERE parent_id = $1 AND is_trial UNION SELECT 1 FROM bookings WHERE parent_id = $1 AND is_trial", [parentId]),
-      db.query('SELECT wallet FROM users WHERE id = $1', [parentId]),
+      db.query('SELECT wallet, currency, pay_method, timezone FROM users WHERE id = $1', [parentId]),
       db.query('SELECT id, nickname, bonus FROM child_profiles WHERE parent_id = $1 ORDER BY created_at', [parentId]),
     ]);
     const s = sub.rows[0];
     return {
       lessonsLeft: packages.rows.reduce((n, p) => n + p.lessons_left, 0),
       wallet: wallet.rows[0]?.wallet ?? 0,
+      settings: { currency: wallet.rows[0]?.currency ?? 'ILS', payMethod: wallet.rows[0]?.pay_method ?? 'card', timezone: wallet.rows[0]?.timezone ?? null },
       trialAvailable: trial.rows.length === 0,
       children: kids.rows.map((c) => ({ id: c.id, nickname: c.nickname, bonus: c.bonus })),
       packages: packages.rows.map((p) => ({
@@ -148,7 +215,17 @@ export function billingRouter(db: Db) {
               tutor: s.tutor_id ? { id: s.tutor_id, displayName: s.tutor_name } : null,
             }
           : null,
-      payments: payments.rows.map((p) => ({ id: p.id, kind: p.kind, title: p.title, amount: p.amount, createdAt: p.created_at })),
+      payments: payments.rows.map((p) => ({
+        id: p.id,
+        kind: p.kind,
+        title: p.title,
+        amount: p.amount,
+        amountShown: p.amount_shown,
+        currency: p.currency,
+        method: p.method,
+        receiptNo: p.receipt_no,
+        createdAt: p.created_at,
+      })),
     };
   };
 
@@ -157,7 +234,8 @@ export function billingRouter(db: Db) {
   });
 
   r.post('/buy', async (req, res) => {
-    const body = z.object({ plan: z.enum(PACKS.map((p) => p.id) as [PackId, ...PackId[]]), tutorId }).parse(req.body);
+    const body = z.object({ plan: z.enum(PACKS.map((p) => p.id) as [PackId, ...PackId[]]), tutorId, pay }).parse(req.body);
+    await savePay(req.user!.id, body.pay);
     const pack = PACKS.find((p) => p.id === body.plan)!;
     const tutor = await checkTutor(body.tutorId);
     const parentId = req.user!.id;
@@ -175,8 +253,9 @@ export function billingRouter(db: Db) {
   /** Starts a subscription, or changes the number of lessons from the next month. */
   r.post('/subscription', async (req, res) => {
     const body = z
-      .object({ lessonsPerMonth: z.number().int().refine((n) => !!subscriptionStep(n), 'Такого плана нет'), tutorId })
+      .object({ lessonsPerMonth: z.number().int().refine((n) => !!subscriptionStep(n), 'Такого плана нет'), tutorId, pay })
       .parse(req.body);
+    await savePay(req.user!.id, body.pay);
     const parentId = req.user!.id;
     await renewSubscription(db, parentId);
     const { rows } = await db.query('SELECT * FROM subscriptions WHERE parent_id = $1', [parentId]);
@@ -257,6 +336,22 @@ export function billingRouter(db: Db) {
     res.json(await overview(parentId));
   });
 
+  /** The family's time zone, currency and usual payment method. */
+  r.put('/settings', async (req, res) => {
+    const body = z
+      .object({
+        currency: z.enum(['ILS', 'EUR', 'USD']).optional(),
+        payMethod: z.enum(['card', 'paypal']).optional(),
+        timezone: z.string().max(64).refine((tz) => Intl.supportedValuesOf('timeZone').includes(tz) || tz === 'UTC', 'Неизвестный часовой пояс').optional(),
+      })
+      .parse(req.body);
+    await db.query(
+      'UPDATE users SET currency = COALESCE($2, currency), pay_method = COALESCE($3, pay_method), timezone = COALESCE($4, timezone) WHERE id = $1',
+      [req.user!.id, body.currency ?? null, body.payMethod ?? null, body.timezone ?? null],
+    );
+    res.json(await overview(req.user!.id));
+  });
+
   /** Gives the subscription to another tutor from the next month; this month's lessons can be moved with /transfer. */
   r.post('/subscription/tutor', async (req, res) => {
     const body = z.object({ tutorId }).parse(req.body);
@@ -270,7 +365,8 @@ export function billingRouter(db: Db) {
 
   /** A child's homework bonuses buy one lesson at half price with any tutor. */
   r.post('/bonus', async (req, res) => {
-    const body = z.object({ childId: z.string().uuid(), tutorId }).parse(req.body);
+    const body = z.object({ childId: z.string().uuid(), tutorId, pay }).parse(req.body);
+    await savePay(req.user!.id, body.pay);
     const parentId = req.user!.id;
     const tutor = await checkTutor(body.tutorId);
     const client = await db.connect();

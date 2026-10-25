@@ -58,3 +58,25 @@ export const subscriptionStep = (lessons: number) => SUBSCRIPTION_STEPS.find((s)
 /** Bonuses for homework: this many give a 50% discount on one lesson with any tutor. */
 export const BONUS_FOR_DISCOUNT = 100;
 export const BONUS_DISCOUNT = 50;
+
+/**
+ * Prices are kept in shekels. Families in Israel see shekels, in Greece euros, everywhere else dollars.
+ * The rates are fixed and approximate; a payment is recorded in shekels together with the amount shown.
+ */
+export type Currency = 'ILS' | 'EUR' | 'USD';
+export const CURRENCIES: Record<Currency, { sign: string; perShekel: number }> = {
+  ILS: { sign: '₪', perShekel: 1 },
+  EUR: { sign: '€', perShekel: 0.25 },
+  USD: { sign: '$', perShekel: 0.27 },
+};
+export const inCurrency = (shekels: number, c: Currency) => Math.round(shekels * CURRENCIES[c].perShekel);
+export const formatMoney = (shekels: number, c: Currency, locale = 'ru-RU') => {
+  const text = inCurrency(shekels, c).toLocaleString(locale);
+  return c === 'ILS' ? `${text} ₪` : `${CURRENCIES[c].sign}${text}`;
+};
+
+export type PayMethod = 'card' | 'paypal';
+export const PAY_METHODS: { id: PayMethod; name: string }[] = [
+  { id: 'card', name: 'Банковская карта' },
+  { id: 'paypal', name: 'PayPal' },
+];

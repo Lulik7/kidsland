@@ -3,7 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, type Billing, type Tutor } from '../api';
 import { WcBranch } from '../components/Watercolor';
-import { CURRENCIES, fmtDateTime, getCurrency, money, personName, setCurrency, type Currency } from '../format';
+import { Checkout } from '../components/Checkout';
+import { PaySettings } from '../components/PaySettings';
+import { fmtDateTime, getCurrency as getCurrencyCode, getTimeZone, money, personName, setTimeZone } from '../format';
+import type { PayChoice } from '../api';
 import { useT } from '../i18n';
 
 /** "Subscription and payment": balance, lesson packs, the monthly subscription and moving lessons to another tutor. */
@@ -17,12 +20,14 @@ export function BillingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
-  const [cur, setCur] = useState(getCurrency());
+  const [, redraw] = useState(0);
+  const [checkout, setCheckout] = useState<{ title: string; shekels: number; pay: (c: PayChoice) => Promise<Billing> } | null>(null);
   const [move, setMove] = useState<{ packageId: string; to: string; lessons: number } | null>(null);
 
   useEffect(() => {
     api.billing().then((b) => {
       setBill(b);
+      if (b.settings.timezone && b.settings.timezone !== getTimeZone()) setTimeZone(b.settings.timezone);
       if (b.subscription) setSubLessons(b.subscription.nextLessons ?? b.subscription.lessonsPerMonth);
     });
     api.tutors({ sort: 'rating' }).then((r) => setTutors(r.tutors));
@@ -72,22 +77,9 @@ export function BillingPage() {
         <p>{t('Оплатите уроки заранее: пакетом или подпиской на месяц. Чем больше уроков, тем дешевле каждый. Неиспользованные уроки можно перенести к другому наставнику.')}</p>
       </section>
 
-      <div className="bill-currency">
-        <span className="muted small">{t('Валюта')}:</span>
-        {(Object.keys(CURRENCIES) as Currency[]).map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={`fchip${cur === c ? ' on' : ''}`}
-            onClick={() => {
-              setCurrency(c);
-              setCur(c);
-            }}
-          >
-            {CURRENCIES[c].sign} {c}
-          </button>
-        ))}
-      </div>
+      <section className="card">
+        <PaySettings withMethod onChange={(b) => (b ? setBill(b) : redraw((n) => n + 1))} />
+      </section>
       <div className="demo-pay">💡 {t('Оплата пока учебная: деньги не списываются, уроки сразу появляются на балансе.')}</div>
       {error && <div className="error">{error}</div>}
       {note && <div className="ok-note">✓ {note}</div>}
@@ -187,7 +179,10 @@ export function BillingPage() {
                   type="button"
                   className="btn btn-primary btn-small"
                   disabled={!tutor || busy || off}
-                  onClick={() => run(() => api.buyPack(p.id, tutorId), t('Оплачено! Уроки на балансе.'))}
+                  onClick={() =>
+                    per !== null &&
+                    setCheckout({ title: `${t(p.name)} · ${personName(tutor!.displayName)}`, shekels: per * p.lessons, pay: (pay) => api.buyPack(p.id, tutorId, pay) })
+                  }
                 >
                   {off ? t('Уже был') : t('Оплатить')}
                 </button>
@@ -195,7 +190,7 @@ export function BillingPage() {
             );
           })}
         </div>
-        {cur !== 'ILS' && <p className="small muted">{t('Цены пересчитаны из шекелей по примерному курсу.')}</p>}
+        {bill.settings && getCurrencyCode() !== 'ILS' && <p className="small muted">{t('Цены пересчитаны из шекелей по примерному курсу.')}</p>}
         <p className="small muted">
           {t('Цена урока зависит от наставника: у нового')} {money(PRICE_STEPS[0].price)}
           {t(', и она растёт вместе с числом его учеников')} ({PRICE_STEPS.map((s) => `${s.from}+ → ${money(s.price)}`).join(', ')}).
@@ -226,7 +221,14 @@ export function BillingPage() {
                   type="button"
                   className="btn btn-primary btn-small"
                   disabled={!ready || !tutor || busy}
-                  onClick={() => run(() => api.bonusLesson(c.id, tutorId), t('Урок со скидкой на балансе!'))}
+                  onClick={() =>
+                    tutor &&
+                    setCheckout({
+                      title: `${t('Урок за бонусы')} · ${personName(tutor.displayName)}`,
+                      shekels: withDiscount(tutor.price, BONUS_DISCOUNT),
+                      pay: (pay) => api.bonusLesson(c.id, tutorId, pay),
+                    })
+                  }
                 >
                   {!ready
                     ? t('ещё {n} до скидки', { n: BONUS_FOR_DISCOUNT - c.bonus })
@@ -295,11 +297,33 @@ export function BillingPage() {
             </div>
           </div>
         ) : (
-          <button type="button" className="btn btn-go" disabled={!tutor || busy} onClick={() => run(() => api.subscribe(subLessons, tutorId), t('Подписка оформлена! Уроки этого месяца на балансе.'))}>
+          <button type="button" className="btn btn-go" disabled={!tutor || busy} onClick={() =>
+              tutor &&
+              subPer !== null &&
+              setCheckout({
+                title: `${t('Подписка на месяц')}: ${subLessons} ${t('уроков в месяц')} · ${personName(tutor.displayName)}`,
+                shekels: subPer * subLessons,
+                pay: (pay) => api.subscribe(subLessons, tutorId, pay),
+              })
+            }>
             {tutor ? `${t('Оформить подписку')}: ${personName(tutor.displayName)}` : t('Сначала выберите наставника выше')}
           </button>
         )}
       </section>
+
+      {checkout && (
+        <Checkout
+          title={checkout.title}
+          shekels={checkout.shekels}
+          defaultMethod={bill.settings.payMethod}
+          pay={checkout.pay}
+          onClose={() => setCheckout(null)}
+          onPaid={(b) => {
+            setBill(b);
+            setNote(t('Оплачено! Уроки на балансе.'));
+          }}
+        />
+      )}
 
       {bill.payments.length > 0 && (
         <section className="card">
@@ -308,8 +332,18 @@ export function BillingPage() {
             {bill.payments.map((p) => (
               <li key={p.id}>
                 <span className="muted small">{fmtDateTime(p.createdAt)}</span>
-                <span>{p.title}</span>
+                <span>
+                  {p.title}
+                  {p.method && <small className="muted"> · {p.method === 'paypal' ? 'PayPal' : t('Банковская карта')}</small>}
+                </span>
                 <b>{p.amount ? money(p.amount) : '—'}</b>
+                {p.receiptNo ? (
+                  <Link to={`/billing/receipt/${p.id}`} className="small">
+                    🧾 № {p.receiptNo}
+                  </Link>
+                ) : (
+                  <span />
+                )}
               </li>
             ))}
           </ul>

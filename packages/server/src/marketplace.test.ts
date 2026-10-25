@@ -79,7 +79,15 @@ describe.skipIf(!url)('marketplace', () => {
     expect(trial.status).toBe(201);
     expect(trial.body.lessonsLeft).toBe(1);
     expect((await request(app!).post('/api/billing/buy').set(auth(parent)).send({ plan: 'trial', tutorId })).status).toBe(400);
-    await request(app!).post('/api/billing/buy').set(auth(parent)).send({ plan: 'p4', tutorId });
+    const p4 = await request(app!).post('/api/billing/buy').set(auth(parent)).send({ plan: 'p4', tutorId, pay: { method: 'paypal', currency: 'USD' } });
+    expect(p4.body.settings).toMatchObject({ currency: 'USD', payMethod: 'paypal' });
+    const [paid] = p4.body.payments;
+    expect(paid).toMatchObject({ method: 'paypal', currency: 'USD', amountShown: Math.round(price * 4 * 0.27) });
+    const receipt = await request(app!).get(`/api/billing/receipts/${paid.id}`).set(auth(parent));
+    expect(receipt.body.receiptNo).toBe(paid.receiptNo);
+    expect((await request(app!).get(`/api/billing/receipts/${paid.id}`).set(auth(other))).status).toBe(404);
+    const { rows: letters } = await db!.query('SELECT to_email FROM email_outbox WHERE subject LIKE $1', [`%№ ${paid.receiptNo}%`]);
+    expect(letters.length).toBeGreaterThanOrEqual(1);
 
     const first = await request(app!).post('/api/bookings').set(auth(parent)).send({ slotId: s1.id, childId });
     expect(first.status).toBe(201);

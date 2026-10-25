@@ -1,3 +1,4 @@
+import { CURRENCIES, formatMoney, type Currency } from '@kidsland/shared';
 import { LANGUAGES, SUBJECTS, topicName } from '@kidsland/shared';
 import type { T } from './i18n';
 
@@ -27,17 +28,9 @@ export const personName = (name: string) =>
       });
 
 /** Money on the site is in shekels. */
-/**
- * Prices are kept in shekels. Families in Israel see shekels, in Greece euros, everywhere else dollars.
- * The country is guessed from the browser's time zone and language; the rates are fixed and approximate,
- * and the payment itself is counted in shekels.
- */
-export type Currency = 'ILS' | 'EUR' | 'USD';
-export const CURRENCIES: Record<Currency, { sign: string; perShekel: number }> = {
-  ILS: { sign: '₪', perShekel: 1 },
-  EUR: { sign: '€', perShekel: 0.25 },
-  USD: { sign: '$', perShekel: 0.27 },
-};
+/** The family's currency: guessed from the browser's time zone and language, or picked by the parent. */
+export type { Currency };
+export { CURRENCIES };
 
 function guessCurrency(): Currency {
   try {
@@ -64,22 +57,35 @@ export function setCurrency(c: Currency) {
   }
 }
 
-export const money = (shekels: number) => {
-  const c = CURRENCIES[currency];
-  const text = Math.round(shekels * c.perShekel).toLocaleString(locale);
-  return currency === 'ILS' ? `${text} ₪` : `${c.sign}${text}`;
-};
+export const money = (shekels: number) => formatMoney(shekels, currency, locale);
+
+/** The time zone lesson times are shown in: the browser's own unless the parent picked another one. */
+export const browserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC';
+let timeZone: string | undefined = (() => {
+  try {
+    return localStorage.getItem('kl-tz') ?? undefined;
+  } catch {
+    return undefined;
+  }
+})();
+export const getTimeZone = () => timeZone ?? browserTimeZone();
+export function setTimeZone(tz: string | null) {
+  timeZone = tz && tz !== browserTimeZone() ? tz : undefined;
+  try {
+    if (timeZone) localStorage.setItem('kl-tz', timeZone);
+    else localStorage.removeItem('kl-tz');
+  } catch {
+    // used for this visit only
+  }
+}
 
 export const fmtDay = (d: Date | string) =>
-  new Date(d).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'long' });
-export const fmtTime = (d: Date | string) => new Date(d).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  new Date(d).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'long', timeZone });
+export const fmtTime = (d: Date | string) => new Date(d).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone });
 export const fmtDateTime = (d: Date | string) => `${fmtDay(d)}, ${fmtTime(d)}`;
 
-/** Local calendar day key, so slots group by the viewer's own dates. */
-export const dayKey = (d: Date | string) => {
-  const x = new Date(d);
-  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
-};
+/** Calendar day key in the viewer's time zone, so slots group by the viewer's own dates. */
+export const dayKey = (d: Date | string) => new Date(d).toLocaleDateString('en-CA', { timeZone });
 
 export function relativeDays(d: string | null, t: T): string {
   if (!d) return t('ещё не играл');

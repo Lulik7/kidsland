@@ -1,4 +1,4 @@
-import type { Answers, BookingStatus, Concept, CourseLevel, FailReason, LessonPart, LevelConfig, Program, SubjectId, Theme } from '@kidsland/shared';
+import type { Answers, BookingStatus, Currency, PayMethod, Concept, CourseLevel, FailReason, LessonPart, LevelConfig, Program, SubjectId, Theme } from '@kidsland/shared';
 
 export interface User {
   id: string;
@@ -102,7 +102,36 @@ export interface Billing {
   children: { id: string; nickname: string; bonus: number }[];
   packages: LessonPackage[];
   subscription: { lessonsPerMonth: number; nextLessons: number | null; status: 'active' | 'cancelled'; periodEnd: string; tutor: { id: string; displayName: string } | null } | null;
-  payments: { id: string; kind: 'pack' | 'subscription' | 'transfer'; title: string; amount: number; createdAt: string }[];
+  payments: Payment[];
+  settings: { currency: Currency; payMethod: PayMethod; timezone: string | null };
+}
+
+export interface Payment {
+  id: string;
+  kind: 'pack' | 'subscription' | 'transfer';
+  title: string;
+  /** In shekels. */
+  amount: number;
+  /** In the currency the family saw. */
+  amountShown: number;
+  currency: Currency;
+  method: PayMethod | null;
+  receiptNo: number | null;
+  createdAt: string;
+}
+
+export type PayChoice = { method: PayMethod; currency: Currency };
+
+export interface Receipt {
+  id: string;
+  receiptNo: number;
+  title: string;
+  amount: number;
+  amountShown: number;
+  currency: Currency;
+  method: PayMethod | null;
+  email: string;
+  createdAt: string;
 }
 
 export interface Slot {
@@ -430,8 +459,11 @@ export const api = {
   book: (slotId: string, childId: string) =>
     request<{ booking: Booking }>('/bookings', { method: 'POST', body: { slotId, childId } }),
   billing: () => request<Billing>('/billing'),
-  buyPack: (plan: string, tutorId: string) => request<Billing>('/billing/buy', { method: 'POST', body: { plan, tutorId } }),
-  subscribe: (lessonsPerMonth: number, tutorId: string) => request<Billing>('/billing/subscription', { method: 'POST', body: { lessonsPerMonth, tutorId } }),
+  buyPack: (plan: string, tutorId: string, pay?: PayChoice) => request<Billing>('/billing/buy', { method: 'POST', body: { plan, tutorId, pay } }),
+  subscribe: (lessonsPerMonth: number, tutorId: string, pay?: PayChoice) =>
+    request<Billing>('/billing/subscription', { method: 'POST', body: { lessonsPerMonth, tutorId, pay } }),
+  billingSettings: (s: { currency?: Currency; payMethod?: PayMethod; timezone?: string }) => request<Billing>('/billing/settings', { method: 'PUT', body: s }),
+  receipt: (id: string) => request<Receipt>(`/billing/receipts/${id}`),
   cancelSubscription: () => request<Billing>('/billing/subscription/cancel', { method: 'POST' }),
   resumeSubscription: () => request<Billing>('/billing/subscription/resume', { method: 'POST' }),
   moveSubscription: (tutorId: string) => request<Billing>('/billing/subscription/tutor', { method: 'POST', body: { tutorId } }),
@@ -489,7 +521,7 @@ export const api = {
     request<{ results: Record<string, boolean>; attempts: number; earned: number; bonus: number }>(`/children/${childId}/homework/${lessonId}`),
   submitHomework: (childId: string, lessonId: string, answers: Answers) =>
     request<HomeworkResult>(`/children/${childId}/homework/${lessonId}`, { method: 'POST', body: { answers } }),
-  bonusLesson: (childId: string, tutorId: string) => request<Billing>('/billing/bonus', { method: 'POST', body: { childId, tutorId } }),
+  bonusLesson: (childId: string, tutorId: string, pay?: PayChoice) => request<Billing>('/billing/bonus', { method: 'POST', body: { childId, tutorId, pay } }),
   completeLesson: (childId: string, lessonId: string) =>
     request<{ progress: LessonProgress }>(`/children/${childId}/lessons/${lessonId}/complete`, { method: 'POST', body: {} }),
 

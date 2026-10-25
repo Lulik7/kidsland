@@ -23,6 +23,7 @@ import { LessonRoom } from './pages/LessonRoom';
 import { LevelMap } from './pages/LevelMap';
 import { ParentDashboard } from './pages/ParentDashboard';
 import { BillingPage } from './pages/BillingPage';
+import { ReceiptPage } from './pages/ReceiptPage';
 import { TutorCabinet } from './pages/TutorCabinet';
 import { TutorPage } from './pages/TutorPage';
 import { TutorsPage } from './pages/TutorsPage';
@@ -195,6 +196,7 @@ export function App() {
         />
         <Route path="/parent" element={<RequireAuth role="parent"><ParentDashboard /></RequireAuth>} />
         <Route path="/billing" element={<RequireAuth role="parent"><BillingPage /></RequireAuth>} />
+        <Route path="/billing/receipt/:id" element={<RequireAuth><ReceiptPage /></RequireAuth>} />
         <Route path="/tutor" element={<RequireAuth role="tutor"><TutorCabinet /></RequireAuth>} />
         <Route path="/lessons/:id" element={<RequireAuth><LessonRoom /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />

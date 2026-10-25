@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Child, type ChildReport } from '../api';
 import { BookingCard } from '../components/BookingCard';
+import { PaySettings } from '../components/PaySettings';
 import { LevelBadge } from '../components/CourseCard';
 import { StarIcon } from '../components/Icons';
 import { Sprite } from '../components/Sprite';
 import { StarsChart } from '../components/StarsChart';
 import { avatarSvg, COIN } from '../game/sprites';
-import { relativeDays } from '../format';
+import { getCurrency, getTimeZone, relativeDays } from '../format';
 import { useTc } from '../content';
 import { useT } from '../i18n';
 
@@ -32,6 +33,7 @@ const formatDate = (iso: string) => new Date(iso).toLocaleDateString(document.do
 export function ParentDashboard() {
   const t = useT();
   const tc = useTc();
+  const [, redraw] = useState(0);
   const [kids, setKids] = useState<Child[] | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const [report, setReport] = useState<ChildReport | null>(null);
@@ -90,6 +92,13 @@ export function ParentDashboard() {
           ))}
         </div>
       </div>
+
+      <details className="card dash-settings">
+        <summary>
+          ⚙️ {t('Часовой пояс и валюта')}: <b>{getTimeZone().split('/').pop()!.replace(/_/g, ' ')}</b> · <b>{getCurrency()}</b>
+        </summary>
+        <PaySettings onChange={() => redraw((n) => n + 1)} />
+      </details>
 
       <section className="lessons">
         <h2 className="card-title">{t('Ближайшие уроки')}</h2>

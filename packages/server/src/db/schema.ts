@@ -303,6 +303,28 @@ CREATE TABLE IF NOT EXISTS tutor_reviews (
 CREATE UNIQUE INDEX IF NOT EXISTS tutor_reviews_one_per_parent ON tutor_reviews(tutor_id, parent_id) WHERE parent_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS tutor_reviews_tutor_idx ON tutor_reviews(tutor_id, created_at);
 
+-- The family's settings and how payments were made; every payment has a receipt number.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS currency text NOT NULL DEFAULT 'ILS';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pay_method text NOT NULL DEFAULT 'card';
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS method text;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS currency text NOT NULL DEFAULT 'ILS';
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS amount_shown integer NOT NULL DEFAULT 0;
+CREATE SEQUENCE IF NOT EXISTS receipt_no_seq START 1001;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS receipt_no integer;
+-- Letters to send: written in the same transaction as what they are about, delivered by mail.ts.
+CREATE TABLE IF NOT EXISTS email_outbox (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  to_email   text NOT NULL,
+  subject    text NOT NULL,
+  body       text NOT NULL,
+  status     text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
+  error      text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  sent_at    timestamptz
+);
+CREATE INDEX IF NOT EXISTS email_outbox_pending_idx ON email_outbox(created_at) WHERE status = 'pending';
+
 -- Homework after lessons: bonuses for right answers; 100 of them buy a lesson at half price.
 ALTER TABLE child_profiles ADD COLUMN IF NOT EXISTS bonus integer NOT NULL DEFAULT 0;
 CREATE TABLE IF NOT EXISTS homework_progress (

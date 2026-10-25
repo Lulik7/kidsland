@@ -1814,3 +1814,105 @@ textarea,
   gap: 8px;
   margin: 0 0 12px;
 }
+
+/* Time zone, currency and payment method; checkout and receipt. */
+.pay-settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.pay-settings label {
+  display: grid;
+  gap: 6px;
+}
+.pay-settings .chips-row {
+  margin-top: 6px;
+}
+.dash-settings {
+  margin-bottom: 18px;
+}
+.dash-settings summary {
+  cursor: url('/img/cursor-bird-hover.svg') 1 10, pointer;
+  font-weight: 600;
+}
+.dash-settings[open] summary {
+  margin-bottom: 14px;
+}
+.checkout {
+  width: min(520px, 100%);
+}
+.pay-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.pay-method {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 14px 10px;
+  border: 2px dashed #f2b8a2;
+  border-radius: 16px;
+  background: #fff;
+  font: inherit;
+}
+.pay-method.on {
+  border-style: solid;
+  border-color: var(--primary);
+  background: #eef9f3;
+}
+.pm-logo {
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.pm-card {
+  color: #1a3d8f;
+}
+.pm-paypal {
+  color: #003087;
+  font-style: italic;
+}
+.receipt {
+  max-width: 560px;
+  margin: 0 auto 16px;
+}
+.receipt header {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #f2b8a2;
+}
+.receipt-logo {
+  font-size: 1.3rem;
+  color: var(--primary);
+}
+.receipt h1 {
+  margin: 0;
+  font-family: var(--hand);
+  font-size: 2.2rem;
+}
+.receipt dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 18px;
+  margin: 0 0 12px;
+}
+.receipt dt {
+  color: var(--muted);
+}
+.receipt dd {
+  margin: 0;
+}
+.bill-history li {
+  grid-template-columns: 150px 1fr auto auto;
+}
+@media print {
+  .no-print,
+  .topbar,
+  footer {
+    display: none !important;
+  }
+}
