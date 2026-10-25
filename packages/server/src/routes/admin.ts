@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
 import { config } from '../config';
-import { envFilesFound } from '../envFiles';
+import { envFilesFound, smtpUrlFiles } from '../envFiles';
 import type { Db } from '../db/pool';
 import { deliverMail, smtpSettings } from '../mail';
 import { HttpError } from '../errors';
@@ -79,6 +79,7 @@ export function adminRouter(db: Db) {
       envFiles: envFilesFound,
       mailLogin: smtpSettings()?.user ?? '',
       mailPassLength: smtpSettings()?.pass.length ?? 0,
+      smtpUrlFiles,
     });
   });
 

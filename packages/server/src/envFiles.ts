@@ -13,6 +13,8 @@ const CANDIDATES = [join(serverDir, '.env'), join(serverDir, '.env.txt'), join(r
 
 /** Which settings files were found, for the admin's mail page. */
 export const envFilesFound: string[] = [];
+/** Files that hold an SMTP_URL line, once per line, so a duplicate shows up on the mail page. */
+export const smtpUrlFiles: string[] = [];
 
 for (const file of CANDIDATES) {
   if (!existsSync(file)) continue;
@@ -26,7 +28,10 @@ for (const file of CANDIDATES) {
     const key = line.slice(0, eq).trim();
     let value = line.slice(eq + 1).trim().replace(/^(["'])(.*)\1$/, '$2');
     // A mail address never has spaces: they come from copying the app password as Google shows it.
-    if (key === 'SMTP_URL') value = value.replace(/\s+/g, '');
+    if (key === 'SMTP_URL') {
+      value = value.replace(/\s+/g, '');
+      smtpUrlFiles.push(file);
+    }
     if (process.env[key] === undefined || process.env[key] === '') process.env[key] = value;
   }
 }

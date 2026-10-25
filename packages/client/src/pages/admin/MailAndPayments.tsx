@@ -8,7 +8,7 @@ const STATUS = { pending: 'ждёт отправки', sent: 'отправлен
 /** Every letter the site sent or is about to send: receipts, lesson reminders, copies for the admin. */
 export function AdminMail() {
   const [filter, setFilter] = useState<'' | 'pending' | 'sent' | 'failed'>('');
-  const [data, setData] = useState<{ letters: AdminLetter[]; counts: Partial<Record<string, number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number } | null>(null);
+  const [data, setData] = useState<{ letters: AdminLetter[]; counts: Partial<Record<string, number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; smtpUrlFiles?: string[] } | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const load = () => api.adminMail(filter || undefined).then(setData).catch(() => {});
@@ -32,6 +32,14 @@ export function AdminMail() {
         <p className="muted small">
           Почта подключена. Вход в почтовый ящик: <b>{data.mailLogin || 'не указан'}</b>, длина пароля приложения: {data.mailPassLength ?? 0} знаков
           {data.mailPassLength !== 16 && ' (у пароля приложения Google должно быть ровно 16 букв)'}.
+          {!!data.smtpUrlFiles?.length && (
+            <>
+              <br />
+              Строка SMTP_URL взята из файла: {data.smtpUrlFiles[0]}.
+              {data.smtpUrlFiles.length > 1 &&
+                ` Внимание: SMTP_URL записан ${data.smtpUrlFiles.length} раза (${data.smtpUrlFiles.join(', ')}). Оставьте только одну строку SMTP_URL с новым паролем, остальные удалите.`}
+            </>
+          )}
         </p>
       )}
       {data.mailReady && !!data.counts.failed && (

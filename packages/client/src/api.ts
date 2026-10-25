@@ -523,7 +523,7 @@ export const api = {
 
   content: () => request<ContentOverridesDto>('/content'),
   adminMail: (status?: 'pending' | 'sent' | 'failed') =>
-    request<{ letters: AdminLetter[]; counts: Partial<Record<'pending' | 'sent' | 'failed', number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number }>(`/admin/mail${status ? `?status=${status}` : ''}`),
+    request<{ letters: AdminLetter[]; counts: Partial<Record<'pending' | 'sent' | 'failed', number>>; mailReady: boolean; envFiles?: string[]; mailLogin?: string; mailPassLength?: number; smtpUrlFiles?: string[] }>(`/admin/mail${status ? `?status=${status}` : ''}`),
   retryMail: () => request<{ requeued: number }>('/admin/mail/retry', { method: 'POST' }),
   adminPayments: () => request<{ payments: AdminPayment[]; month: number }>('/admin/payments'),
   adminNotifications: () => request<{ unread: number; notifications: AdminNotification[] }>('/admin/notifications'),
