@@ -37,7 +37,7 @@ export function Posture({ tc, topic }: { tc: Tc; topic: Topic }) {
   const [photo, setPhoto] = useState(PHOTOS.has(topic));
   return (
     <figure className="music-diagram posture-card">
-      <figcaption className="md-title">{tc('Как держать инструмент и сидеть')}</figcaption>
+      <figcaption className="md-title">{tc(topic === 'piano' ? 'Как сидеть за инструментом' : 'Как держать инструмент и сидеть')}</figcaption>
       <div className="pc-main">
         <div className={`pc-pic${photo ? ' photo' : ''}`}>
           {photo ? (
