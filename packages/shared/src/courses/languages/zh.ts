@@ -1,5 +1,6 @@
 import type { LanguageData } from './build';
 import { ZH_EXTRA_1 } from './zh-extra-1';
+import { ZH_EXTRA_2 } from './zh-extra-2';
 
 export const CHINESE: LanguageData = {
   topic: 'lang-zh',
@@ -7,7 +8,7 @@ export const CHINESE: LanguageData = {
   inName: 'по-китайски',
   color: '#c8102e',
   speak: 'zh-CN',
-  extra: ZH_EXTRA_1,
+  extra: ZH_EXTRA_1 + ZH_EXTRA_2,
   notes: {
     0: 'На китайском говорит больше людей, чем на любом другом языке: больше миллиарда человек в Китае, на Тайване и в Сингапуре.',
     1: 'Китайцы пишут иероглифами. Каждый иероглиф — это слог и часто целое слово. Чтобы читать газету, нужно знать около трёх тысяч иероглифов.',
