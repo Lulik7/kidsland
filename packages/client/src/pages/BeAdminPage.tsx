@@ -115,6 +115,18 @@ export function BeAdminPage() {
                   <span className="muted small">
                     {p.authorName} · {fmtDateTime(p.createdAt)}
                   </span>
+                  {user?.role === 'admin' && (
+                    <button
+                      className="btn btn-danger btn-small"
+                      onClick={async () => {
+                        if (!window.confirm(`Удалить пост «${p.title}» навсегда?`)) return;
+                        await api.deletePost(p.id);
+                        setPosts((ps) => ps?.filter((x) => x.id !== p.id) ?? null);
+                      }}
+                    >
+                      Удалить
+                    </button>
+                  )}
                 </article>
               ))}
             </div>

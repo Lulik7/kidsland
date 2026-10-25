@@ -91,6 +91,14 @@ export function postsRouter(db: Db) {
     res.json({ post: publicPost(rows[0], true) });
   });
 
+  // The admin removes a post for good: waiting for review, published or rejected.
+  admin.delete('/:id', async (req, res) => {
+    if (!isUuid(req.params.id)) throw new HttpError(404, 'Пост не найден');
+    const { rowCount } = await db.query('DELETE FROM community_posts WHERE id = $1', [req.params.id]);
+    if (!rowCount) throw new HttpError(404, 'Пост не найден');
+    res.json({ ok: true });
+  });
+
   r.use('/admin', admin);
   return r;
 }

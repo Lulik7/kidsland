@@ -21,6 +21,8 @@ export function AdminPage() {
   const [focusTutor, setFocusTutor] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<'' | 'parent' | 'tutor'>('');
   const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [postView, setPostView] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [donePosts, setDonePosts] = useState<CommunityPost[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [threads, setThreads] = useState<SupportThread[]>([]);
   const [current, setCurrent] = useState<string | null>(null);
@@ -96,7 +98,7 @@ export function AdminPage() {
           {tabButton('tutors', 'Преподаватели', pendingTutors)}
           {tabButton('chats', 'Чаты уроков')}
           {tabButton('content', 'Темы, статьи, уроки')}
-          {tabButton('posts', 'Посты на проверку', posts.length)}
+          {tabButton('posts', 'Посты', posts.length)}
           {tabButton('safety', 'Жалобы и безопасность', flags.length)}
           {tabButton('account', 'Пароль')}
         </div>
@@ -190,12 +192,32 @@ export function AdminPage() {
       ) : tab === 'posts' ? (
         <div className="card">
           <h2 className="card-title">Посты «Побудь админом»</h2>
-          <p className="muted small">Пост увидят все только после одобрения. При отказе автор увидит ваш комментарий.</p>
-          {posts.length === 0 ? (
-            <p className="muted">Новых постов нет.</p>
+          <p className="muted small">Пост увидят все только после одобрения. При отказе автор увидит ваш комментарий. Ненужный пост можно удалить совсем.</p>
+          <div className="tabs small-tabs">
+            {(
+              [
+                ['pending', 'На проверке'],
+                ['approved', 'Опубликованные'],
+                ['rejected', 'Отклонённые'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                className={postView === id ? 'tab on' : 'tab'}
+                onClick={() => {
+                  setPostView(id);
+                  if (id !== 'pending') api.adminPosts(id).then((r) => setDonePosts(r.posts)).catch(() => setDonePosts([]));
+                }}
+              >
+                {label} {id === 'pending' && posts.length > 0 && <span className="badge">{posts.length}</span>}
+              </button>
+            ))}
+          </div>
+          {(postView === 'pending' ? posts : donePosts).length === 0 ? (
+            <p className="muted">{postView === 'pending' ? 'Новых постов нет.' : 'Здесь пока пусто.'}</p>
           ) : (
             <div className="flag-list">
-              {posts.map((p) => (
+              {(postView === 'pending' ? posts : donePosts).map((p) => (
                 <div key={p.id} className="flag">
                   <div className="flag-head">
                     <b>{p.authorName}</b>
@@ -203,29 +225,47 @@ export function AdminPage() {
                   </div>
                   <h3 className="post-title">{p.title}</h3>
                   <blockquote className="post-body">{p.body}</blockquote>
-                  <input
-                    placeholder="Комментарий автору (необязательно)"
-                    value={notes[p.id] ?? ''}
-                    onChange={(e) => setNotes({ ...notes, [p.id]: e.target.value })}
-                  />
+                  {postView === 'pending' && (
+                    <input
+                      placeholder="Комментарий автору (необязательно)"
+                      value={notes[p.id] ?? ''}
+                      onChange={(e) => setNotes({ ...notes, [p.id]: e.target.value })}
+                    />
+                  )}
+                  {postView === 'rejected' && p.reviewNote && <p className="muted small">Комментарий автору: {p.reviewNote}</p>}
                   <div className="post-actions">
+                    {postView === 'pending' && (
+                      <>
+                        <button
+                          className="btn btn-go"
+                          onClick={async () => {
+                            await api.reviewPost(p.id, 'approve', notes[p.id]);
+                            setPosts((ps) => ps.filter((x) => x.id !== p.id));
+                          }}
+                        >
+                          Одобрить и опубликовать
+                        </button>
+                        <button
+                          className="btn btn-light"
+                          onClick={async () => {
+                            await api.reviewPost(p.id, 'reject', notes[p.id]);
+                            setPosts((ps) => ps.filter((x) => x.id !== p.id));
+                          }}
+                        >
+                          Отклонить
+                        </button>
+                      </>
+                    )}
                     <button
-                      className="btn btn-go"
+                      className="btn btn-danger"
                       onClick={async () => {
-                        await api.reviewPost(p.id, 'approve', notes[p.id]);
+                        if (!window.confirm(`Удалить пост «${p.title}» навсегда?`)) return;
+                        await api.deletePost(p.id);
                         setPosts((ps) => ps.filter((x) => x.id !== p.id));
+                        setDonePosts((ps) => ps.filter((x) => x.id !== p.id));
                       }}
                     >
-                      Одобрить и опубликовать
-                    </button>
-                    <button
-                      className="btn btn-light"
-                      onClick={async () => {
-                        await api.reviewPost(p.id, 'reject', notes[p.id]);
-                        setPosts((ps) => ps.filter((x) => x.id !== p.id));
-                      }}
-                    >
-                      Отклонить
+                      Удалить
                     </button>
                   </div>
                 </div>

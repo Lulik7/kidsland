@@ -574,6 +574,7 @@ export const api = {
   createPost: (post: { authorName: string; title: string; body: string }) =>
     request<{ post: CommunityPost }>('/posts', { method: 'POST', body: post }),
   adminPosts: (status: 'pending' | 'approved' | 'rejected') => request<{ posts: CommunityPost[] }>(`/posts/admin?status=${status}`),
+  deletePost: (id: string) => request<{ ok: true }>(`/posts/admin/${id}`, { method: 'DELETE' }),
   reviewPost: (id: string, decision: 'approve' | 'reject', note?: string) =>
     request<{ post: CommunityPost }>(`/posts/admin/${id}/review`, { method: 'POST', body: { decision, note } }),
 
