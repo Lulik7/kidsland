@@ -1,6 +1,7 @@
 import type { Course } from '@kidsland/shared';
 import type { ReactNode } from 'react';
 import { CharacterMaker, ColorMixer, ColorWheel, ComicPanel, Easel, FaceBuilder, FigurePose, Flipbook, FolkPattern, Hatching, LandscapePlanes, Layers, LightShadow, MoodPalette, Perspective, PainterStyles, PencilPressure, PixelArt, ShapeBuilder, ThirdsGrid, WatercolorWash, WaterReflect } from './art1';
+import { BinaryBits, BinarySearch, ChoiceTree, DebugSteps, GraphBfs, IfElseFlow, LogicGates, LoopPattern, RobotProgram, SortBars, WaveMaze } from './algo';
 import { GEORGIAN } from './geoData';
 import { HIRAGANA, KATAKANA, type Kana } from './kanaData';
 import type { Tc } from './kit';
@@ -31,6 +32,20 @@ type Make = (tc: Tc) => ReactNode;
 
 /** Interactive pictures by lesson id and theory card title. */
 const SCENES: Record<string, Make> = {
+  // Логика и алгоритмы: каждый алгоритм работает по шагам
+  'logic-1|Что такое алгоритм': (tc) => <RobotProgram tc={tc} />,
+  'logic-2|Ищем повторения': (tc) => <LoopPattern tc={tc} />,
+  'logic-3|Решения в алгоритмах': (tc) => <IfElseFlow tc={tc} />,
+  'logic-3|И, или, не': (tc) => <LogicGates tc={tc} />,
+  'logic-4|Как искать': (tc) => <DebugSteps tc={tc} />,
+  'logic-mid-1|Дерево вариантов': (tc) => <ChoiceTree tc={tc} />,
+  'logic-mid-2|Сортировка пузырьком': (tc) => <SortBars tc={tc} kind="bubble" />,
+  'logic-mid-2|Сортировка выбором': (tc) => <SortBars tc={tc} kind="selection" />,
+  'logic-mid-3|Как читать двоичное число': (tc) => <BinaryBits tc={tc} bits={4} />,
+  'logic-mid-3|Байт': (tc) => <BinaryBits tc={tc} />,
+  'logic-pro-1|Угадай число за 7 вопросов': (tc) => <BinarySearch tc={tc} />,
+  'logic-pro-2|Граф': (tc) => <GraphBfs tc={tc} />,
+  'logic-pro-2|Разберём пример: волна по клеткам': (tc) => <WaveMaze tc={tc} />,
   // Маленький учёный
   'science-start-1|Восемь планет': (tc) => <SolarSystem tc={tc} />,
   'science-start-2|Трение': (tc) => <FrictionRamp tc={tc} />,

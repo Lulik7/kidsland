@@ -2144,3 +2144,51 @@ textarea,
     grid-area: auto !important;
   }
 }
+
+/* Algorithms step by step. */
+.algo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.algo-prog {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 34px;
+  justify-content: center;
+}
+.algo-prog span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #4c97ff;
+  color: #fff;
+  font-weight: 800;
+}
+.algo-prog span.on,
+.algo-lines li.on {
+  outline: 3px solid #f2a07b;
+  background: #f2a07b;
+  color: #fff;
+}
+.algo-lines {
+  margin: 0;
+  padding-left: 28px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.algo-lines li {
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.algo-lines li.bug {
+  background: #ffe1dc;
+  text-decoration: wavy underline #e5534b;
+}
+.algo-code {
+  margin: 0;
+}
