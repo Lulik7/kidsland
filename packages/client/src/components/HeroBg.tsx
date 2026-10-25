@@ -24,7 +24,7 @@ const MUSIC: Record<string, HeroMedia> = {
   cello: p('cello', 'center 40%'),
   vocal: p('vocal', '30% 30%'),
   solfeggio: { image: '/img/bg/music-sheet.jpg', pos: 'center 30%' },
-  dj: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
+  dj: { image: '/img/bg/dj-headphones.jpg', pos: 'center 70%' },
   composition: { image: '/img/bg/music-band.jpg', pos: 'center 40%' },
 };
 
@@ -54,6 +54,13 @@ export const COUNTRY_PHOTOS: Record<string, string[]> = {
 
 export const countryPhoto = (name: string) => `/img/country/${name}.jpg`;
 
+/** Banners of single courses, by course id. */
+const COURSE_BG: Record<string, HeroMedia> = {
+  'dj-1': { image: '/img/bg/dj-headphones.jpg', pos: 'center 70%' },
+  'dj-2': { image: '/img/bg/dj-cables.jpg', pos: 'center 40%' },
+  'dj-3': { image: '/img/bg/dj-roland.jpg', pos: 'center 60%' },
+};
+
 function countryBg(course: Course): HeroMedia | undefined {
   const list = course.topic ? COUNTRY_PHOTOS[course.topic] : undefined;
   if (!list) return undefined;
@@ -62,7 +69,7 @@ function countryBg(course: Course): HeroMedia | undefined {
 }
 
 export function courseBg(course: Course): HeroMedia | undefined {
-  return countryBg(course) || (course.topic && TOPIC_BG[course.topic]) || SUBJECT_BG[course.subject] || SECTION_BG[course.subject];
+  return COURSE_BG[course.id] || countryBg(course) || (course.topic && TOPIC_BG[course.topic]) || SUBJECT_BG[course.subject] || SECTION_BG[course.subject];
 }
 
 export function HeroBg({ media }: { media?: HeroMedia }) {
