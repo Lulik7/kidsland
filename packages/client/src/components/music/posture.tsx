@@ -32,12 +32,15 @@ const PIC: Record<Topic, string> = {
   vocal: '1f3a4',
 };
 
+/** Instruments played standing up: their card says nothing about sitting. */
+const STANDING = new Set<Topic>(['violin', 'flute', 'saxophone', 'vocal']);
+
 /** How to hold the instrument: a photo when there is one, otherwise a 3D picture, and numbered tips. */
 export function Posture({ tc, topic }: { tc: Tc; topic: Topic }) {
   const [photo, setPhoto] = useState(PHOTOS.has(topic));
   return (
     <figure className="music-diagram posture-card">
-      <figcaption className="md-title">{tc(topic === 'piano' ? 'Как сидеть за инструментом' : 'Как держать инструмент и сидеть')}</figcaption>
+      <figcaption className="md-title">{tc(topic === 'piano' ? 'Как сидеть за инструментом' : STANDING.has(topic) ? 'Как держать инструмент' : 'Как держать инструмент и сидеть')}</figcaption>
       <div className="pc-main">
         <div className={`pc-pic${photo ? ' photo' : ''}`}>
           {photo ? (
