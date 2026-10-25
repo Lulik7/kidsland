@@ -1051,4 +1051,11 @@ export const EN: Record<string, string> = {
   "Сумма": "Amount",
   "Распечатать": "Print",
   "Часовой пояс и валюта": "Time zone and currency",
+  "Прослушать текст": "Listen to the text",
+  "Комната скачивания": "Downloads room",
+  "Скачай диалоги уроков в mp3 и слушай их в дороге, а тексты распечатай для повторения.": "Download lesson dialogues as mp3 to listen on the go, and print the texts for review.",
+  "Скачай тексты уроков со словами и диалогами, чтобы повторять без интернета. Аудио этого языка звучит прямо в уроках.": "Download lesson texts with words and dialogues to review offline. Audio for this language plays inside the lessons.",
+  "Скачать весь курс (текст)": "Download the whole course (text)",
+  "Аудио (mp3)": "Audio (mp3)",
+  "Текст": "Text",
 };

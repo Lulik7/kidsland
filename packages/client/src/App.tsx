@@ -9,6 +9,7 @@ import { Sprite } from './components/Sprite';
 import { HERO } from './game/sprites';
 import { AdminPage } from './pages/AdminPage';
 import { AuthPage } from './pages/AuthPage';
+import { DownloadsPage } from './pages/DownloadsPage';
 import { CoursePage } from './pages/CoursePage';
 import { CoursesPage } from './pages/CoursesPage';
 import { DemoLesson } from './pages/DemoLesson';
@@ -167,6 +168,7 @@ export function App() {
         <Route path="/sections/:sectionId" element={<SectionPage />} />
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/courses/:courseId" element={<CoursePage />} />
+        <Route path="/courses/:courseId/downloads" element={<DownloadsPage />} />
         <Route path="/courses/:courseId/:lessonId" element={<LessonPage />} />
         <Route path="/kids/:childId/courses" element={<RequireAuth role="parent"><CoursesPage /></RequireAuth>} />
         <Route path="/kids/:childId/courses/:courseId" element={<RequireAuth role="parent"><CoursePage /></RequireAuth>} />

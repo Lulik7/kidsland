@@ -1,5 +1,7 @@
 import { articlesOfSection, findArticle, findSection } from '@kidsland/shared';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { ListenText } from '../components/ListenText';
 import { useLocal, useTc } from '../content';
 import { useT } from '../i18n';
 
@@ -10,6 +12,7 @@ export function ArticlePage() {
   const original = findArticle(articleId ?? '');
   const article = useLocal(original);
   const tc = useTc();
+  const [reading, setReading] = useState(-1);
   if (!article) return <div className="center-note">{t('Статья не найдена.')} <Link to="/sections">{t('Все разделы')}</Link></div>;
   const section = findSection(article.section)!;
   const others = articlesOfSection(section.id).filter((a) => a.id !== article.id);
@@ -21,8 +24,9 @@ export function ArticlePage() {
         <span className="article-topic">{t(section.topics.find((tp) => tp.id === article.topic)?.name ?? '')}</span>
         <h1>{article.title}</h1>
         <p className="article-lead">{article.summary}</p>
+        <ListenText parts={[article.title, ...article.sections.map((s) => [s.title, s.text, s.tip].filter(Boolean).join('. '))]} onPart={(i) => setReading(i - 1)} />
         {article.sections.map((s, i) => (
-          <section key={i}>
+          <section key={i} className={reading === i ? 'reading' : undefined}>
             <h2>{s.title}</h2>
             <p>{s.text}</p>
             {s.tip && <div className="tip">{s.tip}</div>}

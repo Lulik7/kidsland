@@ -58,6 +58,11 @@ export function CoursePage() {
               {doneCount > 0 ? t('Продолжить') : t('Начать курс')}
             </Link>
           )}
+          {course.subject === 'languages' && (
+            <Link to={`/courses/${course.id}/downloads`} className="btn btn-light">
+              📥 {t('Комната скачивания')}
+            </Link>
+          )}
           {childId && doneCount === course.lessons.length && <div className="ch-done">{t('🏆 Курс пройден!')}</div>}
         </div>
       </section>

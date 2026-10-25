@@ -2387,13 +2387,13 @@ textarea,
 @keyframes md-pulse { from { transform: scale(0.6); } to { transform: scale(1.15); } }
 
 /* how to hold the instrument: picture + numbered tips */
-.posture-card .pc-main { display: grid; grid-template-columns: minmax(160px, 260px) 1fr; gap: 20px; align-items: center; margin-top: 8px; }
+.posture-card .pc-main { display: grid; grid-template-columns: minmax(160px, 300px) 1fr; gap: 20px; align-items: center; margin-top: 8px; }
 .posture-card .pc-pic { aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 40% 35%, #fff7ec 0%, #fde3d0 55%, #f7cdb3 100%); box-shadow: inset 0 0 0 6px #fff, 0 8px 24px #f4b39155; overflow: hidden; }
 .posture-card .pc-pic img { width: 74%; filter: drop-shadow(0 10px 14px #0002); animation: pc-float 4s ease-in-out infinite; }
 .posture-card .pc-pic img.small { width: 56%; }
 .posture-card .pc-pic img.big { width: 86%; }
-.posture-card .pc-pic.photo { border-radius: 18px; aspect-ratio: 4 / 5; background: none; }
-.posture-card .pc-pic.photo img { width: 100%; height: 100%; object-fit: cover; animation: none; filter: none; }
+.posture-card .pc-pic.photo { border-radius: 18px; aspect-ratio: auto; background: none; box-shadow: 0 8px 24px #0002; }
+.posture-card .pc-pic.photo img { width: 100%; height: auto; display: block; animation: none; filter: none; }
 .posture-card .pc-tips { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .posture-card .pc-tips li { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 2px dashed #f4c9ad; border-radius: 14px; padding: 10px 12px; line-height: 1.35; }
 .posture-card .pc-tips b { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--primary, #79c7a6); color: #fff; display: grid; place-items: center; font-size: 0.9rem; }
@@ -2442,3 +2442,17 @@ textarea,
 @media (max-width: 720px) { .dj-main { grid-template-columns: 1fr; } }
 .cp-bar select { width: auto; flex: 0 0 auto; padding: 6px 10px; }
 .cp-check, .cp-tempo { white-space: nowrap; }
+
+/* reading a text aloud */
+.listen-text { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 6px 0 14px; }
+.theory-card.reading, .article section.reading { box-shadow: 0 0 0 3px #f4a259aa; border-radius: 14px; transition: box-shadow 0.3s; }
+.article section.reading { background: #fff8ee; }
+
+/* downloads room */
+.downloads-page h1 { margin-bottom: 4px; }
+.dl-top { margin: 14px 0; }
+.dl-list { list-style: none; padding: 0; display: grid; gap: 8px; }
+.dl-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; flex-wrap: wrap; }
+.dl-num { width: 30px; height: 30px; border-radius: 50%; background: var(--primary, #79c7a6); color: #fff; display: grid; place-items: center; font-weight: 800; flex: none; }
+.dl-title { flex: 1; min-width: 160px; }
+.dl-btns { display: flex; gap: 6px; flex-wrap: wrap; }
