@@ -6,7 +6,7 @@ export type HeroMedia = { image?: string; video?: string; pos?: string };
 /** Background media of section pages, by section id. */
 export const SECTION_BG: Record<string, HeroMedia> = {
   animals: { image: '/img/bg/animals-dog.jpg', pos: 'center 22%' },
-  spirit: { image: '/img/bg/spirit-lotus.jpg', pos: 'center 35%' },
+  spirit: { video: '/video/spirit-stones.mp4', image: '/video/spirit-stones.jpg', pos: 'center 50%' },
   music: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
   art: { image: '/img/bg/art-painter.jpg', pos: 'center 30%' },
   science: { image: '/img/bg/science-lab.jpg', pos: 'center 30%' },
