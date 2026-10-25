@@ -22,7 +22,7 @@ import { useLocal, useTc } from '../content';
 import { CHESS_DIAGRAMS } from '../content/chess';
 import { cardPic, lessonPic, Pic } from '../pics';
 import { HeroBg, lessonBg, lessonPhoto } from '../components/HeroBg';
-import { soundsIn } from '../components/natureSounds';
+import { SOUND_SUBJECTS, soundsIn } from '../components/natureSounds';
 import { SoundButton } from '../components/SoundButton';
 
 type Tab = 'theory' | LessonPart | 'homework';
@@ -294,7 +294,7 @@ export function LessonPage() {
           {shown.lesson.sections.map((s, i) => {
             const title = lesson.sections[i]?.title;
             const pic = i > 0 && title ? cardPic(course, title) : undefined;
-            const sounds = soundsIn(`${title ?? ''} ${lesson.sections[i]?.text ?? ''}`);
+            const sounds = !SOUND_SUBJECTS.has(course.subject) ? [] : soundsIn(`${title ?? ''} ${lesson.sections[i]?.text ?? ''}`);
             return (
             <article key={i} className={`theory-card${reading === i ? ' reading' : ''}`}>
               {sounds.length > 0 ? <SoundButton code={pic ?? '1f50a'} sounds={sounds} /> : pic && <Pic code={pic} size={72} className="tc-pic" />}

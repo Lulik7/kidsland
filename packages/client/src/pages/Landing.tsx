@@ -299,6 +299,7 @@ export function Landing() {
             <b>{t('Помощь')}</b>
             <Link to="/support">{t('Служба поддержки')}</Link>
             <a href="#guide">{t('Видео о сайте')}</a>
+            <Link to="/admin/login">{t('Вход для администратора')}</Link>
           </nav>
           <div className="sf-contacts" id="contacts">
             <b>{t('Контакты')}</b>

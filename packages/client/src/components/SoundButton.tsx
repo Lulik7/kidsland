@@ -21,7 +21,6 @@ export function SoundButton({ code, sounds }: { code: string; sounds: string[] }
   return (
     <button type="button" className={`tc-pic tc-sound${playing ? ' playing' : ''}`} onClick={toggle} aria-label={playing ? t('Стоп') : t('Послушать звуки')}>
       <Pic code={code} size={72} />
-      <span className="tc-sound-label">{playing ? '■ ' + t('Стоп') : '▶ ' + t('Послушать')}</span>
     </button>
   );
 }

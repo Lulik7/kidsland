@@ -4,10 +4,11 @@ import { ChatBox, usePolling } from '../components/ChatBox';
 import { fmtDateTime } from '../format';
 import { ContentEditor } from './admin/ContentEditor';
 import { LessonChats } from './admin/LessonChats';
+import { AdminMail, AdminPayments } from './admin/MailAndPayments';
 import { Notifications } from './admin/Notifications';
 import { TutorApplications } from './admin/TutorApplications';
 
-type Tab = 'notes' | 'support' | 'tutors' | 'chats' | 'content' | 'posts' | 'safety';
+type Tab = 'notes' | 'mail' | 'payments' | 'support' | 'tutors' | 'chats' | 'content' | 'posts' | 'safety';
 
 const roleName = { parent: 'родитель', tutor: 'наставник', admin: 'админ' } as const;
 
@@ -59,6 +60,7 @@ export function AdminPage() {
       setTab('tutors');
     } else if (link === 'posts') setTab('posts');
     else if (link === 'safety') setTab('safety');
+    else if (link.startsWith('/billing/receipt/')) setTab('payments');
   };
 
   usePolling(
@@ -88,11 +90,13 @@ export function AdminPage() {
         <div className="tabs">
           {tabButton('notes', 'Уведомления', unreadNotes)}
           {tabButton('support', 'Сообщения', unread)}
+          {tabButton('mail', 'Письма')}
+          {tabButton('payments', 'Оплаты')}
           {tabButton('tutors', 'Преподаватели', pendingTutors)}
           {tabButton('chats', 'Чаты уроков')}
           {tabButton('content', 'Темы, статьи, уроки')}
           {tabButton('posts', 'Посты на проверку', posts.length)}
-          {tabButton('safety', 'Безопасность', flags.length)}
+          {tabButton('safety', 'Жалобы и безопасность', flags.length)}
         </div>
       </div>
       {error && <div className="error">{error}</div>}
@@ -106,6 +110,10 @@ export function AdminPage() {
             loadNotes();
           }}
         />
+      ) : tab === 'mail' ? (
+        <AdminMail />
+      ) : tab === 'payments' ? (
+        <AdminPayments />
       ) : tab === 'tutors' ? (
         <TutorApplications focus={focusTutor} onChanged={loadNotes} />
       ) : tab === 'chats' ? (

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Child, type ChildReport } from '../api';
 import { BookingCard } from '../components/BookingCard';
+import { NotifySettings } from '../components/NotifySettings';
 import { PaySettings } from '../components/PaySettings';
 import { LevelBadge } from '../components/CourseCard';
 import { StarIcon } from '../components/Icons';
@@ -98,6 +99,11 @@ export function ParentDashboard() {
           ⚙️ {t('Часовой пояс и валюта')}: <b>{getTimeZone().split('/').pop()!.replace(/_/g, ' ')}</b> · <b>{getCurrency()}</b>
         </summary>
         <PaySettings onChange={() => redraw((n) => n + 1)} />
+      </details>
+
+      <details className="card dash-settings">
+        <summary>🔔 {t('Напоминания об уроках')}</summary>
+        <NotifySettings />
       </details>
 
       <section className="lessons">

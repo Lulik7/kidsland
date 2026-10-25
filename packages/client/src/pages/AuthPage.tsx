@@ -6,18 +6,20 @@ import { Sprite } from '../components/Sprite';
 import { HERO } from '../game/sprites';
 import { useT } from '../i18n';
 
-export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
+export function AuthPage({ mode }: { mode: 'login' | 'register' | 'admin' }) {
   const t = useT();
-  const { login, register } = useAuth();
+  const { login, register, logout } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [role, setRole] = useState<'parent' | 'tutor'>(params.get('role') === 'tutor' ? 'tutor' : 'parent');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const isLogin = mode === 'login';
+  const isAdmin = mode === 'admin';
+  const isLogin = mode !== 'register';
   const next = params.get('next');
   const keep = (path: string) => `${path}${next ? `?next=${encodeURIComponent(next)}` : ''}`;
 
@@ -27,8 +29,15 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     setBusy(true);
     try {
       if (isLogin) await login(email, password);
-      else await register(email, password, role, role === 'tutor' ? name : undefined);
+      else await register(email, password, role, role === 'tutor' ? name : undefined, phone.trim());
       const { user } = await api.me();
+      if (isAdmin) {
+        if (user.role !== 'admin') {
+          logout();
+          throw new Error(t('Этот вход только для администратора.'));
+        }
+        return navigate('/admin');
+      }
       // Only follow same-site paths from ?next=, never absolute URLs.
       navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : homeFor(user));
     } catch (err) {
@@ -46,7 +55,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           <Sprite svg={HERO.robot('down')} size={64} />
           <Sprite svg={HERO.ocean('right')} size={56} className="float" />
         </div>
-        <h1>{isLogin ? t('С возвращением!') : t('Создать аккаунт')}</h1>
+        <h1>{isAdmin ? t('Вход для администратора') : isLogin ? t('С возвращением!') : t('Создать аккаунт')}</h1>
         {!isLogin && (
           <div className="segmented" role="radiogroup" aria-label={t('Кто вы')}>
             <button type="button" role="radio" aria-checked={role === 'parent'} className={role === 'parent' ? 'on' : ''} onClick={() => setRole('parent')}>
@@ -58,7 +67,9 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           </div>
         )}
         <p className="muted">
-          {isLogin
+          {isAdmin
+            ? t('Здесь вы читаете сообщения, жалобы и письма, видите оплаты и уведомления о проблемах.')
+            : isLogin
             ? t('Войдите, чтобы продолжить.')
             : role === 'parent'
               ? t('Потом добавите профиль ребёнка, и можно играть.')
@@ -86,11 +97,18 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           />
         </label>
         {!isLogin && <span className="hint">{t('Не короче 8 символов')}</span>}
+        {!isLogin && (
+          <label>
+            {t('Телефон для напоминаний об уроках')}
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" placeholder="+972 50 123 4567" pattern="[0-9+()\- ]{7,32}" />
+            <span className="hint">{t('Необязательно. Пришлём SMS в день урока и за 30 минут.')}</span>
+          </label>
+        )}
         {error && <div className="error">{error}</div>}
         <button className="btn btn-primary btn-lg" disabled={busy}>
           {busy ? t('Минутку…') : isLogin ? t('Войти') : t('Зарегистрироваться')}
         </button>
-        <p className="muted switch">
+        {!isAdmin && <p className="muted switch">
           {isLogin ? (
             <>
               {t('Нет аккаунта?')}{' '}<Link to={keep('/register')}>{t('Зарегистрируйтесь')}</Link>
@@ -100,7 +118,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
               {t('Уже есть аккаунт?')}{' '}<Link to={keep('/login')}>{t('Войдите')}</Link>
             </>
           )}
-        </p>
+        </p>}
       </form>
     </main>
   );

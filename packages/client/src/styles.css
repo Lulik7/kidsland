@@ -2491,3 +2491,19 @@ textarea,
 .tc-sound-label { font-size: .8rem; font-weight: 700; color: var(--primary-dark, #3f8f6d); white-space: nowrap; }
 .tc-sound:hover img { transform: scale(1.06); }
 .tc-sound.playing img { animation: pic-bob 1s ease-in-out infinite; }
+
+/* Lesson reminder settings: notifications on this device and phone for SMS */
+.notify-settings { display: grid; gap: 10px; padding-top: 8px; }
+.notify-settings .ns-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.notify-settings .ns-phone { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.notify-settings .ns-phone input { flex: 1 1 180px; max-width: 260px; }
+.notify-settings .ns-msg { color: var(--primary-dark, #3f8f6d); font-weight: 700; }
+
+/* Admin: letters and payments */
+.chip-warn { background: #fde2dc; color: #b23b1e; }
+.small-tabs { margin: 8px 0 14px; }
+.admin-table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.admin-table th, .admin-table td { text-align: left; padding: 8px 10px; border-bottom: 1px dashed #f3c9b3; vertical-align: top; }
+.admin-table th { font-weight: 700; color: var(--muted, #6b7280); }
+.admin-login-note { font-size: .9rem; }

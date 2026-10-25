@@ -239,18 +239,15 @@ const WORDS: [RegExp, string][] = [
   [/ручей|ручья|журч|рек[аиу]\b/i, 'stream'],
   [/ветер|ветр/i, 'wind'],
   [/мор[ея]\b|волн[ыа]/i, 'sea'],
-  [/гром|гроз/i, 'thunder'],
-  [/лягушк|квак/i, 'frog'],
   [/сверч|кузнечик|стрекоч/i, 'cricket'],
   [/пчел|пчёл|жужж|шмел/i, 'bee'],
   [/мяука|мурлы|кошк|котен|котён/i, 'cat'],
-  [/ла[ея]т|лай|гав/i, 'dog'],
-  [/волк|вой\b|воет/i, 'wolf'],
-  [/ржёт|ржет|ржани|лошад/i, 'horse'],
-  [/корова|мычит|мычан/i, 'cow'],
   [/петух|кукарек/i, 'rooster'],
   [/утк[аи]|крякает|кря\b/i, 'duck'],
 ];
+
+/** Subjects whose lessons talk about real animals and nature; other lessons never get sound buttons. */
+export const SOUND_SUBJECTS = new Set(['animals', 'science']);
 
 /** The sounds a piece of text talks about, in the order it mentions them (at most 4). */
 export function soundsIn(text: string): string[] {

@@ -2,6 +2,7 @@ import { applyContentOverrides, ARTICLES, findLesson, findSection, type ContentO
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../auth';
+import { config } from '../config';
 import type { Db } from '../db/pool';
 import { HttpError } from '../errors';
 import { isUuid, type TutorRow } from '../tutors';
@@ -59,6 +60,38 @@ const lessonSchema = z.object({
 export function adminRouter(db: Db) {
   const r = Router();
   r.use(requireAuth, requireRole('admin'));
+
+  // ---- Letters the site sent (or is waiting to send) ----
+  r.get('/mail', async (req, res) => {
+    const status = z.enum(['pending', 'sent', 'failed']).optional().parse(req.query.status || undefined);
+    const { rows } = await db.query(
+      `SELECT id, to_email, subject, body, status, error, created_at, sent_at FROM email_outbox
+        WHERE ($1::text IS NULL OR status = $1) ORDER BY created_at DESC LIMIT 200`,
+      [status ?? null],
+    );
+    const counts = await db.query('SELECT status, count(*)::int AS n FROM email_outbox GROUP BY status');
+    res.json({
+      letters: rows.map((m) => ({ id: m.id, to: m.to_email, subject: m.subject, body: m.body, status: m.status, error: m.error, createdAt: m.created_at, sentAt: m.sent_at })),
+      counts: Object.fromEntries(counts.rows.map((c) => [c.status, c.n])),
+      mailReady: !!config.smtpUrl,
+    });
+  });
+
+  // ---- Payments and receipts ----
+  r.get('/payments', async (_req, res) => {
+    const { rows } = await db.query(
+      `SELECT p.id, p.kind, p.title, p.amount, p.amount_shown, p.currency, p.method, p.receipt_no, p.created_at, u.email
+         FROM payments p JOIN users u ON u.id = p.parent_id ORDER BY p.created_at DESC LIMIT 200`,
+    );
+    const total = await db.query("SELECT COALESCE(sum(amount), 0)::int AS sum FROM payments WHERE created_at > now() - interval '30 days'");
+    res.json({
+      payments: rows.map((p) => ({
+        id: p.id, kind: p.kind, title: p.title, amount: p.amount, amountShown: p.amount_shown, currency: p.currency,
+        method: p.method, receiptNo: p.receipt_no, createdAt: p.created_at, email: p.email,
+      })),
+      month: total.rows[0].sum,
+    });
+  });
 
   // ---- Notifications ----
   r.get('/notifications', async (_req, res) => {

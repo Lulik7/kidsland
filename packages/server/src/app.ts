@@ -11,6 +11,7 @@ import { billingRouter } from './routes/billing';
 import { bookingsRouter } from './routes/bookings';
 import { childrenRouter } from './routes/children';
 import { lessonRoomRouter } from './routes/lessonRoom';
+import { pushRouter } from './routes/push';
 import { postsRouter } from './routes/posts';
 import { supportRouter } from './routes/support';
 import { tutorCabinetRouter } from './routes/tutorCabinet';
@@ -42,6 +43,7 @@ export function createApp(db: Db) {
   app.use('/api/posts', postsRouter(db));
   app.use('/api/tutor', tutorCabinetRouter(db));
   app.use('/api/admin', adminRouter(db));
+  app.use('/api/push', pushRouter(db));
 
   // Topics, articles and lesson texts the admin added or edited; the client applies them on load.
   app.get('/api/content', async (_req, res) => {

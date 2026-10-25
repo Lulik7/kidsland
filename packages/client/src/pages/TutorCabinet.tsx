@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Slot, type Tutor, type TutorProfileInput } from '../api';
 import { BookingCard } from '../components/BookingCard';
+import { NotifySettings } from '../components/NotifySettings';
 import { TutorApplicationForm } from '../components/TutorApplicationForm';
 import { TutorAvatar } from '../components/TutorAvatar';
 import { dayKey, fmtDay, fmtTime } from '../format';
@@ -197,6 +198,10 @@ function Lessons() {
           ))}
         </div>
       )}
+      <details className="dash-settings">
+        <summary>🔔 {t('Напоминания об уроках')}</summary>
+        <NotifySettings />
+      </details>
     </section>
   );
 }

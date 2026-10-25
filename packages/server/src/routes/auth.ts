@@ -95,5 +95,12 @@ export function authRouter(db: Db) {
     res.json({ user: publicUser(rows[0]) });
   });
 
+  // Phone for lesson reminders by text message.
+  r.patch('/me', requireAuth, async (req, res) => {
+    const { phone } = z.object({ phone: z.string().trim().max(32).regex(/^[\d+\-() ]*$/, 'Только цифры, +, -, скобки и пробелы') }).parse(req.body);
+    const { rows } = await db.query<UserRow>('UPDATE users SET phone = $2 WHERE id = $1 RETURNING *', [req.user!.id, phone || null]);
+    res.json({ user: publicUser(rows[0]) });
+  });
+
   return r;
 }

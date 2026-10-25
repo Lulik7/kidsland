@@ -34,6 +34,11 @@ export const config = {
   // Outgoing mail, like smtps://user:app-password@smtp.gmail.com:465. Without it letters wait in the outbox.
   smtpUrl: process.env.SMTP_URL ?? '',
   mailFrom: process.env.MAIL_FROM ?? 'Kidsland <no-reply@kidsland.local>',
+  // Browser notifications. Without these keys the server makes its own pair once and keeps it in the database.
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY ?? '',
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? '',
+  // Text messages through Twilio (optional): account SID, auth token and the sender number.
+  twilio: { sid: process.env.TWILIO_ACCOUNT_SID ?? '', token: process.env.TWILIO_AUTH_TOKEN ?? '', from: process.env.TWILIO_FROM ?? '' },
   // Who gets a copy of every payment confirmation (comma-separated).
   notifyEmails: (process.env.ADMIN_NOTIFY_EMAILS ?? 'yuliaberner.dev@gmail.com')
     .split(',')

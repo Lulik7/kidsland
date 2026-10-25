@@ -40,6 +40,7 @@ function RequireAuth({ children, role }: { children: ReactNode; role?: User['rol
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) return <div className="center-note">{t('Загружаем…')}</div>;
+  if (!user && role === 'admin') return <Navigate to="/admin/login" replace />;
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   if (role && user.role !== role) return <Navigate to={homeFor(user)} replace />;
   return children;
@@ -161,6 +162,7 @@ export function App() {
       <Routes key={contentVersion}>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<AuthPage mode="login" />} />
+        <Route path="/admin/login" element={<AuthPage mode="admin" />} />
         <Route path="/register" element={<AuthPage mode="register" />} />
         <Route path="/tutors" element={<TutorsPage />} />
         <Route path="/tutors/:id" element={<TutorPage />} />

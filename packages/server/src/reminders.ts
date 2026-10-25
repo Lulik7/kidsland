@@ -1,6 +1,8 @@
 import { config } from './config';
 import type { Db } from './db/pool';
 import { queueMail } from './mail';
+import { sendPush } from './push';
+import { sendSms } from './sms';
 
 /** Time zone for people who have not chosen one yet: most families are in Israel. */
 const DEFAULT_TZ = 'Asia/Jerusalem';
@@ -13,8 +15,8 @@ const time = (d: Date, tz: string) => d.toLocaleTimeString('ru-RU', { timeZone: 
 
 const LESSONS = `
   SELECT b.id, b.slot_time, s.duration_min, c.nickname AS child_name, t.display_name AS tutor_name,
-         p.email AS parent_email, COALESCE(p.timezone, '${DEFAULT_TZ}') AS parent_tz,
-         tu.email AS tutor_email, COALESCE(tu.timezone, '${DEFAULT_TZ}') AS tutor_tz
+         p.id AS parent_id, p.email AS parent_email, p.phone AS parent_phone, COALESCE(p.timezone, '${DEFAULT_TZ}') AS parent_tz,
+         tu.id AS tutor_user_id, tu.email AS tutor_email, tu.phone AS tutor_phone, COALESCE(tu.timezone, '${DEFAULT_TZ}') AS tutor_tz
     FROM bookings b
     JOIN tutor_slots s ON s.id = b.slot_id
     JOIN child_profiles c ON c.id = b.child_id
@@ -44,7 +46,20 @@ function letter(b: Row, who: 'parent' | 'tutor', soon: boolean) {
     'Если не получается прийти, отмените урок в личном кабинете заранее.',
     'Команда Kidsland',
   ].join('\n');
-  return { subject, body };
+  const short = soon
+    ? `Kidsland: через 30 минут урок (${time(start, tz)}). ${withWhom}. ${link}`
+    : `Kidsland: сегодня урок в ${time(start, tz)}. ${withWhom}. ${link}`;
+  const push = { title: soon ? 'Урок через 30 минут' : `Сегодня урок в ${time(start, tz)}`, body: withWhom, url: `/lessons/${b.id}` };
+  return { subject, body, short, push };
+}
+
+/** One reminder by every channel the person has: email, a notification on their devices, a text message. */
+async function remind(db: Db, b: Row, who: 'parent' | 'tutor', soon: boolean) {
+  const m = letter(b, who, soon);
+  const parent = who === 'parent';
+  await queueMail(db, parent ? b.parent_email : b.tutor_email, m.subject, m.body);
+  await sendPush(db, parent ? b.parent_id : b.tutor_user_id, m.push).catch((e) => console.warn('push failed', e));
+  await sendSms(parent ? b.parent_phone : b.tutor_phone, m.short);
 }
 
 /**
@@ -59,10 +74,7 @@ export async function sendLessonReminders(db: Db) {
   for (const b of soon.rows) {
     const claimed = await db.query('UPDATE bookings SET reminded_soon_at = now() WHERE id = $1 AND reminded_soon_at IS NULL', [b.id]);
     if (!claimed.rowCount) continue;
-    for (const who of ['parent', 'tutor'] as const) {
-      const m = letter(b, who, true);
-      await queueMail(db, who === 'parent' ? b.parent_email : b.tutor_email, m.subject, m.body);
-    }
+    for (const who of ['parent', 'tutor'] as const) await remind(db, b, who, true);
   }
 
   // Lesson day: each side by their own clock, skipped when the 30-minute letter is already due.
@@ -77,8 +89,7 @@ export async function sendLessonReminders(db: Db) {
     for (const b of day.rows) {
       const claimed = await db.query(`UPDATE bookings SET ${col} = now() WHERE id = $1 AND ${col} IS NULL`, [b.id]);
       if (!claimed.rowCount) continue;
-      const m = letter(b, who, false);
-      await queueMail(db, who === 'parent' ? b.parent_email : b.tutor_email, m.subject, m.body);
+      await remind(db, b, who, false);
     }
   }
 }

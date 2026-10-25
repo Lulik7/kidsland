@@ -1,9 +1,34 @@
 import type { Answers, BookingStatus, Currency, PayMethod, Concept, CourseLevel, FailReason, LessonPart, LevelConfig, Program, SubjectId, Theme } from '@kidsland/shared';
 
+export interface AdminLetter {
+  id: string;
+  to: string;
+  subject: string;
+  body: string;
+  status: 'pending' | 'sent' | 'failed';
+  error: string | null;
+  createdAt: string;
+  sentAt: string | null;
+}
+
+export interface AdminPayment {
+  id: string;
+  kind: string;
+  title: string;
+  amount: number;
+  amountShown: number;
+  currency: string;
+  method: string | null;
+  receiptNo: number | null;
+  createdAt: string;
+  email: string;
+}
+
 export interface User {
   id: string;
   email: string;
   role: 'parent' | 'tutor' | 'admin';
+  phone?: string | null;
   isPremium: boolean;
 }
 
@@ -431,8 +456,13 @@ export async function openPrivateFile(path: string) {
 }
 
 export const api = {
-  register: (email: string, password: string, role: 'parent' | 'tutor' = 'parent', displayName?: string) =>
-    request<{ token: string; user: User }>('/auth/register', { method: 'POST', body: { email, password, role, displayName } }),
+  register: (email: string, password: string, role: 'parent' | 'tutor' = 'parent', displayName?: string, phone?: string) =>
+    request<{ token: string; user: User }>('/auth/register', { method: 'POST', body: { email, password, role, displayName, phone: phone || undefined } }),
+  setPhone: (phone: string) => request<{ user: User }>('/auth/me', { method: 'PATCH', body: { phone } }),
+  pushKey: () => request<{ publicKey: string }>('/push/key'),
+  pushSubscribe: (sub: PushSubscriptionJSON) => request<{ ok: true }>('/push/subscribe', { method: 'POST', body: sub }),
+  pushUnsubscribe: (endpoint: string) => request<{ ok: true }>('/push/unsubscribe', { method: 'POST', body: { endpoint } }),
+  pushTest: () => request<{ sent: number }>('/push/test', { method: 'POST' }),
   login: (email: string, password: string) =>
     request<{ token: string; user: User }>('/auth/login', { method: 'POST', body: { email, password } }),
   me: () => request<{ user: User }>('/auth/me'),
@@ -492,6 +522,9 @@ export const api = {
   submitApplication: () => request<{ application: TutorApplication; tutor: Tutor }>('/tutor/application/submit', { method: 'POST' }),
 
   content: () => request<ContentOverridesDto>('/content'),
+  adminMail: (status?: 'pending' | 'sent' | 'failed') =>
+    request<{ letters: AdminLetter[]; counts: Partial<Record<'pending' | 'sent' | 'failed', number>>; mailReady: boolean }>(`/admin/mail${status ? `?status=${status}` : ''}`),
+  adminPayments: () => request<{ payments: AdminPayment[]; month: number }>('/admin/payments'),
   adminNotifications: () => request<{ unread: number; notifications: AdminNotification[] }>('/admin/notifications'),
   readNotifications: (ids?: string[]) => request<{ ok: true }>('/admin/notifications/read', { method: 'POST', body: { ids } }),
   tutorApplications: (status: VerificationStatus | 'all') =>
