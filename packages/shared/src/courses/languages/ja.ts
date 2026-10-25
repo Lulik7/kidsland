@@ -1,5 +1,6 @@
 import type { LanguageData } from './build';
 import { JA_EXTRA_1 } from './ja-extra-1';
+import { JA_EXTRA_2 } from './ja-extra-2';
 
 export const JAPANESE: LanguageData = {
   topic: 'lang-ja',
@@ -7,7 +8,7 @@ export const JAPANESE: LanguageData = {
   inName: 'по-японски',
   color: '#d93a5b',
   speak: 'ja-JP',
-  extra: JA_EXTRA_1,
+  extra: JA_EXTRA_1 + JA_EXTRA_2,
   notes: {
     0: 'На японском говорят в Японии. В нём три вида письма: хирагана, катакана и иероглифы кандзи. Часто все три встречаются в одном предложении.',
     1: 'Хирагана и катакана — это азбуки: каждый знак обозначает слог, например か (ка) или さ (са). Катаканой пишут слова, пришедшие из других языков.',
