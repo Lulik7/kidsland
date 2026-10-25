@@ -176,14 +176,16 @@ export function CoursesPage() {
             )}
           </div>
 
-          {topicTiles.length > 1 &&
-            [...topicTiles.filter((tp) => !topic || tp.id === topic), { id: '', name: 'Для всех' }].map((tp) => {
+          {topicTiles.length > 1 && (
+            <div className="topic-tracks">
+            {[...topicTiles.filter((tp) => !topic || tp.id === topic), { id: '', name: 'Для всех' }].map((tp) => {
               const list = sectionCourses.filter((c) => (tp.id ? c.topic === tp.id : !topicTiles.some((x) => x.id === c.topic)) && (!level || c.level === level));
               if (!list.length) return null;
               return (
-                <section key={tp.id || 'all'} className="track">
+                // One course per instrument (a level is picked): instruments sit side by side across the screen.
+                <section key={tp.id || 'all'} className={list.length > 1 ? 'track track-wide' : 'track'}>
                   <h2 className="track-title">{t(tp.name)}</h2>
-                  <div className="track-row">
+                  <div className={list.length > 1 ? 'track-row' : 'track-one'}>
                     {list.map((c) => (
                       <CourseCard key={c.id} course={c} to={`${base}/${c.id}`} done={childId ? done(c.id) : undefined} />
                     ))}
@@ -191,6 +193,8 @@ export function CoursesPage() {
                 </section>
               );
             })}
+            </div>
+          )}
 
           {topicTiles.length <= 1 && subjects.map((s) => {
             const list = COURSES.filter((c) => c.subject === s.id && (!level || c.level === level));
