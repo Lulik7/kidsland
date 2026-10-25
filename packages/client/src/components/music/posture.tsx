@@ -17,7 +17,7 @@ const TIPS: Record<Topic, string[]> = {
 };
 
 /** Instruments that have a real photo in /img/posture/<topic>.jpg. */
-const PHOTOS = new Set<Topic>(['guitar', 'violin', 'drums', 'flute', 'saxophone', 'ukulele', 'cello', 'vocal']);
+const PHOTOS = new Set<Topic>(['piano', 'accordion', 'guitar', 'violin', 'drums', 'flute', 'saxophone', 'ukulele', 'cello', 'vocal']);
 
 const PIC: Record<Topic, string> = {
   guitar: '1f3b8',

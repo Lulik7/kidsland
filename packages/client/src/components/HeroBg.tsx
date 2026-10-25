@@ -14,6 +14,8 @@ const p = (topic: string, pos = 'center 30%'): HeroMedia => ({ image: `/img/post
 /** Music topics: photos of children playing each instrument. */
 const MUSIC: Record<string, HeroMedia> = {
   guitar: p('guitar'),
+  piano: p('piano', 'center 40%'),
+  accordion: p('accordion', 'center 55%'),
   violin: p('violin', 'center 40%'),
   drums: p('drums', '70% 40%'),
   flute: p('flute', 'center 40%'),
@@ -21,7 +23,7 @@ const MUSIC: Record<string, HeroMedia> = {
   ukulele: p('ukulele', 'center 45%'),
   cello: p('cello', 'center 40%'),
   vocal: p('vocal', '30% 30%'),
-  solfeggio: { image: '/img/bg/music-recorder.jpg', pos: 'center 30%' },
+  solfeggio: { image: '/img/bg/music-sheet.jpg', pos: 'center 30%' },
   dj: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
   composition: { image: '/img/bg/music-band.jpg', pos: 'center 40%' },
 };
@@ -29,6 +31,7 @@ const MUSIC: Record<string, HeroMedia> = {
 /** Background media of course pages: by topic first, then by subject. */
 const TOPIC_BG: Record<string, HeroMedia> = {
   ...MUSIC,
+  piano: { image: '/img/bg/music-piano-old.jpg', pos: 'center 60%' },
   'dog-training': { image: '/img/bg/animals-dog.jpg', pos: 'center 22%' },
   cooking: { image: '/img/bg/leisure-cake.jpg', pos: 'center 40%' },
 };
