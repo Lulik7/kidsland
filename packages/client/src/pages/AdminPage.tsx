@@ -5,10 +5,11 @@ import { fmtDateTime } from '../format';
 import { ContentEditor } from './admin/ContentEditor';
 import { LessonChats } from './admin/LessonChats';
 import { AdminMail, AdminPayments } from './admin/MailAndPayments';
+import { ChangePassword } from './admin/ChangePassword';
 import { Notifications } from './admin/Notifications';
 import { TutorApplications } from './admin/TutorApplications';
 
-type Tab = 'notes' | 'mail' | 'payments' | 'support' | 'tutors' | 'chats' | 'content' | 'posts' | 'safety';
+type Tab = 'notes' | 'mail' | 'payments' | 'support' | 'tutors' | 'chats' | 'content' | 'posts' | 'safety' | 'account';
 
 const roleName = { parent: 'родитель', tutor: 'наставник', admin: 'админ' } as const;
 
@@ -97,6 +98,7 @@ export function AdminPage() {
           {tabButton('content', 'Темы, статьи, уроки')}
           {tabButton('posts', 'Посты на проверку', posts.length)}
           {tabButton('safety', 'Жалобы и безопасность', flags.length)}
+          {tabButton('account', 'Пароль')}
         </div>
       </div>
       {error && <div className="error">{error}</div>}
@@ -110,6 +112,8 @@ export function AdminPage() {
             loadNotes();
           }}
         />
+      ) : tab === 'account' ? (
+        <ChangePassword />
       ) : tab === 'mail' ? (
         <AdminMail />
       ) : tab === 'payments' ? (

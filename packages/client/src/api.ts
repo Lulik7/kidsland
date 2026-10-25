@@ -570,6 +570,7 @@ export const api = {
   safetyFlags: () => request<{ flags: SafetyFlag[] }>('/support/admin/safety-flags'),
   posts: () => request<{ posts: CommunityPost[] }>('/posts'),
   myPosts: () => request<{ posts: CommunityPost[] }>('/posts/mine'),
+  changePassword: (current: string, next: string) => request<{ ok: true }>('/auth/password', { method: 'POST', body: { current, next } }),
   createPost: (post: { authorName: string; title: string; body: string }) =>
     request<{ post: CommunityPost }>('/posts', { method: 'POST', body: post }),
   adminPosts: (status: 'pending' | 'approved' | 'rejected') => request<{ posts: CommunityPost[] }>(`/posts/admin?status=${status}`),

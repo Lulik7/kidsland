@@ -102,5 +102,16 @@ export function authRouter(db: Db) {
     res.json({ user: publicUser(rows[0]) });
   });
 
+  // Any signed-in user, the admin included, changes their own password by giving the current one.
+  r.post('/password', requireAuth, async (req, res) => {
+    const body = z
+      .object({ current: z.string().min(1), next: registerSchema.shape.password })
+      .parse(req.body);
+    const { rows } = await db.query<UserRow>('SELECT * FROM users WHERE id = $1', [req.user!.id]);
+    if (!rows[0] || !(await bcrypt.compare(body.current, rows[0].password_hash))) throw new HttpError(400, 'Текущий пароль неверный');
+    await db.query('UPDATE users SET password_hash = $2 WHERE id = $1', [req.user!.id, await bcrypt.hash(body.next, 10)]);
+    res.json({ ok: true });
+  });
+
   return r;
 }
