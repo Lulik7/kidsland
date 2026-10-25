@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { CharacterMaker, ColorMixer, ColorWheel, ComicPanel, Easel, FaceBuilder, FigurePose, Flipbook, FolkPattern, Hatching, LandscapePlanes, Layers, LightShadow, MoodPalette, Perspective, PainterStyles, PencilPressure, PixelArt, ShapeBuilder, ThirdsGrid, WatercolorWash, WaterReflect } from './art1';
 import { BinaryBits, BinarySearch, ChoiceTree, DebugSteps, GraphBfs, IfElseFlow, LogicGates, LoopPattern, RobotProgram, SortBars, WaveMaze } from './algo';
 import { GEORGIAN } from './geoData';
+import { CodeTrace, TurtleLoop } from './pytrace';
 import { HIRAGANA, KATAKANA, type Kana } from './kanaData';
 import type { Tc } from './kit';
 import { Copybook } from './writer';
@@ -32,6 +33,15 @@ type Make = (tc: Tc) => ReactNode;
 
 /** Interactive pictures by lesson id and theory card title. */
 const SCENES: Record<string, Make> = {
+  // Python: программа выполняется по строкам, видно переменные и вывод
+  'python-2|Переменная это коробка с названием': (tc) => <CodeTrace tc={tc} id="vars" />,
+  'python-3|Если… иначе': (tc) => <CodeTrace tc={tc} id="ifelse" />,
+  'python-4|Повторить N раз': (tc) => <CodeTrace tc={tc} id="forrange" />,
+  'python-4|Считаем в цикле': (tc) => <CodeTrace tc={tc} id="sum" />,
+  'python-mid-1|Изменяем и перебираем': (tc) => <CodeTrace tc={tc} id="list" />,
+  'python-mid-2|return: функция возвращает ответ': (tc) => <CodeTrace tc={tc} id="func" />,
+  'python-pro-1|Цикл while и случайности': (tc) => <CodeTrace tc={tc} id="whileloop" />,
+  'python-pro-2|Узоры из циклов': (tc) => <TurtleLoop tc={tc} />,
   // Логика и алгоритмы: каждый алгоритм работает по шагам
   'logic-1|Что такое алгоритм': (tc) => <RobotProgram tc={tc} />,
   'logic-2|Ищем повторения': (tc) => <LoopPattern tc={tc} />,

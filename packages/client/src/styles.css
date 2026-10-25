@@ -2192,3 +2192,93 @@ textarea,
 .algo-code {
   margin: 0;
 }
+
+/* A program running line by line. */
+.code-trace {
+  width: 100%;
+}
+.ct-main {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+.ct-code {
+  margin: 0;
+  padding: 10px 0;
+  border-radius: 12px;
+  background: #273041;
+  color: #e8edf5;
+  font: 0.9rem/1.7 ui-monospace, Menlo, Consolas, monospace;
+  overflow-x: auto;
+}
+.ct-code div {
+  padding: 0 12px;
+  white-space: pre;
+  transition: background 0.25s;
+}
+.ct-code div.on {
+  background: #f2a07b;
+  color: #1f2430;
+}
+.ct-code i {
+  display: inline-block;
+  width: 1.8em;
+  opacity: 0.5;
+  font-style: normal;
+}
+.ct-side {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.ct-vars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ct-box {
+  display: grid;
+  justify-items: center;
+  min-width: 70px;
+  padding: 6px 10px;
+  border: 2px solid #e2b07a;
+  border-radius: 10px;
+  background: #fff6e8;
+}
+.ct-box small {
+  color: #8a6d5a;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.ct-box b {
+  font-size: 1.2rem;
+}
+.ct-list {
+  display: flex;
+  gap: 3px;
+}
+.ct-list b {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid #e2b07a;
+  font-size: 0.85rem;
+}
+.ct-out {
+  margin: 0;
+  min-height: 70px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #1f2430;
+  color: #9be3b9;
+  font: 0.85rem/1.5 ui-monospace, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+}
+.ct-out small {
+  color: #8a94a3;
+}
+@media (max-width: 640px) {
+  .ct-main {
+    grid-template-columns: 1fr;
+  }
+}
