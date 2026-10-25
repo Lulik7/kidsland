@@ -1010,7 +1010,7 @@ a.ll:hover { border-color: var(--c, var(--violet)); transform: translateX(4px); 
 .sf-contacts b { color: #fff; font-family: var(--display); }
 .sf-contacts span { font-size: 0.95rem; }
 .sf-socials { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-.sf-socials a { padding: 5px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); font-size: 0.9rem; }
+.sf-socials a, .sf-socials span { padding: 5px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); font-size: 0.9rem; }
 .sf-socials a:hover { background: rgba(255, 255, 255, 0.22); }
 
 /* Header tools: language, theme, accessibility */
@@ -1415,7 +1415,7 @@ h1, h2 { color: #34404f; }
 .sf-cols a { color: #4f5d6d; }
 .sf-cols a:hover { color: var(--primary-dark); }
 .sf-logo { color: var(--ink); }
-.sf-socials a { background: #fff; border: 2px dashed #f4c9b8; }
+.sf-socials a, .sf-socials span { background: #fff; border: 2px dashed #f4c9b8; }
 .sf-socials a:hover { background: #fff5ef; }
 @media (max-width: 700px) {
   .sf-horse { left: 2%; width: 120px; height: 108px; }

@@ -305,14 +305,18 @@ export function Landing() {
             <b>{t('Контакты')}</b>
             <a href={`tel:${CONTACTS.phone.replace(/[^\d+]/g, '')}`}>{CONTACTS.phone}</a>
             <a href={`mailto:${CONTACTS.email}`}>{CONTACTS.email}</a>
-            <span>{t(CONTACTS.address)}</span>
+            {CONTACTS.address && <span>{t(CONTACTS.address)}</span>}
             <span>{t(CONTACTS.hours)}</span>
             <div className="sf-socials">
-              {CONTACTS.socials.map((s) => (
-                <a key={s.url} href={s.url} target="_blank" rel="noreferrer">
-                  {t(s.name)}
-                </a>
-              ))}
+              {CONTACTS.socials.map((s) =>
+                s.url ? (
+                  <a key={s.name} href={s.url} target="_blank" rel="noreferrer">
+                    {t(s.name)}
+                  </a>
+                ) : (
+                  <span key={s.name}>{t(s.name)}</span>
+                ),
+              )}
             </div>
           </div>
         </div>

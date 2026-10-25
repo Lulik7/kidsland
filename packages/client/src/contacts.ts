@@ -1,15 +1,17 @@
-/**
- * Contact details shown at the bottom of the home page. These are sample values: replace them with the
- * real ones in this one place.
- */
-export const CONTACTS = {
-  phone: '+7 (900) 123-45-67',
-  email: 'hello@kidsland.ru',
-  address: 'Москва, ул. Программистов, 1',
-  hours: 'Пн–Пт 9:00–19:00, Сб 10:00–16:00',
+/** Contact details shown at the bottom of the home page. A social link without a url is shown as plain text. */
+export const CONTACTS: {
+  phone: string;
+  email: string;
+  address?: string;
+  hours: string;
+  socials: { name: string; url?: string }[];
+} = {
+  phone: '+972 52-655-0238',
+  email: 'yuliaberner.dev@gmail.com',
+  hours: 'Пн–Пт 9:00–19:00, Сб 10:00–14:00',
   socials: [
-    { name: 'Telegram', url: 'https://t.me/kidsland' },
-    { name: 'ВКонтакте', url: 'https://vk.com/kidsland' },
-    { name: 'YouTube', url: 'https://youtube.com/@kidsland' },
+    // Links will be added when the channels are ready.
+    { name: 'Telegram' },
+    { name: 'YouTube' },
   ],
 };

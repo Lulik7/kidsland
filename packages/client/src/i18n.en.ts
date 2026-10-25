@@ -347,7 +347,7 @@ export const EN: Record<string, string> = {
   "Отладка": "Debugging",
   "Первые уровни игры и все курсы для самостоятельного обучения бесплатны. Платные только премиум-уровни и уроки с наставниками, причём первый урок бесплатный.": "The first game levels and all self-study courses are free. Only premium levels and tutor lessons are paid, and the first lesson is free.",
   "Перетаскивай цветные блоки-команды. Никакого набора текста.": "Drag colourful command blocks. No typing needed.",
-  "Пн–Пт 9:00–19:00, Сб 10:00–16:00": "Mon–Fri 9:00–19:00, Sat 10:00–16:00",
+  "Пн–Пт 9:00–19:00, Сб 10:00–14:00": "Mon–Fri 9:00–19:00, Sat 10:00–14:00",
   "Повторение действий": "Repeating actions",
   "Повторять, а не копировать": "Repeat instead of copying",
   "Поддержка": "Support",
