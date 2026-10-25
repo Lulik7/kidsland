@@ -2,6 +2,7 @@ import type { Course } from '@kidsland/shared';
 import type { ReactNode } from 'react';
 import { AccordionParts, DrumParts, FluteParts, GuitarParts, PianoParts, SaxParts, ViolinParts, VoiceParts } from './instruments';
 import type { Tc } from './parts';
+import { ComposerCard, SongForm } from './composers';
 import { Accidentals, Accompaniment, BluesScale, ClapRhythm, Dynamics, IntervalHouse, MajorMinorChords, SongHints, Metronome, Rests, RhythmExample, ToneExample } from './live';
 import { Posture } from './posture';
 import { Composer } from './compose';
@@ -154,6 +155,14 @@ export function musicSectionPicture(course: Course, sectionTitle: string | undef
       return <IntervalHouse tc={tc} />;
     case 'Песенки-подсказки':
       return <SongHints tc={tc} />;
+    case 'Бах':
+    case 'Моцарт':
+    case 'Чайковский':
+      return <ComposerCard tc={tc} id={sectionTitle} />;
+    case 'Куплет и припев':
+    case 'Вступление и кода':
+    case 'Повторы':
+      return <SongForm tc={tc} id={sectionTitle} />;
     case 'Мажорное и минорное':
       return <MajorMinorChords tc={tc} />;
     case 'Аккомпанемент':
