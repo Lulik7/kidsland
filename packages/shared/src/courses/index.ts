@@ -1,5 +1,5 @@
 import type { SubjectId } from '../marketplace';
-import type { Answer, Answers, Course, CourseLevel, Lesson, Question } from './types';
+import type { Answer, Answers, Course, CourseLevel, Lesson, LessonSection, Question } from './types';
 import { scratchCourse } from './scratch';
 import { scratchMidCourse, scratchProCourse } from './scratchMore';
 import { pythonCourse } from './python';
@@ -29,6 +29,7 @@ import { SOLFEGGIO_COURSES } from './solfeggio';
 import { DJ_COMPOSE_COURSES } from './djCompose';
 import { ANIMALS_EXTRA } from './animalsExtra';
 import { CODING_LEVELS } from './codingLevels';
+import { DEEPER } from './deeper';
 
 /** Extra lessons for the short intro courses, keyed by course id. */
 const MORE_LESSONS: Record<string, Lesson[]> = { ...CODING_LEVELS, 'python-pro': [...PYTHON_PRO_MORE, ...(CODING_LEVELS['python-pro'] ?? [])], ...SCIENCE_MORE, ...CHESS_MORE, ...ART_MORE, ...LEISURE_MORE, ...ANIMALS_MORE };
@@ -41,6 +42,17 @@ export const COURSE_LEVELS: { id: CourseLevel; name: string }[] = [
   { id: 'intermediate', name: 'Средний' },
   { id: 'advanced', name: 'Продвинутый' },
 ];
+
+/** A detailed section replaces the text of a short one with the same title (its code and tip stay), others are added at the end. */
+function deepen(sections: LessonSection[], more: LessonSection[]): LessonSection[] {
+  const byTitle = new Map(more.map((m) => [m.title, m]));
+  const merged = sections.map((s) => {
+    const m = byTitle.get(s.title);
+    return m ? { ...s, text: m.text, tip: m.tip ?? s.tip, code: m.code ?? s.code } : s;
+  });
+  const used = new Set(sections.map((s) => s.title));
+  return [...merged, ...more.filter((m) => !used.has(m.title))];
+}
 
 const withExtraTheory = (c: Course): Course => ({
   ...c,
@@ -63,7 +75,8 @@ export const COURSES: Course[] = [
   .map(withExtraTheory)
   .concat(MUSIC_COURSES, INTRO_COURSES, EXTRA_COURSES)
   .map((c) => (MORE_LESSONS[c.id] ? { ...c, lessons: [...c.lessons, ...MORE_LESSONS[c.id]] } : c))
-  .map((c) => (c.subject === 'animals' ? { ...c, lessons: c.lessons.map((l) => ({ ...l, sections: [...l.sections, ...(ANIMALS_EXTRA[l.id] ?? [])] })) } : c));
+  .map((c) => (c.subject === 'animals' ? { ...c, lessons: c.lessons.map((l) => ({ ...l, sections: [...l.sections, ...(ANIMALS_EXTRA[l.id] ?? [])] })) } : c))
+  .map((c) => ({ ...c, lessons: c.lessons.map((l) => (DEEPER[l.id] ? { ...l, sections: deepen(l.sections, DEEPER[l.id]) } : l)) }));
 
 /** Share of points needed to pass a lesson. */
 export const LESSON_PASS_RATIO = 0.6;
