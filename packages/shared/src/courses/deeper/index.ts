@@ -4,9 +4,12 @@ import { ART_PRO_DEEPER } from './artPro';
 import { LEISURE_MID_DEEPER } from './leisureMid';
 import { LEISURE_PRO_DEEPER } from './leisurePro';
 import { MUSIC_DEEPER } from './music';
+import { RU1_DEEPER } from './ru1';
+import { RU2_DEEPER } from './ru2';
+import { RU3_DEEPER } from './ru3';
 
 /**
  * More detailed text and examples for short lessons (the user asked to double them), by lesson id.
  * A section with the same title as an existing one replaces its text; new titles are added.
  */
-export const DEEPER: Record<string, LessonSection[]> = { ...MUSIC_DEEPER, ...LEISURE_MID_DEEPER, ...LEISURE_PRO_DEEPER, ...ART_MID_DEEPER, ...ART_PRO_DEEPER };
+export const DEEPER: Record<string, LessonSection[]> = { ...MUSIC_DEEPER, ...LEISURE_MID_DEEPER, ...LEISURE_PRO_DEEPER, ...ART_MID_DEEPER, ...ART_PRO_DEEPER, ...RU1_DEEPER, ...RU2_DEEPER, ...RU3_DEEPER };
