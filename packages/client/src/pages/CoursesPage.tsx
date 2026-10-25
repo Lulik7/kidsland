@@ -69,7 +69,6 @@ export function CoursesPage() {
                   </span>
                   <h3>{t(sec.name)}</h3>
                   <span className="bs-open">
-                    <Pic code="1f98b" size={34} className="bs-fly" />
                     {t('Открыть')}
                   </span>
                 </>

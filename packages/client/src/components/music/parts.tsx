@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useState, type PointerEvent, type ReactNode } from 'react';
+import { playNote, whiteMidi } from './sound';
 
 /** Drawing helpers shared by the instrument diagrams. Texts are Russian and go through `tc` for other languages. */
 export type Tc = (s: string) => string;
@@ -36,13 +37,14 @@ export function Num({ x, y, n }: { x: number; y: number; n: number }) {
   );
 }
 
-export function Figure({ title, children, w = 460, h = 300, notes }: { title: string; children: ReactNode; w?: number; h?: number; notes?: string[] }) {
+export function Figure({ title, children, w = 460, h = 300, notes, extra }: { title: string; children: ReactNode; w?: number; h?: number; notes?: string[]; extra?: ReactNode }) {
   return (
     <figure className="music-diagram">
       <figcaption className="md-title">{title}</figcaption>
       <svg viewBox={`0 0 ${w} ${h}`} width="100%" role="img" aria-label={title} style={{ maxWidth: w }}>
         {children}
       </svg>
+      {extra}
       {notes && (
         <ol className="md-notes">
           {notes.map((n) => (
@@ -95,40 +97,74 @@ const WHITE_NAMES = ['До', 'Ре', 'Ми', 'Фа', 'Соль', 'Ля', 'Си']
 
 /**
  * A piano keyboard of `octaves` octaves starting at C. `marks` are white-key indexes (0 = first C) painted mint,
- * `fingers` puts finger numbers above white keys, `names` writes note names on white keys.
+ * `blackMarks` are black keys by the white key on their left, `fingers` puts finger numbers above white keys,
+ * `names` writes note names on white keys. Keys sound when pressed; `lit` (MIDI numbers) glows during playback.
  */
-export function Keyboard({ x = 10, y = 20, octaves = 2, key = 28, marks = [], blackMarks = [], fingers = {}, names = true, tc }: {
+export function Keyboard({ x = 10, y = 20, octaves = 2, keyW = 28, marks = [], blackMarks = [], fingers = {}, names = true, lit = [], tc }: {
   x?: number;
   y?: number;
   octaves?: number;
-  key?: number;
+  keyW?: number;
   marks?: number[];
   blackMarks?: number[];
   fingers?: Record<number, number>;
   names?: boolean;
+  lit?: number[];
   tc: Tc;
 }) {
+  const [down, setDown] = useState<number | null>(null);
+  const key = keyW;
   const whites = octaves * 7 + 1;
   const h = key * 4.4;
   const blackAfter = [0, 1, 3, 4, 5];
+  const press = (midi: number) => {
+    setDown(midi);
+    playNote(midi, 0.7);
+  };
+  const on = (midi: number) => down === midi || lit.includes(midi);
+  const keyProps = (midi: number) => ({
+    onPointerDown: (e: PointerEvent<SVGElement>) => {
+      e.preventDefault();
+      press(midi);
+    },
+    onPointerUp: () => setDown(null),
+    onPointerLeave: () => setDown((d) => (d === midi ? null : d)),
+    style: { cursor: 'pointer' },
+    role: 'button',
+    'aria-label': String(midi),
+  });
   return (
-    <g transform={`translate(${x} ${y})`}>
-      {Array.from({ length: whites }, (_, i) => (
-        <g key={i}>
-          <rect x={i * key} y="0" width={key} height={h} rx="3" fill={marks.includes(i) ? '#bfe6d4' : '#fffdf8'} stroke="#8a94a3" />
-          {names && (
-            <text x={i * key + key / 2} y={h - 8} textAnchor="middle" fontSize={key * 0.36} fontWeight="700" fill={INK}>
-              {tc(WHITE_NAMES[i % 7])}
-            </text>
-          )}
-          {fingers[i] !== undefined && <Num x={i * key + key / 2} y={-14} n={fingers[i]} />}
-        </g>
-      ))}
-      {Array.from({ length: whites - 1 }, (_, i) =>
-        blackAfter.includes(i % 7) ? (
-          <rect key={`b${i}`} x={(i + 1) * key - key * 0.3} y="0" width={key * 0.6} height={h * 0.6} rx="2" fill={blackMarks.includes(i) ? MINT : '#2f3440'} />
-        ) : null,
-      )}
+    <g transform={`translate(${x} ${y})`} className="kb">
+      {Array.from({ length: whites }, (_, i) => {
+        const midi = whiteMidi(i);
+        return (
+          <g key={i} {...keyProps(midi)}>
+            <rect x={i * key} y="0" width={key} height={h} rx="3" fill={on(midi) ? '#ffd9a8' : marks.includes(i) ? '#bfe6d4' : '#fffdf8'} stroke="#8a94a3" />
+            {names && (
+              <text x={i * key + key / 2} y={h - 8} textAnchor="middle" fontSize={key * 0.36} fontWeight="700" fill={INK} pointerEvents="none">
+                {tc(WHITE_NAMES[i % 7])}
+              </text>
+            )}
+            {fingers[i] !== undefined && <Num x={i * key + key / 2} y={-14} n={fingers[i]} />}
+          </g>
+        );
+      })}
+      {Array.from({ length: whites - 1 }, (_, i) => {
+        if (!blackAfter.includes(i % 7)) return null;
+        const midi = whiteMidi(i) + 1;
+        return (
+          <rect
+            key={`b${i}`}
+            {...keyProps(midi)}
+            x={(i + 1) * key - key * 0.3}
+            y="0"
+            width={key * 0.6}
+            height={h * 0.6}
+            rx="2"
+            fill={on(midi) ? '#f4a259' : blackMarks.includes(i) ? MINT : '#2f3440'}
+          />
+        );
+      })}
     </g>
   );
 }
