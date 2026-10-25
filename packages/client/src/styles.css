@@ -2486,12 +2486,6 @@ textarea,
 .lesson-reminder .lr-close { background: none; border: 0; font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1; }
 @media (max-width: 1220px) { .lesson-reminder { margin: 12px 16px 0; } }
 
-/* Lesson card picture that plays animal and nature sounds */
-.tc-sound { border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0; font: inherit; }
-.tc-sound-label { font-size: .8rem; font-weight: 700; color: var(--primary-dark, #3f8f6d); white-space: nowrap; }
-.tc-sound:hover img { transform: scale(1.06); }
-.tc-sound.playing img { animation: pic-bob 1s ease-in-out infinite; }
-
 /* Lesson reminder settings: notifications on this device and phone for SMS */
 .notify-settings { display: grid; gap: 10px; padding-top: 8px; }
 .notify-settings .ns-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
