@@ -96,10 +96,14 @@ export function WcBirds({ className = '' }: P) {
 
 /** Rolling green hills with round trees: closes a banner at the bottom. */
 export function WcHills({ className = '' }: P) {
-  const trees: [number, number, number, string][] = [
-    [60, 70, 52, '#8fc2ad'], [150, 86, 40, '#6fa996'], [300, 80, 46, '#9ccbb6'], [470, 74, 54, '#7fb7a2'],
-    [640, 84, 44, '#8fc2ad'], [820, 72, 56, '#6fa996'], [990, 82, 46, '#9ccbb6'], [1160, 74, 52, '#7fb7a2'], [1340, 84, 48, '#8fc2ad'],
-  ];
+  // Bushes stand close together, overlapping a little, like a hedge along the hill.
+  const colors = ['#8fc2ad', '#6fa996', '#9ccbb6', '#7fb7a2'];
+  const trees: [number, number, number, string][] = Array.from({ length: 18 }, (_, i) => [
+    20 + i * 82,
+    74 + ((i * 7) % 4) * 4,
+    42 + ((i * 5) % 3) * 6,
+    colors[(i * 3) % 4],
+  ]);
   return (
     <svg className={`wc-hills ${className}`} viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden>
       <g filter="url(#wc)">
