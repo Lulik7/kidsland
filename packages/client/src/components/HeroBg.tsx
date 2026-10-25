@@ -30,7 +30,6 @@ const MUSIC: Record<string, HeroMedia> = {
 const TOPIC_BG: Record<string, HeroMedia> = {
   ...MUSIC,
   'dog-training': { image: '/img/bg/animals-dog.jpg', pos: 'center 22%' },
-  'lang-ja': { image: '/img/bg/japan-sakura.jpg' },
   cooking: { image: '/img/bg/leisure-cake.jpg', pos: 'center 40%' },
 };
 
@@ -39,8 +38,28 @@ const SUBJECT_BG: Record<string, HeroMedia> = {
   animals: { image: '/img/bg/animals-pony.jpg', pos: 'center 30%' },
 };
 
+/** Photos of the countries where a language is spoken, by language topic. Course level N shows photo N. */
+export const COUNTRY_PHOTOS: Record<string, string[]> = {
+  'lang-zh': ['zh-temple', 'zh-flag'],
+  'lang-ja': ['../bg/japan-sakura', 'ja-castle', 'ja-pagoda', 'ja-kimono'],
+  'lang-de': ['de-nuremberg', 'de-mosel'],
+  'lang-fr': ['fr-arc', 'fr-provence'],
+  'lang-es': ['es-street', 'es-flag'],
+  'lang-it': ['it-cinqueterre', 'it-village', 'it-street', 'it-flag'],
+  'lang-el': ['el-church', 'el-athens', 'el-guards', 'el-flag'],
+};
+
+export const countryPhoto = (name: string) => `/img/country/${name}.jpg`;
+
+function countryBg(course: Course): HeroMedia | undefined {
+  const list = course.topic ? COUNTRY_PHOTOS[course.topic] : undefined;
+  if (!list) return undefined;
+  const level = Number(course.id.split('-').pop()) || 1;
+  return { image: countryPhoto(list[(level - 1) % list.length]), pos: 'center 40%' };
+}
+
 export function courseBg(course: Course): HeroMedia | undefined {
-  return (course.topic && TOPIC_BG[course.topic]) || SUBJECT_BG[course.subject] || SECTION_BG[course.subject];
+  return countryBg(course) || (course.topic && TOPIC_BG[course.topic]) || SUBJECT_BG[course.subject] || SECTION_BG[course.subject];
 }
 
 export function HeroBg({ media }: { media?: HeroMedia }) {
@@ -60,6 +79,13 @@ export function HeroBg({ media }: { media?: HeroMedia }) {
 /** Photos of section topics, shown on the topic chips. */
 export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   ...MUSIC,
+  'lang-zh': { image: '/img/country/zh-temple.jpg' },
+  'lang-ja': { image: '/img/country/ja-pagoda.jpg', pos: 'center 20%' },
+  'lang-de': { image: '/img/country/de-nuremberg.jpg' },
+  'lang-fr': { image: '/img/country/fr-arc.jpg', pos: 'center 30%' },
+  'lang-es': { image: '/img/country/es-flag.jpg', pos: '40% 30%' },
+  'lang-it': { image: '/img/country/it-flag.jpg' },
+  'lang-el': { image: '/img/country/el-flag.jpg', pos: '35% 40%' },
   dogs: { image: '/img/bg/animals-dog.jpg', pos: 'center 25%' },
   birds: { image: '/img/bg/animals-bird.jpg', pos: '68% 45%' },
   pets: { image: '/img/bg/animals-pony.jpg', pos: 'center 25%' },
@@ -78,4 +104,20 @@ const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
 
 export function lessonPhoto(course: Course, title: string): HeroMedia | undefined {
   return LESSON_PHOTO.find(([subject, re]) => subject === course.subject && re.test(title))?.[2];
+}
+
+/** A strip of photos of the language's country, shown on a language course page. */
+export function CountryGallery({ course, title }: { course: Course; title: string }) {
+  const list = course.topic ? COUNTRY_PHOTOS[course.topic] : undefined;
+  if (!list) return null;
+  return (
+    <section className="country-gallery">
+      <h2 className="track-title">{title}</h2>
+      <div className="cg-row">
+        {list.map((n) => (
+          <img key={n} src={countryPhoto(n)} alt="" loading="lazy" />
+        ))}
+      </div>
+    </section>
+  );
 }

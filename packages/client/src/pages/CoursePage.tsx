@@ -2,7 +2,7 @@ import { coursesBySubject, getCourse, SUBJECTS } from '@kidsland/shared';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { LevelBadge } from '../components/CourseCard';
 import { Faq } from '../components/Faq';
-import { courseBg, HeroBg } from '../components/HeroBg';
+import { CountryGallery, courseBg, HeroBg } from '../components/HeroBg';
 import { LockIcon } from '../components/Icons';
 import { KidHud } from '../components/KidHud';
 import { coursePic, Pic } from '../pics';
@@ -68,6 +68,8 @@ export function CoursePage() {
           {childId && doneCount === course.lessons.length && <div className="ch-done">{t('🏆 Курс пройден!')}</div>}
         </div>
       </section>
+
+      <CountryGallery course={course} title={t('Страна языка')} />
 
       <div className="course-layout">
         <section>

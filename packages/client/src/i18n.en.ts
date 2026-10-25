@@ -1058,4 +1058,5 @@ export const EN: Record<string, string> = {
   "Скачать весь курс (текст)": "Download the whole course (text)",
   "Аудио (mp3)": "Audio (mp3)",
   "Текст": "Text",
+  "Страна языка": "The country of the language",
 };
