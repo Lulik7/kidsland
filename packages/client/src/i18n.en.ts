@@ -1061,4 +1061,6 @@ export const EN: Record<string, string> = {
   "Страна языка": "The country of the language",
   "Студия диджея": "The DJ studio",
   "Как пишут музыку": "How music is written",
+  "Мастерская художника": "The artist's studio",
+  "Мастерская рукоделия": "The craft workshop",
 };

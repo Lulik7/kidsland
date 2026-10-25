@@ -10,6 +10,7 @@ export const SECTION_BG: Record<string, HeroMedia> = {
   music: { image: '/img/bg/music-rock.jpg', pos: 'center 30%' },
   art: { image: '/img/bg/art-painter.jpg', pos: 'center 30%' },
   science: { image: '/img/bg/science-lab.jpg', pos: 'center 30%' },
+  leisure: { image: '/img/hobby/craft-embroidery-bunny.jpg', pos: 'center 60%' },
 };
 
 const p = (topic: string, pos = 'center 30%'): HeroMedia => ({ image: `/img/posture/${topic}.jpg`, pos });
@@ -64,6 +65,12 @@ const COURSE_BG: Record<string, HeroMedia> = {
   'compose-1': { image: '/img/bg/compose-pencil.jpg' },
   'compose-2': { image: '/img/bg/compose-pen.jpg' },
   'compose-3': { image: '/img/bg/compose-piano.jpg' },
+  'art-start': { image: '/img/hobby/art-paints.jpg' },
+  'art-mid': { image: '/img/hobby/art-watercolor-table.jpg', pos: 'center 40%' },
+  'art-pro': { image: '/img/hobby/art-easel.jpg', pos: 'center 30%' },
+  'leisure-start': { image: '/img/hobby/craft-twine.jpg', pos: 'center 50%' },
+  'leisure-mid': { image: '/img/hobby/knit.jpg', pos: 'center 35%' },
+  'leisure-pro': { image: '/img/hobby/craft-embroidery.jpg', pos: 'center 50%' },
 };
 
 function countryBg(course: Course): HeroMedia | undefined {
@@ -107,6 +114,19 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   yoga: { image: '/img/bg/spirit-yoga.jpg', pos: '20% 50%' },
   food: { image: '/img/bg/leisure-food.jpg' },
   experiments: { image: '/img/bg/science-lab.jpg', pos: '70% 30%' },
+  magic: { image: '/img/hobby/magic-stage.jpg', pos: 'center 30%' },
+  pencil: { image: '/img/hobby/art-brushes.jpg' },
+  watercolor: { image: '/img/hobby/art-paints.jpg' },
+  gouache: { image: '/img/hobby/art-easel.jpg', pos: 'center 25%' },
+  sketching: { image: '/img/hobby/art-watercolor.jpg', pos: 'center 40%' },
+  knitting: { image: '/img/hobby/knit.jpg', pos: 'center 35%' },
+  crochet: { image: '/img/hobby/knit.jpg', pos: 'center 60%' },
+  sewing: { image: '/img/hobby/craft-embroidery.jpg' },
+  crafts: { image: '/img/hobby/craft-twine.jpg' },
+  macrame: { image: '/img/hobby/craft-twine.jpg', pos: 'center 60%' },
+  magicCards: { image: '/img/hobby/magic-deck.jpg', pos: 'center 45%' },
+  embroidery: { image: '/img/hobby/craft-embroidery-bunny.jpg', pos: 'center 65%' },
+  market: { image: '/img/hobby/craft-market.jpg', pos: 'center 60%' },
   herbarium: { image: '/img/bg/spirit-lotus.jpg' },
   cooking: { image: '/img/bg/leisure-cake.jpg', pos: 'center 40%' },
 };
@@ -115,6 +135,10 @@ export const TOPIC_PHOTO: Record<string, HeroMedia> = {
 const LESSON_PHOTO: [string, RegExp, HeroMedia][] = [
   ['animals', /птиц|попуга|канар/i, TOPIC_PHOTO.birds],
   ['animals', /лошад|пони/i, TOPIC_PHOTO.pets],
+  ['science', /фокус/i, TOPIC_PHOTO.magicCards],
+  ['leisure', /вышивк/i, TOPIC_PHOTO.embroidery],
+  ['leisure', /ярмарк|выставк/i, TOPIC_PHOTO.market],
+  ['leisure', /вязан|спиц|крюч|шапк|шарф/i, TOPIC_PHOTO.knitting],
   ['leisure', /рацион|салат|суп|кухни мира|обед/i, TOPIC_PHOTO.food],
   ['leisure', /кулинар|печенье|выпечк|тесто|блины|праздничный стол|бутерброд|каша/i, TOPIC_PHOTO.cooking],
   ['leisure', /гербарий/i, TOPIC_PHOTO.herbarium],
@@ -129,9 +153,15 @@ const DJ_PHOTOS = ['dj-synth', 'dj-headphones', 'dj-cables', 'dj-knobs', 'dj-rol
 
 const COMPOSE_PHOTOS = ['compose-pencil', 'compose-pen', 'compose-notes', 'compose-piano', 'music-band'].map((n) => `/img/bg/${n}.jpg`);
 
+const hobby = (names: string[]) => names.map((n) => `/img/hobby/${n}.jpg`);
+const ART_PHOTOS = [...hobby(['art-easel', 'art-paints', 'art-watercolor-table', 'art-brushes', 'art-watercolor']), '/img/bg/art-painter.jpg'];
+const CRAFT_PHOTOS = hobby(['knit', 'craft-embroidery-bunny', 'craft-twine', 'craft-embroidery', 'craft-market']);
+
 /** A strip of photos under a course banner: the language's country, or the DJ studio. */
 export function courseGallery(course: Course): { title: string; photos: string[] } | undefined {
   if (course.topic === 'dj') return { title: 'Студия диджея', photos: DJ_PHOTOS };
+  if (course.subject === 'art') return { title: 'Мастерская художника', photos: ART_PHOTOS };
+  if (course.subject === 'leisure' && course.topic !== 'cooking') return { title: 'Мастерская рукоделия', photos: CRAFT_PHOTOS };
   if (course.topic === 'composition') return { title: 'Как пишут музыку', photos: COMPOSE_PHOTOS };
   const list = course.topic ? COUNTRY_PHOTOS[course.topic] : undefined;
   return list && { title: 'Страна языка', photos: list.map(countryPhoto) };
