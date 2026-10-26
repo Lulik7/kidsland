@@ -113,7 +113,7 @@ export const SECTIONS: Section[] = [
   {
     id: 'languages',
     name: 'Иностранные языки',
-    tagline: '11 языков мира',
+    tagline: '12 языков мира',
     description: 'Первые слова, фразы и разговор с носителями: от английского и китайского до грузинского и иврита.',
     color: '#3b8cff',
     topics: [
@@ -125,6 +125,7 @@ export const SECTIONS: Section[] = [
       { id: 'lang-es', name: 'Испанский' },
       { id: 'lang-ja', name: 'Японский' },
       { id: 'lang-zh', name: 'Китайский' },
+      { id: 'lang-ko', name: 'Корейский' },
       { id: 'lang-el', name: 'Греческий' },
       { id: 'lang-ka', name: 'Грузинский' },
       { id: 'lang-he', name: 'Иврит' },

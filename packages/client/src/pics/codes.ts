@@ -66,6 +66,7 @@ export const TOPIC_PIC: Record<string, string> = {
   'lang-es': '1f1ea-1f1f8',
   'lang-ja': '1f1ef-1f1f5',
   'lang-zh': '1f1e8-1f1f3',
+  'lang-ko': '1f1f0-1f1f7',
   'lang-el': '1f1ec-1f1f7',
   'lang-ka': '1f1ec-1f1ea',
   'lang-he': '1f1ee-1f1f1',

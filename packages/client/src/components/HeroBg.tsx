@@ -52,6 +52,7 @@ const SUBJECT_BG: Record<string, HeroMedia> = {
 /** Photos of the countries where a language is spoken, by language topic. Course level N shows photo N. */
 export const COUNTRY_PHOTOS: Record<string, string[]> = {
   'lang-zh': ['zh-temple', 'zh-flag'],
+  'lang-ko': ['ko-palace', 'ko-pavilion', 'ko-tower', 'ko-street', 'ko-sign', 'ko-seoul'],
   'lang-ja': ['../bg/japan-sakura', 'ja-castle', 'ja-pagoda', 'ja-kimono'],
   'lang-de': ['de-nuremberg', 'de-mosel'],
   'lang-fr': ['fr-arc', 'fr-provence'],
@@ -113,6 +114,7 @@ export function HeroBg({ media }: { media?: HeroMedia }) {
 export const TOPIC_PHOTO: Record<string, HeroMedia> = {
   ...MUSIC,
   'lang-zh': { image: '/img/country/zh-temple.jpg' },
+  'lang-ko': { image: '/img/country/ko-pavilion.jpg' },
   'lang-ja': { image: '/img/country/ja-pagoda.jpg', pos: 'center 20%' },
   'lang-de': { image: '/img/country/de-nuremberg.jpg' },
   'lang-fr': { image: '/img/country/fr-arc.jpg', pos: 'center 30%' },
