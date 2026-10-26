@@ -14,6 +14,8 @@ from piper.config import SynthesisConfig
 # The Greek voice drags out a word said on its own and babbles after it for seconds. Inside a phrase
 # («ναι, και ναι.») it says the word at a natural pace, so we record the phrase and keep the first word.
 CARRIER_LANGS = {'el'}
+# Voices recorded without the hiss filter (Georgian natia sounds dull and robotic through it).
+PLAIN_LANGS = {'ka'}
 
 
 def first_word_only(path, phonemes, inner_pause=False):
@@ -78,7 +80,13 @@ for item in json.load(open(lines_file)):
     # Clean-up for every voice: cut rumble and hiss, even out loudness.
     # Silence before and after, so browsers never swallow the start of a short word.
     clean = 'highpass=f=70,lowpass=f=7600,afftdn=nf=-30,loudnorm=I=-18:TP=-2,adelay=150:all=1,apad=pad_dur=0.25'
-    if item['g'] == 'm' and male_model == '-':
+    if lang in PLAIN_LANGS:
+        # These voices are clean already: the hiss filter only makes them dull and robotic.
+        clean = 'highpass=f=70,loudnorm=I=-18:TP=-2,adelay=150:all=1,apad=pad_dur=0.25'
+    if item['g'] == 'm' and male_model == '-' and lang in PLAIN_LANGS:
+        # Classic resampling: lower and a bit darker, with no formant-shifting artefacts.
+        af = f'asetrate={rate}*{factor},aresample=24000,atempo={1 / factor:.4f},{clean}'
+    elif item['g'] == 'm' and male_model == '-':
         # Rubber Band moves the pitch and the voice timbre down without changing the tempo (no slow-motion effect).
         af = f'aresample=24000,rubberband=pitch={factor}:formant=shifted:pitchq=quality,{clean}'
     else:
