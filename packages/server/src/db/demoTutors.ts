@@ -428,6 +428,13 @@ const SAMPLE_REVIEWS = [
  * Demo tutors so the marketplace is not empty in development. Their accounts cannot log in
  * (no valid password hash). Future slots are topped up on every start.
  */
+/** Where the demo tutors live, for the country filter. */
+const DEMO_COUNTRY: Record<string, string> = {
+  'Emily Carter': 'US', 'Kate Wilson': 'GB', 'Ганс Мюллер': 'DE', 'Мэй Чжан': 'CN', 'Нато Беридзе': 'GE', 'Айгерим Нурланова': 'KZ',
+  'Дмитрий Орлов': 'RU', 'Максим Ли': 'RU', 'Тимур Алиев': 'RU', 'Павел Кузнецов': 'RU', 'Галина Петрова': 'RU', 'Борис Ладьин': 'RU',
+  'Ольга Ким': 'CY', 'Елена Морозова': 'GR', 'Аркадий Волков': 'DE', 'Нина Ершова': 'LV', 'Кира Ланская': 'ES',
+};
+
 export async function seedDemoTutors(db: Db, now = new Date()): Promise<void> {
   for (const t of DEMO_TUTORS) {
     const { rows: users } = await db.query(
@@ -447,6 +454,7 @@ export async function seedDemoTutors(db: Db, now = new Date()): Promise<void> {
        RETURNING id`,
       [users[0].id, t.displayName, t.headline, t.bio, t.avatar, t.subjects, t.languages, t.ageMin, t.ageMax, t.hourlyRate, t.rating, t.reviews, Math.round(t.reviews * 1.6) + 3],
     );
+    await db.query('UPDATE tutor_profiles SET country = $2 WHERE id = $1 AND country IS NULL', [profiles[0].id, DEMO_COUNTRY[t.displayName] ?? 'IL']);
     // A few sample reviews, so the tutor page shows what families write.
     const { rows: had } = await db.query('SELECT 1 FROM tutor_reviews WHERE tutor_id = $1 LIMIT 1', [profiles[0].id]);
     if (!had[0]) {

@@ -1,7 +1,7 @@
 import type { PoolClient } from 'pg';
 import type { Db } from './db/pool';
 
-export type NotificationKind = 'support' | 'tutor-application' | 'post' | 'safety' | 'payment';
+export type NotificationKind = 'support' | 'tutor-application' | 'post' | 'safety' | 'payment' | 'topic';
 
 /** Leaves a note in the admin's notification list. Never fails the request that caused it. */
 export async function notifyAdmins(db: Db | PoolClient, kind: NotificationKind, title: string, body = '', link: string | null = null) {

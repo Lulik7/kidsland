@@ -8,7 +8,11 @@ import { HttpError } from '../errors';
 import { FREE_SLOT_SQL, isUuid, publicTutor, TUTOR_EXTRA_SQL, type TutorRow } from '../tutors';
 
 const filterSchema = z.object({
-  subject: z.enum(TOPIC_IDS as [string, ...string[]]).optional(),
+  // Checked against the live list: tutors and the admin add topics while the server runs.
+  subject: z
+    .string()
+    .refine((id) => TOPIC_IDS.includes(id))
+    .optional(),
   section: z.enum(SECTION_IDS as [string, ...string[]]).optional(),
   language: z.enum(LANGUAGE_IDS as [string, ...string[]]).optional(),
   age: z.coerce.number().int().min(3).max(18).optional(),

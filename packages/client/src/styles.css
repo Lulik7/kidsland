@@ -507,12 +507,16 @@ textarea:focus, select:focus { outline: none; border-color: var(--violet); box-s
 .tutors-hero p { color: var(--muted); font-size: 1.1rem; margin: 0; }
 .filters { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px; }
 .chips-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.other-topic { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.other-topic input { width: 240px; max-width: 100%; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line, #ddd); font: inherit; }
 .fchip { border: 2px solid color-mix(in srgb, #e8e0f4 var(--tint), var(--card)); background: var(--card); border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 800; color: var(--ink); cursor: url('/img/cursor-bird-hover.svg') 1 10, pointer; }
 .fchip:hover { border-color: #cbbcf5; }
 .fchip.on { background: var(--violet); border-color: var(--violet); color: #fff; }
 .selects { display: flex; gap: 10px; flex-wrap: wrap; }
 .selects label { font-size: 0.85rem; color: var(--muted); gap: 4px; }
 .selects select { padding: 8px 12px; min-width: 140px; }
+.selects .price-range { min-width: 220px; }
+.selects .price-range input[type="range"] { width: 100%; accent-color: var(--primary); margin-top: 8px; }
 .tutor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 .tutor-card { display: grid; gap: 12px; align-content: start; background: var(--card); border-radius: 26px; padding: 22px; box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform 0.15s, box-shadow 0.15s; }
 .tutor-card:hover { transform: translateY(-4px); box-shadow: 0 20px 44px rgba(36, 29, 79, 0.16); }

@@ -293,6 +293,8 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS reminded_day_parent_at timestamptz
 -- Tutor card: online status, pupils and reviews.
 ALTER TABLE tutor_profiles ADD COLUMN IF NOT EXISTS last_seen_at timestamptz;
 ALTER TABLE tutor_profiles ADD COLUMN IF NOT EXISTS students_base integer NOT NULL DEFAULT 0;
+-- Where the tutor lives (ISO code), for the country filter in the catalogue.
+ALTER TABLE tutor_profiles ADD COLUMN IF NOT EXISTS country text;
 CREATE TABLE IF NOT EXISTS tutor_reviews (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tutor_id    uuid NOT NULL REFERENCES tutor_profiles(id) ON DELETE CASCADE,

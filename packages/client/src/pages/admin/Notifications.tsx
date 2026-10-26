@@ -6,6 +6,8 @@ const kindName: Record<AdminNotification['kind'], string> = {
   'tutor-application': 'Анкета',
   post: 'Пост',
   safety: 'Безопасность',
+  payment: 'Оплата',
+  topic: 'Новая тема',
 };
 
 /** The admin's feed: what happened on the site and needs a look. A click opens the right tab. */

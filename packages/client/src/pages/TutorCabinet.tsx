@@ -1,4 +1,4 @@
-import { LANGUAGES, TUTOR_SAFETY_RULES, TUTOR_SECTIONS } from '@kidsland/shared';
+import { COUNTRY_CODES, LANGUAGES, TUTOR_SAFETY_RULES, TUTOR_SECTIONS, type CountryCode } from '@kidsland/shared';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type Booking, type Slot, type Tutor, type TutorProfileInput } from '../api';
@@ -6,8 +6,9 @@ import { BookingCard } from '../components/BookingCard';
 import { NotifySettings } from '../components/NotifySettings';
 import { TutorApplicationForm } from '../components/TutorApplicationForm';
 import { TutorAvatar } from '../components/TutorAvatar';
-import { dayKey, fmtDay, fmtTime } from '../format';
+import { countryName, dayKey, fmtDay, fmtTime } from '../format';
 import { tSentences, useT } from '../i18n';
+import { applyContent } from '../siteContent';
 
 type Tab = 'lessons' | 'schedule' | 'profile' | 'application';
 const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
@@ -19,6 +20,7 @@ const toInput = (t: Tutor): TutorProfileInput => ({
   videoUrl: t.videoUrl ?? '',
   subjects: t.subjects,
   languages: t.languages,
+  country: t.country,
   ageMin: t.ageMin,
   ageMax: t.ageMax,
   hourlyRate: t.hourlyRate,
@@ -359,6 +361,7 @@ function ProfileForm({ tutor, onSaved, onApplication }: { tutor: Tutor; onSaved:
                 {t(s.name)}
               </button>
             ))}
+            <OtherTopic section={sec.id} onAdded={(id) => setP((x) => (x.subjects.includes(id) ? x : { ...x, subjects: [...x.subjects, id] }))} />
           </div>
         </div>
       ))}
@@ -370,6 +373,19 @@ function ProfileForm({ tutor, onSaved, onApplication }: { tutor: Tutor; onSaved:
           </button>
         ))}
       </div>
+      <label>
+        {t('Страна, где вы живёте')}
+        <select value={p.country ?? ''} onChange={(e) => set('country', (e.target.value || null) as CountryCode | null)}>
+          <option value="">{t('Не указана')}</option>
+          {[...COUNTRY_CODES]
+            .sort((a, b) => countryName(a).localeCompare(countryName(b)))
+            .map((c) => (
+              <option key={c} value={c}>
+                {countryName(c)}
+              </option>
+            ))}
+        </select>
+      </label>
       <div className="form-grid three">
         <label>
           {t('Возраст от')}
@@ -401,5 +417,59 @@ function ProfileForm({ tutor, onSaved, onApplication }: { tutor: Tutor; onSaved:
         )}
       </div>
     </form>
+  );
+}
+
+/** «Other…» in a section: the tutor types a topic the site does not have yet, and it is added for everyone. */
+function OtherTopic({ section, onAdded }: { section: string; onAdded: (id: string) => void }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  if (!open)
+    return (
+      <button type="button" className="fchip" onClick={() => setOpen(true)}>
+        + {t('Другое')}
+      </button>
+    );
+  const add = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await api.addTutorTopic(section, name);
+      applyContent(r.content, true);
+      onAdded(r.topic.id);
+      setName('');
+      setOpen(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('Ошибка'));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <span className="other-topic">
+      <input
+        value={name}
+        autoFocus
+        maxLength={40}
+        placeholder={t('Чему вы учите? Например: Армянский')}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (name.trim().length >= 2) add();
+          }
+        }}
+      />
+      <button type="button" className="btn btn-light btn-small" disabled={busy || name.trim().length < 2} onClick={add}>
+        {t('Добавить')}
+      </button>
+      <button type="button" className="btn btn-ghost btn-small" onClick={() => setOpen(false)}>
+        {t('Отмена')}
+      </button>
+      {error && <span className="error small">{error}</span>}
+    </span>
   );
 }

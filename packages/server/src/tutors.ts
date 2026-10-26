@@ -11,6 +11,7 @@ export interface TutorRow {
   avatar: string | null;
   subjects: string[];
   languages: string[];
+  country: string | null;
   age_min: number;
   age_max: number;
   hourly_rate: number;
@@ -57,6 +58,7 @@ export const publicTutor = (t: TutorRow & { next_slot?: Date | null; free_slots?
   avatar: t.avatar,
   subjects: t.subjects,
   languages: t.languages,
+  country: t.country ?? null,
   ageMin: t.age_min,
   ageMax: t.age_max,
   students: t.students ?? 0,

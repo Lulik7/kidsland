@@ -1,5 +1,14 @@
 /** English interface strings, keyed by the Russian original. Lesson content is not translated yet. */
 export const EN: Record<string, string> = {
+  "Страна, где вы живёте": "Country you live in",
+  "Не указана": "Not specified",
+  "Страна наставника": "Tutor's country",
+  "Любая": "Any",
+  "Цена урока": "Lesson price",
+  "Другое": "Other",
+  "Чему вы учите? Например: Армянский": "What do you teach? E.g. Armenian",
+  "Слишком короткое название": "The name is too short",
+  "Название не прошло проверку безопасности": "The name did not pass the safety check",
   "Это бесплатный пробный урок.": "This is a free trial lesson.",
   ", урок с наставником": ", lesson with tutor",
   ". Ученик:": ". Student:",

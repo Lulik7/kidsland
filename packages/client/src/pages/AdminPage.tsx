@@ -63,6 +63,7 @@ export function AdminPage() {
       setTab('tutors');
     } else if (link === 'posts') setTab('posts');
     else if (link === 'safety') setTab('safety');
+    else if (link === 'content') setTab('content');
     else if (link.startsWith('/billing/receipt/')) setTab('payments');
   };
 

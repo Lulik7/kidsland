@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api, type Tutor } from '../api';
 import { TutorCard } from '../components/TutorCard';
+import { countryName, money } from '../format';
 import { useT } from '../i18n';
 
 const AGES = [6, 7, 8, 9, 10, 11, 12, 13, 14];
@@ -20,16 +21,27 @@ export function TutorsPage() {
   // The language filter was removed from the page; links with ?language= still filter.
   const language = params.get('language') ?? '';
   const age = params.get('age') ?? '';
-  const sort = params.get('sort') ?? 'rating';
+  const country = params.get('country') ?? '';
+  const maxPrice = Number(params.get('price')) || 0;
   const childId = params.get('child');
 
   useEffect(() => {
     setTutors(null);
     api
-      .tutors({ subject, section: subject ? undefined : section, language, age: age ? Number(age) : undefined, sort })
+      .tutors({ subject, section: subject ? undefined : section, language, age: age ? Number(age) : undefined })
       .then((r) => setTutors(r.tutors))
       .catch((e) => setError(e.message));
-  }, [subject, section, language, age, sort]);
+  }, [subject, section, language, age]);
+
+  // Country and price narrow the loaded list, so their choices always match the tutors of this topic.
+  const countries = [...new Set((tutors ?? []).map((x) => x.country).filter((c): c is string => !!c))].sort((a, b) =>
+    countryName(a).localeCompare(countryName(b)),
+  );
+  const prices = (tutors ?? []).map((x) => x.price);
+  const lo = prices.length ? Math.min(...prices) : 0;
+  const hi = prices.length ? Math.max(...prices) : 0;
+  const limit = maxPrice && maxPrice < hi ? maxPrice : hi;
+  const shown = (tutors ?? []).filter((x) => (!country || x.country === country) && x.price <= limit);
 
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -95,20 +107,38 @@ export function TutorsPage() {
               ))}
             </select>
           </label>
-          <label>
-            {t('Сортировка')}
-            <select value={sort} onChange={(e) => set('sort', e.target.value)}>
-              <option value="rating">{t('По рейтингу')}</option>
-              <option value="soonest">{t('Ближайшее время')}</option>
-              <option value="price">{t('Сначала дешевле')}</option>
-            </select>
-          </label>
+          {countries.length > 0 && (
+            <label>
+              {t('Страна наставника')}
+              <select value={country} onChange={(e) => set('country', e.target.value)}>
+                <option value="">{t('Любая')}</option>
+                {countries.map((c) => (
+                  <option key={c} value={c}>
+                    {countryName(c)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {hi > lo && (
+            <label className="price-range">
+              {t('Цена урока')}: {t('до')} <b>{money(limit)}</b>
+              <input
+                type="range"
+                min={lo}
+                max={hi}
+                step={5}
+                value={limit}
+                onChange={(e) => set('price', Number(e.target.value) >= hi ? '' : e.target.value)}
+              />
+            </label>
+          )}
         </div>
       </div>
 
       {!tutors ? (
         <div className="center-note">{error ?? t('Ищем наставников…')}</div>
-      ) : tutors.length === 0 ? (
+      ) : shown.length === 0 ? (
         <div className="center-note">
           {t('Под эти фильтры никого нет.')}{' '}
           <button className="btn btn-light" onClick={() => setParams(childId ? { child: childId } : {})}>
@@ -117,7 +147,7 @@ export function TutorsPage() {
         </div>
       ) : (
         <div className="tutor-grid">
-          {tutors.map((tu) => (
+          {shown.map((tu) => (
             <TutorCard key={tu.id} tutor={tu} childId={childId} />
           ))}
         </div>

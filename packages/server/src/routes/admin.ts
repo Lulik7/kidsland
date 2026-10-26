@@ -49,7 +49,7 @@ export async function refreshContent(db: Db) {
   applyContentOverrides(await loadContentOverrides(db));
 }
 
-const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+export const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 const textBlock = z.object({
   title: z.string().trim().max(120).optional().default(''),

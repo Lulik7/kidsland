@@ -85,6 +85,8 @@ export interface Tutor {
   avatar: string | null;
   subjects: string[];
   languages: string[];
+  /** Country the tutor lives in (ISO code). */
+  country: string | null;
   ageMin: number;
   ageMax: number;
   hourlyRate: number;
@@ -337,7 +339,7 @@ export interface AdminApplication {
 
 export interface AdminNotification {
   id: string;
-  kind: 'support' | 'tutor-application' | 'post' | 'safety';
+  kind: 'support' | 'tutor-application' | 'post' | 'safety' | 'payment' | 'topic';
   title: string;
   body: string;
   link: string | null;
@@ -387,7 +389,7 @@ export interface RoomState {
 
 export type TutorProfileInput = Pick<
   Tutor,
-  'displayName' | 'headline' | 'bio' | 'subjects' | 'languages' | 'ageMin' | 'ageMax' | 'hourlyRate' | 'isPublished'
+  'displayName' | 'headline' | 'bio' | 'subjects' | 'languages' | 'country' | 'ageMin' | 'ageMax' | 'hourlyRate' | 'isPublished'
 > & { videoUrl: string; avatar?: string };
 
 export class ApiError extends Error {
@@ -508,6 +510,8 @@ export const api = {
     request<{ booking: Booking }>(`/bookings/${id}/cancel`, { method: 'POST', body: { reason, note } }),
 
   myTutorProfile: () => request<{ tutor: Tutor }>('/tutor/profile'),
+  addTutorTopic: (section: string, name: string) =>
+    request<{ topic: { id: string; name: string }; content: ContentOverridesDto }>('/tutor/topics', { method: 'POST', body: { section, name } }),
   saveTutorProfile: (p: TutorProfileInput) => request<{ tutor: Tutor }>('/tutor/profile', { method: 'PUT', body: p }),
   mySlots: () => request<{ slots: Slot[] }>('/tutor/slots'),
   addSlots: (startsAt: string[], durationMin = 45) =>
