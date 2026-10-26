@@ -19,7 +19,7 @@ export const config = {
   jitsiDomain: process.env.JITSI_DOMAIN ?? 'meet.jit.si',
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
   // Users with these emails become admins on sign-up or login (comma-separated).
-  adminEmails: (process.env.ADMIN_EMAILS ?? (isProd ? '' : 'admin@kidsland.local'))
+  adminEmails: (process.env.ADMIN_EMAILS ?? (isProd ? '' : 'admin@kidsland.local,yuliaberner.dev@gmail.com'))
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean),
