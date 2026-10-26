@@ -5,9 +5,16 @@ import type { Db } from './db/pool';
 
 type Q = Db | PoolClient;
 
-/** Puts a letter in the outbox; it is sent by deliverMail, so a mail problem never fails a payment. */
+/**
+ * Puts a letter in the outbox; it is sent by deliverMail, so a mail problem never fails a payment.
+ * Letters are for parents and tutors only: admin addresses are skipped, even when an admin also has a lesson.
+ */
 export async function queueMail(db: Q, to: string | string[], subject: string, body: string) {
-  for (const addr of [to].flat()) {
+  const all = [to].flat().map((a) => a.trim().toLowerCase()).filter(Boolean);
+  if (!all.length) return;
+  const { rows } = await db.query("SELECT lower(email) AS email FROM users WHERE role = 'admin' AND lower(email) = ANY($1)", [all]);
+  const admins = new Set([...config.adminEmails.map((e) => e.toLowerCase()), ...rows.map((r) => r.email as string)]);
+  for (const addr of all.filter((a) => !admins.has(a))) {
     await db.query('INSERT INTO email_outbox (to_email, subject, body) VALUES ($1, $2, $3)', [addr, subject, body]);
   }
 }
@@ -52,6 +59,12 @@ const mailFrom = () => process.env.MAIL_FROM || (smtpSettings()?.user.includes('
 export async function deliverMail(db: Db) {
   const t = getTransport();
   if (!t) return;
+  // Letters queued for admins before they were skipped in queueMail are dropped, not sent.
+  await db.query(
+    `DELETE FROM email_outbox o WHERE o.status = 'pending'
+       AND (lower(o.to_email) = ANY($1) OR EXISTS (SELECT 1 FROM users u WHERE u.role = 'admin' AND lower(u.email) = lower(o.to_email)))`,
+    [config.adminEmails.map((e) => e.toLowerCase())],
+  );
   const { rows } = await db.query("SELECT * FROM email_outbox WHERE status = 'pending' ORDER BY created_at LIMIT 20");
   for (const m of rows) {
     try {
