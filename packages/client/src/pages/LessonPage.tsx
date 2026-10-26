@@ -14,8 +14,7 @@ import { useCourseProgress } from '../courses/useChild';
 import { COIN, HERO } from '../game/sprites';
 import { useLang } from '../i18n';
 import { ChessBoard } from '../components/ChessBoard';
-import { Dialog, ReadingText, WordsListen } from '../components/LessonExtras';
-import { ListenText } from '../components/ListenText';
+import { Dialog, ReadingText, SpeedSwitch, WordsListen } from '../components/LessonExtras';
 import { lessonCopybook, lessonScene } from '../components/interactive';
 import { musicDiagrams, musicSectionPicture } from '../components/music';
 import { useLocal, useTc } from '../content';
@@ -60,7 +59,6 @@ export function LessonPage() {
   const found = findLesson(lessonId);
   const { child, setChild, progress } = useCourseProgress(childId);
   const [tab, setTab] = useState<Tab>('theory');
-  const [reading, setReading] = useState(-1);
   const [answers, setAnswers] = useState<Answers>({});
   const [outcomes, setOutcomes] = useState<Partial<Record<LessonPart, Outcome>>>({});
   const [readLocally, setReadLocally] = useState(false);
@@ -87,7 +85,6 @@ export function LessonPage() {
   // Texts in the interface language; ids, grading and pictures use the original lesson.
   const shown = view ?? found;
   // Parts read aloud by «Listen»: theory in the site language, not foreign dialogues and word lists.
-  const readable = shown.lesson.sections.flatMap((s, i) => (s.dialog || s.speak || !s.text ? [] : [{ i, text: [s.title, s.text, s.tip].filter(Boolean).join('. ') }]));
   const diagrams = course.subject === 'chess' ? (CHESS_DIAGRAMS[lesson.title] ?? []) : [];
   const music = musicDiagrams(course, lesson.title, tc);
   const nextLesson = course.lessons[index + 1];
@@ -283,7 +280,7 @@ export function LessonPage() {
 
       {tab === 'theory' ? (
         <section className="theory">
-          <ListenText parts={readable.map((r) => r.text)} onPart={(k) => setReading(k < 0 ? -1 : readable[k].i)} />
+          <div className="speed-row"><SpeedSwitch /></div>
           {index === 0 && workspaceFor(course.subject) && (
             <article className="theory-card">
               <Workspace subject={course.subject} tc={tc} />
@@ -293,7 +290,7 @@ export function LessonPage() {
             const title = lesson.sections[i]?.title;
             const pic = i > 0 && title ? cardPic(course, title) : undefined;
             return (
-            <article key={i} className={`theory-card${reading === i ? ' reading' : ''}`}>
+            <article key={i} className="theory-card">
               {pic && <Pic code={pic} size={72} className="tc-pic" />}
               {s.title && <h3>{s.title}</h3>}
               {s.dialog ? (

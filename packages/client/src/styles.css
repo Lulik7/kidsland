@@ -1542,6 +1542,7 @@ h1, h2 { color: #34404f; }
 .bubble-tr { font-size: 0.95rem; color: var(--muted); }
 .reading-text { font-size: 1.15rem; line-height: 1.7; background: #fffdf6; border-radius: 18px; padding: 14px 18px; border: 2px dashed #f4e1b8; }
 .reading-tr { color: var(--muted); }
+.speed-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 6px 0 14px; }
 .reading-read { color: #7a6a9a; font-style: italic; }
 .bubble-read { display: block; font-size: 0.82rem; font-style: italic; color: #7a6a9a; }
 .question .listen-btn { margin: 4px 0 10px; }
@@ -2468,9 +2469,6 @@ textarea,
 .cp-check, .cp-tempo { white-space: nowrap; }
 
 /* reading a text aloud */
-.listen-text { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 6px 0 14px; }
-.theory-card.reading, .article section.reading { box-shadow: 0 0 0 3px #f4a259aa; border-radius: 14px; transition: box-shadow 0.3s; }
-.article section.reading { background: #fff8ee; }
 
 /* downloads room */
 .downloads-page h1 { margin-bottom: 4px; }
